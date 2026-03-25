@@ -1,36 +1,49 @@
 # 03 Implementation Order
 
-## Phase 1: Scene Skeleton
-- [ ] Create `Player.tscn` with a `CharacterBody2D` root
-- [ ] Add `StateMachine`, `WeaponPivot`, `Hurtbox`, `HealthComponent`, `FeedbackReceiver`, and `Camera2D` to `Player.tscn`
-- [ ] Create `Enemy_Dummy.tscn` with a simple enemy component layout
-- [ ] Add `StateMachine`, `Hurtbox`, `Hitbox`, `HealthComponent`, `FeedbackReceiver`, and `DropManager` to `Enemy_Dummy.tscn`
-- [ ] Create `DebugOverlay.tscn` as a HUD/debug root
-- [ ] Create `Arena_Test.tscn` and instance the player, dummy container, and debug overlay
+## Current Status
+- [x] Create `Player.tscn` with a `CharacterBody2D` root
+- [x] Add `StateMachine`, `WeaponPivot`, `Hurtbox`, `HealthComponent`, `FeedbackReceiver`, and `Camera2D` to `Player.tscn`
+- [x] Create `Enemy_Dummy.tscn` with a simple enemy component layout
+- [x] Create `DebugOverlay.tscn` as a HUD/debug root
+- [x] Create `Arena_Test.tscn` and instance the player, dummy container, and debug overlay
+- [x] Add 8-direction movement input handling
+- [x] Add the player walk sheet and left/right facing
+- [x] Build the player FSM skeleton with `Idle`, `Walk`, `Run`, and `Locked`
+- [x] Move state machine startup to owner-driven lifecycle
 
-## Phase 2: Combat Foundation
-- [ ] Create `AttackContext.gd`
-- [ ] Create `HealthComponent.gd`
-- [ ] Create `DamageReceiver.gd`
-- [ ] Create `Hitbox.gd`
-- [ ] Create `Hurtbox.gd`
-- [ ] Create `FeedbackReceiver.gd`
-- [ ] Wire the basic flow `Hitbox -> Hurtbox -> DamageReceiver -> HealthComponent`
+## Prototype Goal
+- [x] Use `Arena_Test.tscn` as the main prototype loop
+- [x] Keep the prototype focused on player movement, melee attacks, dummy damage, and readable debug info
+- [x] Do not implement dash in this phase
 
-## Phase 3: Player Prototype
-- [ ] Add 8-direction movement input handling
-- [ ] Add dash state and cooldown
-- [ ] Add a basic attack trigger from `WeaponPivot`
-- [ ] Show current player state in the debug overlay
+## Next Tasks
+- [x] Add `PlayerCollision` and `Hurtbox` shapes to the player scene
+- [x] Add a minimal melee attack from `WeaponPivot -> Hitbox`
+- [x] Add `AttackContext.gd`
+- [x] Add `Hitbox.gd`
+- [x] Add `Hurtbox.gd`
+- [x] Add `DamageReceiver.gd`
+- [x] Add `HealthComponent.gd`
+- [x] Add `FeedbackReceiver.gd`
+- [x] Wire `Hitbox -> Hurtbox -> DamageReceiver -> HealthComponent -> FeedbackReceiver`
+- [x] Give `Enemy_Dummy` a visible placeholder body and HP
+- [x] Show player state, player HP, and dummy HP in `DebugOverlay`
+- [x] Verify the hit flow in the editor
+- [x] Decide whether the prototype needs a dedicated player attack state or should stay input-driven for now
 
-## Phase 4: Test Loop
-- [ ] Spawn one dummy in `Arena_Test`
-- [ ] Verify player movement and camera follow
-- [ ] Verify dummy can receive damage events
-- [ ] Verify debug overlay can be toggled and updated
+## Refactoring Trigger
+- [x] Keep the current prototype attack as input-driven for now
+- [ ] Promote attack into a dedicated player state only when one of these needs appears:
+  - attack startup / recovery timing
+  - movement lock during attack
+  - combo chaining
+  - cancel rules
+  - tighter animation-window control of hitbox timing
 
-## Small Tasks To Start Now
-- [ ] Open `Arena_Test.tscn` and confirm the scene instances load cleanly
-- [ ] Decide whether the player root should keep all combat components directly attached or grouped under a `Components` node
-- [ ] Add placeholder visuals to player and dummy so the test arena is readable
-- [ ] Set `Arena_Test.tscn` as the main test entry scene when ready
+## Acceptance Checklist
+- [x] Player can walk and run in `Arena_Test`
+- [x] Player can trigger a melee attack
+- [x] Dummy takes damage from the player hitbox
+- [x] Dummy HP decreases to zero without scene errors
+- [x] Debug overlay shows player state, player HP, and dummy HP
+- [x] State machine only starts after the owner is ready

@@ -1,19 +1,22 @@
-[gd_scene format=3]
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/ui/DebugOverlay.gd" id="1_debug_overlay_script"]
 
 [node name="DebugOverlay" type="CanvasLayer"]
+script = ExtResource("1_debug_overlay_script")
 
 [node name="Root" type="MarginContainer" parent="."]
 offset_left = 12.0
 offset_top = 12.0
 offset_right = 320.0
-offset_bottom = 180.0
+offset_bottom = 220.0
 
 [node name="Panel" type="PanelContainer" parent="Root"]
 
 [node name="DebugInfo" type="VBoxContainer" parent="Root/Panel"]
 
 [node name="Title" type="Label" parent="Root/Panel/DebugInfo"]
-text = "Debug Overlay"
+text = "Prototype Debug"
 
 [node name="PlayerState" type="Label" parent="Root/Panel/DebugInfo"]
 text = "Player State: N/A"
@@ -21,6 +24,8 @@ text = "Player State: N/A"
 [node name="PlayerHP" type="Label" parent="Root/Panel/DebugInfo"]
 text = "Player HP: N/A"
 
-[node name="EnemyState" type="Label" parent="Root/Panel/DebugInfo"]
-text = "Enemy State: N/A"
+[node name="DummyState" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Dummy State: N/A"
 
+[node name="DummyHP" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Dummy HP: N/A"

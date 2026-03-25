@@ -21,7 +21,7 @@ func get_transition() -> StringName:
 #region Helpers
 func get_actor() -> PlayerController:
 	
-	var machine_ : = get_parent() as PlayerStateMachine
+	var machine_ := get_parent() as PlayerStateMachine
 	
 	assert(machine_ != null, "PlayerState must be parented under PlayerStateMachine")
 	assert(machine_.actor != null, "PlayerStateMachine actor must be assigned before state access")

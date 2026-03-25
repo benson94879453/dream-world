@@ -10,17 +10,17 @@ var current_state: PlayerState
 func _ready() -> void:
 	actor = get_parent() as PlayerController
 	assert(actor != null, "PlayerStateMachine parent must be PlayerController")
-
+	
 	var current_state_ := get_node_or_null(initial_state) as PlayerState
 	if current_state_ == null:
 		current_state_ = _find_first_state()
 	assert(current_state_ != null, "PlayerStateMachine failed to resolve initial state")
-
+	
 	current_state = current_state_
-	current_state.enter()
-
-
-func _physics_process(delta_: float) -> void:
+		
+	set_physics_process(false)
+	
+func _physics_process(delta_: float) -> void:	
 	assert(current_state != null, "PlayerStateMachine current_state must be valid before physics update")
 
 	current_state.physics_update(delta_)
@@ -29,6 +29,15 @@ func _physics_process(delta_: float) -> void:
 		return
 
 	transition_to(next_state_name_)
+	
+#endregion
+
+#region Public
+
+func start() -> void:
+	set_physics_process(true)
+	current_state.enter()
+	
 #endregion
 
 #region State Management

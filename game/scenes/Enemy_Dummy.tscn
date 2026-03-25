@@ -1,22 +1,61 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://coje4bcra6x0j"]
 
-[node name="Enemy_Dummy" type="CharacterBody2D"]
+[ext_resource type="Script" uid="uid://c40yirs3ui103" path="res://game/scripts/enemies/EnemyDummy.gd" id="1_enemy_dummy_script"]
+[ext_resource type="Script" uid="uid://dr50fxtlekb7h" path="res://game/scripts/combat/Hurtbox.gd" id="2_hurtbox_script"]
+[ext_resource type="Script" uid="uid://b5cemxj7ceuje" path="res://game/scripts/combat/Hitbox.gd" id="3_hitbox_script"]
+[ext_resource type="Script" uid="uid://h500tq7ebu60" path="res://game/scripts/combat/HealthComponent.gd" id="4_health_component_script"]
+[ext_resource type="Script" uid="uid://cvcqep5bl7753" path="res://game/scripts/combat/FeedbackReceiver.gd" id="5_feedback_receiver_script"]
+[ext_resource type="Script" uid="uid://cqmxxwf5v8fg3" path="res://game/scripts/combat/DamageReceiver.gd" id="6_damage_receiver_script"]
 
-[node name="StateMachine" type="Node" parent="."]
+[sub_resource type="RectangleShape2D" id="1_enemy_body_shape"]
+size = Vector2(20, 26)
 
-[node name="Visual" type="Node2D" parent="."]
+[sub_resource type="RectangleShape2D" id="2_enemy_hurtbox_shape"]
+size = Vector2(24, 28)
 
-[node name="Hurtbox" type="Area2D" parent="."]
+[sub_resource type="RectangleShape2D" id="3_enemy_hitbox_shape"]
+size = Vector2(14, 14)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+[node name="Enemy_Dummy" type="CharacterBody2D" unique_id=2138393668]
+collision_layer = 2
+script = ExtResource("1_enemy_dummy_script")
 
-[node name="Hitbox" type="Area2D" parent="."]
+[node name="StateMachine" type="Node" parent="." unique_id=1624450496]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+[node name="Visual" type="Node2D" parent="." unique_id=1977408161]
 
-[node name="HealthComponent" type="Node" parent="."]
+[node name="Body" type="Polygon2D" parent="Visual" unique_id=698008635]
+color = Color(0.85, 0.35, 0.35, 1)
+polygon = PackedVector2Array(-10, -26, 10, -26, 10, 0, -10, 0)
 
-[node name="FeedbackReceiver" type="Node" parent="."]
+[node name="EnemyCollision" type="CollisionShape2D" parent="." unique_id=253475569]
+position = Vector2(0, -13)
+shape = SubResource("1_enemy_body_shape")
 
-[node name="DropManager" type="Node" parent="."]
+[node name="Hurtbox" type="Area2D" parent="." unique_id=77504506]
+script = ExtResource("2_hurtbox_script")
 
+[node name="HurtboxCollision" type="CollisionShape2D" parent="Hurtbox" unique_id=27472971]
+position = Vector2(0, -14)
+shape = SubResource("2_enemy_hurtbox_shape")
+
+[node name="Hitbox" type="Area2D" parent="." unique_id=1042700831]
+script = ExtResource("3_hitbox_script")
+attacker_faction = &"enemy"
+base_damage = 10.0
+
+[node name="HitboxCollision" type="CollisionShape2D" parent="Hitbox" unique_id=1802448967]
+position = Vector2(14, -14)
+shape = SubResource("3_enemy_hitbox_shape")
+
+[node name="HealthComponent" type="Node" parent="." unique_id=1594453653]
+script = ExtResource("4_health_component_script")
+max_hp = 60.0
+
+[node name="DamageReceiver" type="Node" parent="." unique_id=715109277]
+script = ExtResource("6_damage_receiver_script")
+
+[node name="FeedbackReceiver" type="Node" parent="." unique_id=1764475169]
+script = ExtResource("5_feedback_receiver_script")
+
+[node name="DropManager" type="Node" parent="." unique_id=579995537]

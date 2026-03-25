@@ -1,7 +1,3 @@
-### One-Line Summary
-
-必要依賴可以 fallback，但不能靜默失敗；命名衝突優先靠清楚命名與後綴 `_` 解決。
-
 ## Fail Fast, Not Softly
 
 ### 可以接受 fallback，但不能靜默失敗
@@ -81,12 +77,14 @@ assert(state_machine_ != null, "state_machine_path must point to PlayerStateMach
 
 ### `:=` 的使用限制
 
-只有在右側已經透過 `as Type` 明確表達型別時，才允許使用 `:=`。
+只有在右側型別非常明確、幾乎不可能誤解時，才允許使用 `:=`。
 
 可接受：
 
 ```gdscript
 var current_state_ := get_node_or_null(initial_state) as PlayerState
+var player_ := get_actor()
+var next_state_name_ := current_state.get_transition()
 ```
 
 不可接受：
@@ -98,7 +96,7 @@ var player_ := get_parent()
 
 ### 其他情況都要直接寫型別
 
-除了 `as Type` 這類情況外，其他變數宣告都必須明確標型別。
+除了右側型別非常明確的情況外，其他變數宣告都必須明確標型別。
 
 可接受：
 
@@ -113,6 +111,11 @@ var input_vector_: Vector2 = player_.get_move_input()
 - 讓閱讀時一眼看出資料型別
 - 降低後續重構時的歧義
 
+判斷原則：
+- `as Type` 通常屬於可接受的明確型別來源
+- 已明確標註回傳型別、而且語意清楚的函式，也可接受
+- 如果閱讀時還需要停下來猜型別，就不要用 `:=`
+
 ## State Machine Rules
 
 對於 state machine：
@@ -126,9 +129,9 @@ var input_vector_: Vector2 = player_.get_move_input()
 
 GDScript 允許使用 `#region` / `#endregion` 做結構分區。
 
-目前統一使用這種思路：
-- `#region Public`
+目前統一使用這種思路(out -> in)：
 - `#region Core Lifecycle`
+- `#region Public`
 - `#region State Management`
 - `#region Animation`
 - `#region Helpers`
