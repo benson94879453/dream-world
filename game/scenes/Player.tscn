@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://ct21fy3nm5go4"]
+
+[ext_resource type="Script" uid="uid://dy5ibsn7e6bx7" path="res://game/scripts/Player.gd" id="1_player_script"]
+[ext_resource type="Texture2D" uid="uid://upphttcmpl5s" path="res://game/assets/characters/knight_perfect_processed_fixed-Sheet.png" id="2_player_sheet"]
+[ext_resource type="Script" uid="uid://bhf5uncleeawr" path="res://game/scripts/player/StateMachine.gd" id="3_state_machine_script"]
+[ext_resource type="Script" uid="uid://rseossme72h7" path="res://game/scripts/player/states/PlayerIdleState.gd" id="4_idle_state_script"]
+[ext_resource type="Script" uid="uid://b6ro0jj1ecps4" path="res://game/scripts/player/states/PlayerWalkState.gd" id="5_walk_state_script"]
+[ext_resource type="Script" uid="uid://dl1pnrviwi6s8" path="res://game/scripts/player/states/PlayerRunState.gd" id="6_run_state_script"]
+[ext_resource type="Script" uid="uid://oibqcmura71c" path="res://game/scripts/player/states/PlayerLockedState.gd" id="7_locked_state_script"]
+
+[node name="Player" type="CharacterBody2D" unique_id=807023401]
+script = ExtResource("1_player_script")
+
+[node name="StateMachine" type="Node" parent="." unique_id=1535896955]
+script = ExtResource("3_state_machine_script")
+
+[node name="Idle" type="Node" parent="StateMachine" unique_id=1661014199]
+script = ExtResource("4_idle_state_script")
+
+[node name="Walk" type="Node" parent="StateMachine" unique_id=318235376]
+script = ExtResource("5_walk_state_script")
+
+[node name="Run" type="Node" parent="StateMachine" unique_id=310882692]
+script = ExtResource("6_run_state_script")
+
+[node name="Locked" type="Node" parent="StateMachine" unique_id=1100240156]
+script = ExtResource("7_locked_state_script")
+
+[node name="Visual" type="Node2D" parent="." unique_id=268081328]
+
+[node name="Sprite2D" type="Sprite2D" parent="Visual" unique_id=438369105]
+texture = ExtResource("2_player_sheet")
+hframes = 5
+
+[node name="WeaponPivot" type="Marker2D" parent="." unique_id=1481702088]
+position = Vector2(20, 0)
+
+[node name="Hurtbox" type="Area2D" parent="." unique_id=1422932758]
+
+[node name="HurtBoxCollision" type="CollisionShape2D" parent="Hurtbox" unique_id=301472059]
+
+[node name="HealthComponent" type="Node" parent="." unique_id=224975511]
+
+[node name="FeedbackReceiver" type="Node" parent="." unique_id=1462198009]
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1262105119]
+position_smoothing_enabled = true
+
+[node name="PlayerCollision" type="CollisionShape2D" parent="." unique_id=1209766090]

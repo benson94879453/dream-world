@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[node name="Enemy_Dummy" type="CharacterBody2D"]
+
+[node name="StateMachine" type="Node" parent="."]
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Hurtbox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+
+[node name="Hitbox" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+
+[node name="HealthComponent" type="Node" parent="."]
+
+[node name="FeedbackReceiver" type="Node" parent="."]
+
+[node name="DropManager" type="Node" parent="."]
+

@@ -1,0 +1,29 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="PackedScene" path="res://game/scenes/Player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://game/scenes/Enemy_Dummy.tscn" id="2_enemy"]
+[ext_resource type="PackedScene" path="res://game/scenes/DebugOverlay.tscn" id="3_debug"]
+
+[node name="Arena_Test" type="Node2D"]
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="Player" parent="World" instance=ExtResource("1_player")]
+position = Vector2(160, 120)
+
+[node name="Enemies" type="Node2D" parent="World"]
+
+[node name="Enemy_Dummy" parent="World/Enemies" instance=ExtResource("2_enemy")]
+position = Vector2(320, 120)
+
+[node name="Markers" type="Node2D" parent="."]
+
+[node name="PlayerSpawn" type="Marker2D" parent="Markers"]
+position = Vector2(160, 120)
+
+[node name="EnemySpawn" type="Marker2D" parent="Markers"]
+position = Vector2(320, 120)
+
+[node name="UI" type="Node" parent="."]
+
+[node name="DebugOverlay" parent="UI" instance=ExtResource("3_debug")]
