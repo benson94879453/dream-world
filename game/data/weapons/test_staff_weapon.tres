@@ -1,0 +1,18 @@
+[gd_resource type="Resource" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/WeaponData.gd" id="1_weapon_data_script"]
+[ext_resource type="Texture2D" path="res://game/assets/weapon/test_sword.png" id="2_weapon_texture"]
+[ext_resource type="PackedScene" path="res://game/scenes/weapons/StaffWeapon.tscn" id="3_weapon_scene"]
+[ext_resource type="PackedScene" path="res://game/scenes/weapons/BoltSpellActor.tscn" id="4_attack_actor_scene"]
+
+[resource]
+script = ExtResource("1_weapon_data_script")
+weapon_id = &"test_staff_weapon"
+display_name = "Test Staff"
+base_atk = 14.0
+attack_speed = 1.2
+attack_range = 4.0
+weapon_type = &"staff"
+weapon_sprite_texture = ExtResource("2_weapon_texture")
+weapon_scene = ExtResource("3_weapon_scene")
+attack_actor_scene = ExtResource("4_attack_actor_scene")

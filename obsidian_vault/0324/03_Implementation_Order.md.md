@@ -10,6 +10,12 @@
 - [x] Add the player walk sheet and left/right facing
 - [x] Build the player FSM skeleton with `Idle`, `Walk`, `Run`, and `Locked`
 - [x] Move state machine startup to owner-driven lifecycle
+- [x] Add a minimal equipped weapon flow backed by `WeaponData`, `WeaponInstance`, and `wpn_unarmed.tres`
+- [x] Promote weapons into category scenes instantiated from `WeaponData.weapon_scene`
+- [x] Split weapon category logic into `SwordWeapon` and `StaffWeapon`
+- [x] Move staff attack payload selection into `WeaponData.attack_actor_scene`
+- [x] Add `SpellActor` base and `BoltSpellActor` projectile implementation
+- [x] Move weapon sprite offset resolution into `WeaponController`
 
 ## Prototype Goal
 - [x] Use `Arena_Test.tscn` as the main prototype loop
@@ -30,6 +36,10 @@
 - [x] Show player state, player HP, and dummy HP in `DebugOverlay`
 - [x] Verify the hit flow in the editor
 - [x] Decide whether the prototype needs a dedicated player attack state or should stay input-driven for now
+- [ ] Add a debug-visible way to equip and swap between sword and staff in `Arena_Test`
+- [ ] Define weapon attack presentation ownership: animation, cast timing, muzzle flash, and audio
+- [ ] Define how non-projectile spell actors plug into the same `StaffWeapon -> SpellActor` chain
+- [ ] Decide when attack timing pressure is high enough to promote attack into a dedicated player state
 
 ## Refactoring Trigger
 - [x] Keep the current prototype attack as input-driven for now
@@ -47,3 +57,6 @@
 - [x] Dummy HP decreases to zero without scene errors
 - [x] Debug overlay shows player state, player HP, and dummy HP
 - [x] State machine only starts after the owner is ready
+- [x] Player equips weapons via `WeaponData -> WeaponInstance -> WeaponController`
+- [x] `SwordWeapon` owns melee hitbox/cooldown lifecycle
+- [x] `StaffWeapon` spawns a `SpellActor` selected from `WeaponData.attack_actor_scene`

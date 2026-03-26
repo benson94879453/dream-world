@@ -10,6 +10,8 @@ extends Area2D
 
 var active_time_remaining: float = 0.0
 var already_hit: Array[Hurtbox] = []
+var source_root: Node = null
+var attack_tags: Array[StringName] = [&"melee"]
 
 #region Core Lifecycle
 func _ready() -> void:
@@ -44,7 +46,8 @@ func _try_hit(area_: Area2D) -> void:
 	if hurtbox_ == null:
 		return
 
-	if hurtbox_.owner == owner:
+	var source_root_ := _resolve_source_root()
+	if source_root_ == hurtbox_ or source_root_.is_ancestor_of(hurtbox_):
 		return
 
 	if already_hit.has(hurtbox_):
@@ -63,7 +66,19 @@ func _build_attack_context() -> AttackContext:
 	attack_context_.damage_type = damage_type
 	attack_context_.poise_damage = poise_damage
 	attack_context_.hitstop_scale = hitstop_scale
-	attack_context_.tags = [&"melee"]
+	attack_context_.tags = attack_tags.duplicate()
 
 	return attack_context_
+
+
+func _resolve_source_root() -> Node:
+	if source_root != null:
+		return source_root
+
+	if owner != null:
+		return owner
+
+	var source_root_ := get_parent()
+	assert(source_root_ != null, "Hitbox requires source_root, scene owner, or parent")
+	return source_root_
 #endregion

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://duiihck18chqv"]
+
+[ext_resource type="Script" uid="uid://bsh0gsen0l62c" path="res://game/scripts/data/WeaponData.gd" id="1_weapon_data_script"]
+[ext_resource type="PackedScene" path="res://game/scenes/weapons/SwordWeapon.tscn" id="2_weapon_scene"]
+
+[resource]
+script = ExtResource("1_weapon_data_script")
+metadata/_custom_type_script = "uid://bsh0gsen0l62c"
+weapon_id = &"wpn_unarmed"
+display_name = "Unarmed"
+base_atk = 10.0
+attack_speed = 2.0
+attack_range = 1.0
+weapon_type = &"unarmed"
+weapon_scene = ExtResource("2_weapon_scene")

@@ -23,6 +23,12 @@
 - [x] `Hurtbox` shape
 - [x] Basic melee attack from `WeaponPivot`
 - [x] Expose current HP to debug tools
+- [x] Minimal equipped weapon field backed by `WeaponData` and `WeaponInstance`
+- [x] Weapon scene instancing from `WeaponData.weapon_scene`
+- [x] `SwordWeapon` category scene owns melee attack nodes
+- [x] `StaffWeapon` category scene spawns `SpellActor`
+- [x] `WeaponData.attack_actor_scene` drives staff attack payload
+- [x] Weapon sprite offset resolves inside weapon scene/controller
 
 ## Combat Foundation
 - [x] `AttackContext.gd`
@@ -47,6 +53,9 @@
 
 ## Deferred Until Later
 - [ ] Player attack state
+- [ ] Weapon switching / loadout flow
+- [ ] Weapon-specific attack presentation and timing
+- [ ] Non-projectile spell actors
 - [ ] Enemy AI
 - [ ] Inventory
 - [ ] Save / Load

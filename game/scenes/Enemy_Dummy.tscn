@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://coje4bcra6x0j"]
 
 [ext_resource type="Script" uid="uid://c40yirs3ui103" path="res://game/scripts/enemies/EnemyDummy.gd" id="1_enemy_dummy_script"]
+[ext_resource type="Texture2D" uid="uid://dhj7siyaeqc2p" path="res://game/assets/entities/spider_normal_sheet.png" id="2_41nmb"]
 [ext_resource type="Script" uid="uid://dr50fxtlekb7h" path="res://game/scripts/combat/Hurtbox.gd" id="2_hurtbox_script"]
 [ext_resource type="Script" uid="uid://b5cemxj7ceuje" path="res://game/scripts/combat/Hitbox.gd" id="3_hitbox_script"]
 [ext_resource type="Script" uid="uid://h500tq7ebu60" path="res://game/scripts/combat/HealthComponent.gd" id="4_health_component_script"]
@@ -18,21 +19,25 @@ size = Vector2(14, 14)
 
 [node name="Enemy_Dummy" type="CharacterBody2D" unique_id=2138393668]
 collision_layer = 2
+collision_mask = 12
 script = ExtResource("1_enemy_dummy_script")
 
 [node name="StateMachine" type="Node" parent="." unique_id=1624450496]
 
 [node name="Visual" type="Node2D" parent="." unique_id=1977408161]
 
-[node name="Body" type="Polygon2D" parent="Visual" unique_id=698008635]
-color = Color(0.85, 0.35, 0.35, 1)
-polygon = PackedVector2Array(-10, -26, 10, -26, 10, 0, -10, 0)
+[node name="Sprite2D" type="Sprite2D" parent="Visual" unique_id=1614211559]
+texture = ExtResource("2_41nmb")
+hframes = 4
+vframes = 6
 
 [node name="EnemyCollision" type="CollisionShape2D" parent="." unique_id=253475569]
 position = Vector2(0, -13)
 shape = SubResource("1_enemy_body_shape")
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=77504506]
+collision_layer = 32
+collision_mask = 80
 script = ExtResource("2_hurtbox_script")
 
 [node name="HurtboxCollision" type="CollisionShape2D" parent="Hurtbox" unique_id=27472971]
@@ -40,6 +45,8 @@ position = Vector2(0, -14)
 shape = SubResource("2_enemy_hurtbox_shape")
 
 [node name="Hitbox" type="Area2D" parent="." unique_id=1042700831]
+collision_layer = 16
+collision_mask = 32
 script = ExtResource("3_hitbox_script")
 attacker_faction = &"enemy"
 base_damage = 10.0

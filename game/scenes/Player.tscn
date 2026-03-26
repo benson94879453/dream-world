@@ -8,23 +8,26 @@
 [ext_resource type="Script" uid="uid://dl1pnrviwi6s8" path="res://game/scripts/player/states/PlayerRunState.gd" id="6_run_state_script"]
 [ext_resource type="Script" uid="uid://oibqcmura71c" path="res://game/scripts/player/states/PlayerLockedState.gd" id="7_locked_state_script"]
 [ext_resource type="Script" uid="uid://dr50fxtlekb7h" path="res://game/scripts/combat/Hurtbox.gd" id="8_hurtbox_script"]
-[ext_resource type="Script" uid="uid://b5cemxj7ceuje" path="res://game/scripts/combat/Hitbox.gd" id="9_hitbox_script"]
 [ext_resource type="Script" uid="uid://h500tq7ebu60" path="res://game/scripts/combat/HealthComponent.gd" id="10_health_component_script"]
 [ext_resource type="Script" uid="uid://cvcqep5bl7753" path="res://game/scripts/combat/FeedbackReceiver.gd" id="11_feedback_receiver_script"]
 [ext_resource type="Script" uid="uid://cqmxxwf5v8fg3" path="res://game/scripts/combat/DamageReceiver.gd" id="12_damage_receiver_script"]
-
-[sub_resource type="RectangleShape2D" id="3_player_attack_shape"]
-size = Vector2(18, 16)
-
-[sub_resource type="RectangleShape2D" id="2_player_hurtbox_shape"]
-size = Vector2(18, 24)
+[ext_resource type="Resource" uid="uid://bcjtmix6guoj3" path="res://game/data/weapons/test_weapon.tres" id="13_unarmed_weapon"]
 
 [sub_resource type="CapsuleShape2D" id="1_player_body_shape"]
 radius = 8.0
 height = 18.0
 
+[sub_resource type="RectangleShape2D" id="2_player_hurtbox_shape"]
+size = Vector2(18, 24)
+
 [node name="Player" type="CharacterBody2D" unique_id=2074202941]
+collision_mask = 12
 script = ExtResource("1_player_script")
+equipped_weapon_data = ExtResource("13_unarmed_weapon")
+
+[node name="PlayerCollision" type="CollisionShape2D" parent="." unique_id=1924972921]
+position = Vector2(0, -9)
+shape = SubResource("1_player_body_shape")
 
 [node name="StateMachine" type="Node" parent="." unique_id=922215123]
 script = ExtResource("3_state_machine_script")
@@ -49,16 +52,11 @@ texture = ExtResource("2_player_sheet")
 hframes = 5
 
 [node name="WeaponPivot" type="Marker2D" parent="." unique_id=1035361433]
-position = Vector2(10, -12)
-
-[node name="AttackHitbox" type="Area2D" parent="WeaponPivot" unique_id=1766928434]
-script = ExtResource("9_hitbox_script")
-
-[node name="AttackHitboxCollision" type="CollisionShape2D" parent="WeaponPivot/AttackHitbox" unique_id=538526998]
-position = Vector2(12, 0)
-shape = SubResource("3_player_attack_shape")
+position = Vector2(12, 6)
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=2140844987]
+collision_layer = 32
+collision_mask = 16
 script = ExtResource("8_hurtbox_script")
 
 [node name="HurtBoxCollision" type="CollisionShape2D" parent="Hurtbox" unique_id=164279558]
@@ -76,11 +74,3 @@ script = ExtResource("11_feedback_receiver_script")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=292574213]
 position_smoothing_enabled = true
-
-[node name="PlayerCollision" type="CollisionShape2D" parent="." unique_id=1924972921]
-position = Vector2(0, -9)
-shape = SubResource("1_player_body_shape")
-
-[node name="AttackCooldownTimer" type="Timer" parent="." unique_id=555911791]
-wait_time = 0.25
-one_shot = true

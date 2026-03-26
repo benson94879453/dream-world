@@ -15,10 +15,6 @@ run/main_scene="res://game/scenes/Arena_Test.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
-[editor_plugins]
-
-enabled=PackedStringArray()
-
 [input]
 
 move_left={
