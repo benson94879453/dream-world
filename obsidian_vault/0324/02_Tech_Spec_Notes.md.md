@@ -106,18 +106,14 @@ res://
 最小欄位：
 
 - `weapon_id`
-    
 - `display_name`
-    
 - `base_atk`
-    
 - `attack_speed`
-    
 - `attack_range`
-    
 - `weapon_type`
-    
-- `weapon_scene_path`
+- `weapon_scene`
+- `attack_profile`  # WeaponAttackProfile，攻擊表現配置
+- `attack_actor_scene`  # 法術/遠程武器的投射物場景
     
 
 ---
@@ -144,23 +140,33 @@ res://
 
 ---
 
+### WeaponAttackProfile
+
+用途：
+
+- 定義武器攻擊的表現層配置
+- 時機控制 (startup/active/recovery frames)
+- 視覺/聽覺表現 (animation, muzzle_flash, hit_effect, audio)
+- 冷卻時間
+
+原則：
+
+- 純配置，無執行邏輯
+- SwordWeapon/StaffWeapon 讀取並執行
+- 允許為 null (如 UnarmedWeapon)
+
+---
+
 ### 映射規則
 
 - `WeaponInstance` 初始化時只接收 `weapon_id`
-    
 - 透過查表載入對應 `WeaponData`
-    
 - 變動欄位由 `WeaponInstance` 自己持有
-    
 - 存檔時只序列化變動欄位與 ID
-    
 - 讀檔時：
-    
-    1. 用 `weapon_id` 建立 `WeaponInstance`
-        
-    2. 載入 `WeaponData`
-        
-    3. 覆蓋 runtime fields
+  1. 用 `weapon_id` 建立 `WeaponInstance`
+  2. 載入 `WeaponData`
+  3. 覆蓋 runtime fields
         
 
 ---
@@ -299,6 +305,37 @@ Hitbox -> Hurtbox -> DamageReceiver -> HealthComponent -> FeedbackReceiver
     - Knockback
         
     - 後續可擴充 hit stop / camera shake
+
+---
+
+### SpellActor 系統
+
+用途：
+
+- 統一法術效果的執行單位
+- 由 StaffWeapon 生成並管理生命週期
+
+類型：
+
+```gdscript
+enum SpellType {
+    PROJECTILE,    # 投射物 (如 BoltSpellActor)
+    INSTANT,       # 立即生效 (如 HealSpellActor, ExplosionSpellActor)
+    CONTINUOUS     # 持續性 (如護盾、光環)
+}
+```
+
+生命週期：
+
+- PROJECTILE: 物理移動直到碰撞或超時
+- INSTANT: 生成後立即執行效果，然後清理
+- CONTINUOUS: 持續作用直到 lifetime 結束
+
+責任：
+
+- SpellActor: 定義法術類型和生命週期
+- 子類 (Bolt/Heal/Explosion): 實作具體效果
+- StaffWeapon: 根據 SpellType 決定生成後的行為
         
 
 ---

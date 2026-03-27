@@ -11,4 +11,6 @@ var knockback_force: Vector2 = Vector2.ZERO
 var hitstop_scale: float = 1.0
 var tags: Array[StringName] = []
 var can_trigger_on_hit: bool = true
+var hit_audio: AudioStream = null
+var hit_effect_scene: PackedScene = null
 #endregion

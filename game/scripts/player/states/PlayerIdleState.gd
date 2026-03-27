@@ -16,7 +16,7 @@ func physics_update(_delta: float) -> void:
 func get_transition() -> StringName:
 	var player_ := get_actor()
 
-	if player_.controls_locked:
+	if player_.is_controls_locked():
 		return &"Locked"
 
 	var input_vector_ := player_.get_move_input()

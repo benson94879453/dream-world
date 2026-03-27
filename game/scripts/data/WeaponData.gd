@@ -1,6 +1,8 @@
 class_name WeaponData
 extends Resource
 
+const WeaponAttackProfileResource = preload("res://game/scripts/data/WeaponAttackProfile.gd")
+
 @export var weapon_id: StringName = &"wpn_unarmed"
 @export var display_name: String = "Unarmed"
 @export var base_atk: float = 20.0
@@ -10,3 +12,4 @@ extends Resource
 @export var weapon_sprite_texture: Texture2D = null
 @export var weapon_scene: PackedScene = null
 @export var attack_actor_scene: PackedScene = null
+@export var attack_profile: WeaponAttackProfileResource = null

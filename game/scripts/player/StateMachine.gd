@@ -37,6 +37,11 @@ func _physics_process(delta_: float) -> void:
 func start() -> void:
 	set_physics_process(true)
 	current_state.enter()
+
+
+func handle_input(event_: InputEvent) -> void:
+	assert(current_state != null, "PlayerStateMachine current_state must be valid before input handling")
+	current_state.handle_input(event_)
 	
 #endregion
 

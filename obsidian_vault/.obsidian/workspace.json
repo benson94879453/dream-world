@@ -1,0 +1,209 @@
+{
+  "main": {
+    "id": "a80df96361447e0d",
+    "type": "split",
+    "children": [
+      {
+        "id": "2f63dae2bf4e5d7a",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "fe9c764075f51b47",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "SYNC_SUMMARY.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "SYNC_SUMMARY"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "248ac55b33c69b28",
+    "type": "split",
+    "children": [
+      {
+        "id": "e9488a42bf5f2d36",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "81b34e2c537eab82",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "檔案瀏覽器"
+            }
+          },
+          {
+            "id": "595585df1c4c078f",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "搜尋"
+            }
+          },
+          {
+            "id": "6eb7f78e91b3aa26",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "書籤"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "8b447fcedf92b55e",
+    "type": "split",
+    "children": [
+      {
+        "id": "5ad88b181f367004",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "301652b2e4811385",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "SYNC_SUMMARY.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "SYNC_SUMMARY 的反向連結"
+            }
+          },
+          {
+            "id": "18916ca626ff9a52",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "SYNC_SUMMARY.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "SYNC_SUMMARY 的對外連結"
+            }
+          },
+          {
+            "id": "665a2965c1a1386f",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "標籤"
+            }
+          },
+          {
+            "id": "892ad2724768cdd0",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "所有屬性"
+            }
+          },
+          {
+            "id": "b4c237d25dfa4817",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "SYNC_SUMMARY.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "SYNC_SUMMARY 的大綱"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:開啟快速切換": false,
+      "graph:查看關聯圖": false,
+      "canvas:建立新畫布": false,
+      "daily-notes:開啟今天的每日筆記": false,
+      "templates:插入模板": false,
+      "command-palette:開啟命令面板": false,
+      "bases:建立新的 base": false
+    }
+  },
+  "active": "fe9c764075f51b47",
+  "lastOpenFiles": [
+    "reviews/review_007_save_load.md",
+    "SYNC_SUMMARY.md",
+    "WORKFLOW_QUICKSTART.md",
+    "WORKFLOW_TEMPLATE.md",
+    "reviews/review_005_inventory.md",
+    "reviews/review_006_loot_drop.md",
+    "codex_prompt.md",
+    "PHASE3_PLAN.md",
+    "0324/01_MVP_TODO.md.md",
+    "reviews/review_004_player_attack_state.md",
+    "reviews/review_003_non_projectile_spells.md",
+    "reviews/review_002_attack_profile.md",
+    "reviews/review_001_weapon_switch.md",
+    "reviews/review_001_retrospective.md",
+    "Kimi_Codex_Workflow.md",
+    "0324/02_Tech_Spec_Notes.md.md",
+    "0324/04_Coding_Habits.md.md",
+    "0324/03_Implementation_Order.md.md",
+    "review_template.md",
+    "reviews"
+  ]
+}

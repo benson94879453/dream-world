@@ -12,6 +12,8 @@ var active_time_remaining: float = 0.0
 var already_hit: Array[Hurtbox] = []
 var source_root: Node = null
 var attack_tags: Array[StringName] = [&"melee"]
+var hit_audio: AudioStream = null
+var hit_effect_scene: PackedScene = null
 
 #region Core Lifecycle
 func _ready() -> void:
@@ -38,6 +40,12 @@ func activate() -> void:
 	active_time_remaining = active_duration
 	monitoring = true
 	set_physics_process(true)
+
+
+func deactivate() -> void:
+	active_time_remaining = 0.0
+	monitoring = false
+	set_physics_process(false)
 #endregion
 
 #region Helpers
@@ -67,6 +75,8 @@ func _build_attack_context() -> AttackContext:
 	attack_context_.poise_damage = poise_damage
 	attack_context_.hitstop_scale = hitstop_scale
 	attack_context_.tags = attack_tags.duplicate()
+	attack_context_.hit_audio = hit_audio
+	attack_context_.hit_effect_scene = hit_effect_scene
 
 	return attack_context_
 

@@ -7,11 +7,13 @@
 [ext_resource type="Script" uid="uid://b6ro0jj1ecps4" path="res://game/scripts/player/states/PlayerWalkState.gd" id="5_walk_state_script"]
 [ext_resource type="Script" uid="uid://dl1pnrviwi6s8" path="res://game/scripts/player/states/PlayerRunState.gd" id="6_run_state_script"]
 [ext_resource type="Script" uid="uid://oibqcmura71c" path="res://game/scripts/player/states/PlayerLockedState.gd" id="7_locked_state_script"]
+[ext_resource type="Script" uid="uid://cfve0jwp4xm5n" path="res://game/scripts/player/states/PlayerAttackState.gd" id="9_attack_state_script"]
 [ext_resource type="Script" uid="uid://dr50fxtlekb7h" path="res://game/scripts/combat/Hurtbox.gd" id="8_hurtbox_script"]
 [ext_resource type="Script" uid="uid://h500tq7ebu60" path="res://game/scripts/combat/HealthComponent.gd" id="10_health_component_script"]
 [ext_resource type="Script" uid="uid://cvcqep5bl7753" path="res://game/scripts/combat/FeedbackReceiver.gd" id="11_feedback_receiver_script"]
 [ext_resource type="Script" uid="uid://cqmxxwf5v8fg3" path="res://game/scripts/combat/DamageReceiver.gd" id="12_damage_receiver_script"]
 [ext_resource type="Resource" uid="uid://bcjtmix6guoj3" path="res://game/data/weapons/test_weapon.tres" id="13_unarmed_weapon"]
+[ext_resource type="Script" path="res://game/scripts/inventory/Inventory.gd" id="14_inventory_script"]
 
 [sub_resource type="CapsuleShape2D" id="1_player_body_shape"]
 radius = 8.0
@@ -44,6 +46,9 @@ script = ExtResource("6_run_state_script")
 [node name="Locked" type="Node" parent="StateMachine" unique_id=1064476366]
 script = ExtResource("7_locked_state_script")
 
+[node name="Attack" type="Node" parent="StateMachine"]
+script = ExtResource("9_attack_state_script")
+
 [node name="Visual" type="Node2D" parent="." unique_id=1953864850]
 
 [node name="Sprite2D" type="Sprite2D" parent="Visual" unique_id=1653221995]
@@ -71,6 +76,9 @@ script = ExtResource("12_damage_receiver_script")
 
 [node name="FeedbackReceiver" type="Node" parent="." unique_id=941624344]
 script = ExtResource("11_feedback_receiver_script")
+
+[node name="Inventory" type="Node" parent="."]
+script = ExtResource("14_inventory_script")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=292574213]
 position_smoothing_enabled = true

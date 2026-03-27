@@ -52,10 +52,10 @@
 - [x] Show dummy HP
 
 ## Deferred Until Later
-- [ ] Player attack state
+- [x] Player attack state
 - [ ] Weapon switching / loadout flow
-- [ ] Weapon-specific attack presentation and timing
-- [ ] Non-projectile spell actors
+- [x] Weapon-specific attack presentation and timing
+- [x] Non-projectile spell actors
 - [ ] Enemy AI
 - [ ] Inventory
 - [ ] Save / Load

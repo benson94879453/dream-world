@@ -1,6 +1,8 @@
 class_name EnemyDummy
 extends CharacterBody2D
 
+const DropComponentNode = preload("res://game/scripts/components/DropComponent.gd")
+
 @export var animation_fps: float = 12.0
 @export var frame_count: int = 23
 
@@ -9,11 +11,13 @@ var animation_time: float = 0.0
 
 @onready var sprite: Sprite2D = $Visual/Sprite2D
 @onready var health_component: HealthComponent = $HealthComponent
+@onready var drop_component: DropComponentNode = $DropComponent
 
 #region Core Lifecycle
 func _ready() -> void:
 	assert(sprite != null, "EnemyDummy requires Sprite2D")
 	assert(health_component != null, "EnemyDummy requires HealthComponent")
+	assert(drop_component != null, "EnemyDummy requires DropComponent")
 
 	add_to_group("debug_dummy")
 	health_component.died.connect(_on_died)
@@ -51,5 +55,6 @@ func _on_died() -> void:
 	current_state_name = &"Dead"
 	velocity = Vector2.ZERO
 	animation_time = 0.0
+	drop_component.on_death()
 	_apply_frame()
 #endregion

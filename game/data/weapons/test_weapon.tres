@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://bsh0gsen0l62c" path="res://game/scripts/data/WeaponData.gd" id="1_weapon_data_script"]
 [ext_resource type="Texture2D" uid="uid://b8dpnnrinqd52" path="res://game/assets/weapon/test_sword.png" id="2_weapon_texture"]
 [ext_resource type="PackedScene" path="res://game/scenes/weapons/SwordWeapon.tscn" id="3_weapon_scene"]
+[ext_resource type="Resource" path="res://game/data/weapons/profiles/profile_sword_basic.tres" id="4_attack_profile"]
 
 [resource]
 script = ExtResource("1_weapon_data_script")
@@ -13,3 +14,4 @@ attack_range = 3.0
 weapon_type = &"sword"
 weapon_sprite_texture = ExtResource("2_weapon_texture")
 weapon_scene = ExtResource("3_weapon_scene")
+attack_profile = ExtResource("4_attack_profile")

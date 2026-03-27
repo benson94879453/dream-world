@@ -32,10 +32,21 @@ func _setup_spell_actor() -> void:
 		hitbox = get_node_or_null(hitbox_path) as Hitbox
 	assert(hitbox != null, "BoltSpellActor hitbox_path must point to Hitbox")
 
+	spell_type = SpellType.PROJECTILE
+
+
+func _activate_spell() -> void:
+	if hitbox == null:
+		hitbox = get_node_or_null(hitbox_path) as Hitbox
+	assert(hitbox != null, "BoltSpellActor hitbox_path must point to Hitbox")
+
 	lifetime_remaining = maxf(weapon_instance.get_attack_range(), 0.25) * seconds_per_range_unit
 	hitbox.source_root = owner_actor
 	hitbox.base_damage = weapon_instance.get_base_attack()
 	hitbox.attack_tags = [&"spell", &"projectile", weapon_data.weapon_type]
+	var attack_profile_ = weapon_data.attack_profile
+	hitbox.hit_audio = attack_profile_.hit_audio if attack_profile_ != null else null
+	hitbox.hit_effect_scene = attack_profile_.hit_effect_scene if attack_profile_ != null else null
 	hitbox.active_duration = lifetime_remaining
 	hitbox.activate()
 #endregion

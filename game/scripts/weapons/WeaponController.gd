@@ -1,6 +1,8 @@
 class_name WeaponController
 extends Node2D
 
+const WeaponAttackProfileResource = preload("res://game/scripts/data/WeaponAttackProfile.gd")
+
 @export var weapon_sprite_path: NodePath = NodePath("WeaponSprite")
 @export var use_weapon_sprite_offset_override: bool = false
 @export var weapon_sprite_offset_override: Vector2 = Vector2.ZERO
@@ -9,6 +11,7 @@ var owner_actor: PlayerController = null
 var weapon_instance: WeaponInstance = null
 var weapon_data: WeaponData = null
 var weapon_sprite: Sprite2D = null
+var startup_audio_player: AudioStreamPlayer2D = null
 
 #region Public
 func setup(owner_: PlayerController, weapon_instance_: WeaponInstance) -> void:
@@ -32,12 +35,25 @@ func try_primary_attack() -> bool:
 	return false
 
 
+func can_combo() -> bool:
+	return false
+
+
+func get_current_phase() -> StringName:
+	return &"idle"
+
+
+func cancel_attack() -> void:
+	pass
+
+
 func on_equipped() -> void:
 	pass
 
 
 func on_unequipped() -> void:
-	pass
+	if startup_audio_player != null:
+		startup_audio_player.stop()
 #endregion
 
 #region Helpers
@@ -54,6 +70,68 @@ func _setup_weapon() -> void:
 func _get_attack_direction() -> Vector2:
 	assert(owner_actor != null, "WeaponController owner_actor must be initialized")
 	return owner_actor.get_attack_direction()
+
+
+func _get_attack_profile() -> WeaponAttackProfileResource:
+	if weapon_data == null:
+		return null
+	return weapon_data.attack_profile
+
+
+func _get_attack_phase_duration_seconds(frame_count_: int) -> float:
+	var ticks_per_second_ := maxf(float(Engine.physics_ticks_per_second), 1.0)
+	return maxf(float(frame_count_), 0.0) / ticks_per_second_
+
+
+func _get_attack_cooldown_seconds() -> float:
+	var attack_profile_ = _get_attack_profile()
+	if attack_profile_ != null:
+		return maxf(attack_profile_.cooldown_seconds, 0.0)
+	return weapon_instance.get_attack_cooldown()
+
+
+func _play_attack_animation(animation_name_: String) -> void:
+	if owner_actor == null or animation_name_.is_empty():
+		return
+
+	owner_actor.play_weapon_attack_animation(animation_name_)
+
+
+func _play_audio_stream(audio_stream_: AudioStream) -> void:
+	if audio_stream_ == null:
+		return
+
+	if startup_audio_player == null:
+		startup_audio_player = AudioStreamPlayer2D.new()
+		startup_audio_player.name = "StartupAudioPlayer"
+		add_child(startup_audio_player)
+
+	startup_audio_player.stream = audio_stream_
+	startup_audio_player.play()
+
+
+func _spawn_presentation_scene(scene_: PackedScene, global_position_: Vector2) -> void:
+	if scene_ == null:
+		return
+
+	var parent_node_ := owner_actor.get_parent() if owner_actor != null else get_parent()
+	if parent_node_ == null:
+		return
+
+	var presentation_node_ := scene_.instantiate()
+	parent_node_.add_child(presentation_node_)
+
+	var presentation_node_2d_ := presentation_node_ as Node2D
+	if presentation_node_2d_ == null:
+		return
+
+	presentation_node_2d_.global_position = global_position_
+
+
+func _get_attack_presentation_position() -> Vector2:
+	if weapon_sprite != null:
+		return weapon_sprite.global_position
+	return global_position
 
 
 func _resolve_weapon_sprite_offset() -> Vector2:

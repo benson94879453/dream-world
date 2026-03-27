@@ -1,0 +1,25 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/weapons/spells/ExplosionSpellActor.gd" id="1_explosion_spell_script"]
+
+[sub_resource type="CircleShape2D" id="1_explosion_area_shape"]
+radius = 28.0
+
+[node name="ExplosionSpellActor" type="Node2D"]
+script = ExtResource("1_explosion_spell_script")
+spell_type = 1
+lifetime_seconds = 0.25
+
+[node name="Visual" type="Polygon2D" parent="."]
+modulate = Color(1, 0.6, 0.2, 0.75)
+polygon = PackedVector2Array(0, -22, 12, -12, 22, 0, 12, 12, 0, 22, -12, 12, -22, 0, -12, -12)
+
+[node name="ExplosionArea" type="Area2D" parent="."]
+collision_mask = 3
+monitoring = true
+monitorable = false
+
+[node name="ExplosionShape" type="CollisionShape2D" parent="ExplosionArea"]
+shape = SubResource("1_explosion_area_shape")
+
+[node name="AudioPlayer" type="AudioStreamPlayer2D" parent="."]

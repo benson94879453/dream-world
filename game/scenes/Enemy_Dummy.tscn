@@ -7,12 +7,14 @@
 [ext_resource type="Script" uid="uid://h500tq7ebu60" path="res://game/scripts/combat/HealthComponent.gd" id="4_health_component_script"]
 [ext_resource type="Script" uid="uid://cvcqep5bl7753" path="res://game/scripts/combat/FeedbackReceiver.gd" id="5_feedback_receiver_script"]
 [ext_resource type="Script" uid="uid://cqmxxwf5v8fg3" path="res://game/scripts/combat/DamageReceiver.gd" id="6_damage_receiver_script"]
+[ext_resource type="Script" path="res://game/scripts/components/DropComponent.gd" id="7_drop_component_script"]
+[ext_resource type="Resource" path="res://game/data/loot_tables/loot_dummy_basic.tres" id="8_dummy_loot_table"]
 
 [sub_resource type="RectangleShape2D" id="1_enemy_body_shape"]
 size = Vector2(20, 26)
 
 [sub_resource type="RectangleShape2D" id="2_enemy_hurtbox_shape"]
-size = Vector2(24, 28)
+size = Vector2(50, 40)
 
 [sub_resource type="RectangleShape2D" id="3_enemy_hitbox_shape"]
 size = Vector2(14, 14)
@@ -32,7 +34,7 @@ hframes = 4
 vframes = 6
 
 [node name="EnemyCollision" type="CollisionShape2D" parent="." unique_id=253475569]
-position = Vector2(0, -13)
+position = Vector2(0, -4)
 shape = SubResource("1_enemy_body_shape")
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=77504506]
@@ -41,7 +43,7 @@ collision_mask = 80
 script = ExtResource("2_hurtbox_script")
 
 [node name="HurtboxCollision" type="CollisionShape2D" parent="Hurtbox" unique_id=27472971]
-position = Vector2(0, -14)
+position = Vector2(0, -3)
 shape = SubResource("2_enemy_hurtbox_shape")
 
 [node name="Hitbox" type="Area2D" parent="." unique_id=1042700831]
@@ -52,7 +54,6 @@ attacker_faction = &"enemy"
 base_damage = 10.0
 
 [node name="HitboxCollision" type="CollisionShape2D" parent="Hitbox" unique_id=1802448967]
-position = Vector2(14, -14)
 shape = SubResource("3_enemy_hitbox_shape")
 
 [node name="HealthComponent" type="Node" parent="." unique_id=1594453653]
@@ -65,4 +66,6 @@ script = ExtResource("6_damage_receiver_script")
 [node name="FeedbackReceiver" type="Node" parent="." unique_id=1764475169]
 script = ExtResource("5_feedback_receiver_script")
 
-[node name="DropManager" type="Node" parent="." unique_id=579995537]
+[node name="DropComponent" type="Node" parent="." unique_id=579995537]
+script = ExtResource("7_drop_component_script")
+loot_table = ExtResource("8_dummy_loot_table")

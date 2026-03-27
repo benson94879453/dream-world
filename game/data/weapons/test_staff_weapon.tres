@@ -1,9 +1,10 @@
-[gd_resource type="Resource" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="WeaponData" format=3 uid="uid://bprc0gqa6lmkt"]
 
-[ext_resource type="Script" path="res://game/scripts/data/WeaponData.gd" id="1_weapon_data_script"]
-[ext_resource type="Texture2D" path="res://game/assets/weapon/test_sword.png" id="2_weapon_texture"]
+[ext_resource type="Script" uid="uid://bsh0gsen0l62c" path="res://game/scripts/data/WeaponData.gd" id="1_weapon_data_script"]
 [ext_resource type="PackedScene" path="res://game/scenes/weapons/StaffWeapon.tscn" id="3_weapon_scene"]
 [ext_resource type="PackedScene" path="res://game/scenes/weapons/BoltSpellActor.tscn" id="4_attack_actor_scene"]
+[ext_resource type="Texture2D" uid="uid://7sx8mpcswxg1" path="res://game/assets/weapon/test_staff.png" id="5_0x2js"]
+[ext_resource type="Resource" path="res://game/data/weapons/profiles/profile_staff_basic.tres" id="5_attack_profile"]
 
 [resource]
 script = ExtResource("1_weapon_data_script")
@@ -13,6 +14,7 @@ base_atk = 14.0
 attack_speed = 1.2
 attack_range = 4.0
 weapon_type = &"staff"
-weapon_sprite_texture = ExtResource("2_weapon_texture")
+weapon_sprite_texture = ExtResource("5_0x2js")
 weapon_scene = ExtResource("3_weapon_scene")
 attack_actor_scene = ExtResource("4_attack_actor_scene")
+attack_profile = ExtResource("5_attack_profile")

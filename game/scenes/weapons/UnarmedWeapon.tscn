@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/weapons/WeaponController.gd" id="1_weapon_controller_script"]
+
+[node name="UnarmedWeapon" type="Node2D"]
+script = ExtResource("1_weapon_controller_script")
+
+[node name="WeaponSprite" type="Sprite2D" parent="."]

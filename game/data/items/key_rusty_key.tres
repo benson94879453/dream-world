@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/ItemData.gd" id="1_item_data_script"]
+
+[resource]
+script = ExtResource("1_item_data_script")
+item_id = &"key_rusty"
+display_name = "Rusty Key"
+description = "An old key with a corroded surface."
+item_type = 4
+max_stack = 1

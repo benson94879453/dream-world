@@ -9,7 +9,7 @@ script = ExtResource("1_debug_overlay_script")
 offset_left = 12.0
 offset_top = 12.0
 offset_right = 320.0
-offset_bottom = 220.0
+offset_bottom = 300.0
 
 [node name="Panel" type="PanelContainer" parent="Root"]
 
@@ -23,6 +23,24 @@ text = "Player State: N/A"
 
 [node name="PlayerHP" type="Label" parent="Root/Panel/DebugInfo"]
 text = "Player HP: N/A"
+
+[node name="PlayerWeapon" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Player Weapon: N/A"
+
+[node name="PlayerAttackPhase" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Attack Phase: N/A"
+
+[node name="PlayerComboAvailable" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Combo Ready: N/A"
+
+[node name="PlayerComboQueued" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Combo Queued: N/A"
+
+[node name="InventoryUsage" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Inventory: N/A"
+
+[node name="RecentPickup" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Recent Pickup: N/A"
 
 [node name="DummyState" type="Label" parent="Root/Panel/DebugInfo"]
 text = "Dummy State: N/A"

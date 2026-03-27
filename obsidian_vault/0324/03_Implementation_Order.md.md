@@ -36,10 +36,10 @@
 - [x] Show player state, player HP, and dummy HP in `DebugOverlay`
 - [x] Verify the hit flow in the editor
 - [x] Decide whether the prototype needs a dedicated player attack state or should stay input-driven for now
-- [ ] Add a debug-visible way to equip and swap between sword and staff in `Arena_Test`
-- [ ] Define weapon attack presentation ownership: animation, cast timing, muzzle flash, and audio
-- [ ] Define how non-projectile spell actors plug into the same `StaffWeapon -> SpellActor` chain
-- [ ] Decide when attack timing pressure is high enough to promote attack into a dedicated player state
+- [x] Add a debug-visible way to equip and swap between sword and staff in `Arena_Test`
+- [x] Define weapon attack presentation ownership: animation, cast timing, muzzle flash, and audio
+- [x] Define how non-projectile spell actors plug into the same `StaffWeapon -> SpellActor` chain
+- [x] Decide when attack timing pressure is high enough to promote attack into a dedicated player state
 
 ## Refactoring Trigger
 - [x] Keep the current prototype attack as input-driven for now

@@ -1,0 +1,16 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/weapons/spells/HealSpellActor.gd" id="1_heal_spell_script"]
+
+[node name="HealSpellActor" type="Node2D"]
+script = ExtResource("1_heal_spell_script")
+spell_type = 1
+lifetime_seconds = 0.35
+affect_self = true
+affect_enemies = false
+
+[node name="Visual" type="Polygon2D" parent="."]
+modulate = Color(0.4, 1, 0.55, 0.7)
+polygon = PackedVector2Array(0, -14, 10, -4, 14, 0, 10, 4, 0, 14, -10, 4, -14, 0, -10, -4)
+
+[node name="AudioPlayer" type="AudioStreamPlayer2D" parent="."]
