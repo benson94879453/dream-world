@@ -2,7 +2,7 @@ class_name PlayerAttackState
 extends PlayerState
 
 const PHASE_IDLE: StringName = &"idle"
-const LOCKED_STATE: StringName = &"Locked"
+const DASH_STATE: StringName = &"Dash"
 
 var queued_transition: StringName = &""
 var combo_queued: bool = false
@@ -35,12 +35,11 @@ func handle_input(event_: InputEvent) -> void:
 	if weapon_ == null:
 		return
 
-	if event_.is_action_pressed("dash"):
+	if event_.is_action_pressed("dash") and player_.can_perform_dash():
 		combo_queued = false
 		queued_transition = &""
 		weapon_.cancel_attack()
-		player_.lock_controls_for(player_.attack_cancel_lock_seconds)
-		(get_parent() as PlayerStateMachine).transition_to(LOCKED_STATE)
+		(get_parent() as PlayerStateMachine).transition_to(DASH_STATE)
 		return
 
 	if event_.is_action_pressed("attack") and weapon_.can_combo():

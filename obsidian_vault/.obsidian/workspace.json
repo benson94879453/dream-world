@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "SYNC_SUMMARY.md",
+                "file": "reviews/review_005_inventory.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "SYNC_SUMMARY 的反向連結"
+              "title": "review_005_inventory 的反向連結"
             }
           },
           {
@@ -113,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "SYNC_SUMMARY.md",
+                "file": "reviews/review_005_inventory.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "SYNC_SUMMARY 的對外連結"
+              "title": "review_005_inventory 的對外連結"
             }
           },
           {
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "SYNC_SUMMARY.md",
+                "file": "reviews/review_005_inventory.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "SYNC_SUMMARY 的大綱"
+              "title": "review_005_inventory 的大綱"
             }
           }
         ]
@@ -185,25 +185,30 @@
   },
   "active": "fe9c764075f51b47",
   "lastOpenFiles": [
-    "reviews/review_007_save_load.md",
-    "SYNC_SUMMARY.md",
-    "WORKFLOW_QUICKSTART.md",
-    "WORKFLOW_TEMPLATE.md",
-    "reviews/review_005_inventory.md",
-    "reviews/review_006_loot_drop.md",
     "codex_prompt.md",
-    "PHASE3_PLAN.md",
+    "reviews/review_012_charge_enemy.md",
+    "reviews/review_011_dash.md",
+    "reviews/review_010_ranged_enemy.md",
+    "Kimi_Codex_Workflow.md",
+    "reviews/review_005_inventory.md",
+    "reviews/review_009_enemy_ai.md",
     "0324/01_MVP_TODO.md.md",
-    "reviews/review_004_player_attack_state.md",
-    "reviews/review_003_non_projectile_spells.md",
+    "0324/02_Tech_Spec_Notes.md.md",
+    "0324/03_Implementation_Order.md.md",
+    "0324/04_Coding_Habits.md.md",
+    "0324/00_Project_Goals.md.md",
+    "WORKFLOW_QUICKSTART.md",
+    "PHASE3_PLAN.md",
+    "review_template.md",
+    "SYNC_SUMMARY.md",
+    "WORKFLOW_TEMPLATE.md",
     "reviews/review_002_attack_profile.md",
     "reviews/review_001_weapon_switch.md",
     "reviews/review_001_retrospective.md",
-    "Kimi_Codex_Workflow.md",
-    "0324/02_Tech_Spec_Notes.md.md",
-    "0324/04_Coding_Habits.md.md",
-    "0324/03_Implementation_Order.md.md",
-    "review_template.md",
+    "reviews/review_007_save_load.md",
+    "reviews/review_006_loot_drop.md",
+    "reviews/review_004_player_attack_state.md",
+    "reviews/review_003_non_projectile_spells.md",
     "reviews"
   ]
 }

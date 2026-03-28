@@ -51,12 +51,25 @@
 - [x] Show player HP
 - [x] Show dummy HP
 
-## Deferred Until Later
+## Phase 2-3 已完成 ✅
 - [x] Player attack state
 - [ ] Weapon switching / loadout flow
 - [x] Weapon-specific attack presentation and timing
 - [x] Non-projectile spell actors
-- [ ] Enemy AI
-- [ ] Inventory
-- [ ] Save / Load
+- [x] Enemy AI
+- [x] Inventory
+- [x] Save / Load
 - [ ] Hub / Zone flow
+
+## Phase 4+ 進度 ✅ 完成
+- [x] Slime 近戰敵人 ✅
+- [x] Archer 遠程敵人 ✅
+- [x] Dash 位移實作 ✅
+- [x] Boar 突進型敵人 ✅
+- [ ] 群體行為敵人
+- [ ] 受擊硬直 (hit stop)
+- [ ] 攻擊頓幀 (hit pause)
+- [ ] 武器強化系統
+- [ ] Hub / Zone 切換
+- [ ] 場景轉場
+- [ ] 存檔點

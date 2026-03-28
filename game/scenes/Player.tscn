@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://dl1pnrviwi6s8" path="res://game/scripts/player/states/PlayerRunState.gd" id="6_run_state_script"]
 [ext_resource type="Script" uid="uid://oibqcmura71c" path="res://game/scripts/player/states/PlayerLockedState.gd" id="7_locked_state_script"]
 [ext_resource type="Script" uid="uid://cfve0jwp4xm5n" path="res://game/scripts/player/states/PlayerAttackState.gd" id="9_attack_state_script"]
+[ext_resource type="Script" path="res://game/scripts/player/states/PlayerDashState.gd" id="15_dash_state_script"]
 [ext_resource type="Script" uid="uid://dr50fxtlekb7h" path="res://game/scripts/combat/Hurtbox.gd" id="8_hurtbox_script"]
 [ext_resource type="Script" uid="uid://h500tq7ebu60" path="res://game/scripts/combat/HealthComponent.gd" id="10_health_component_script"]
 [ext_resource type="Script" uid="uid://cvcqep5bl7753" path="res://game/scripts/combat/FeedbackReceiver.gd" id="11_feedback_receiver_script"]
@@ -48,6 +49,9 @@ script = ExtResource("7_locked_state_script")
 
 [node name="Attack" type="Node" parent="StateMachine"]
 script = ExtResource("9_attack_state_script")
+
+[node name="Dash" type="Node" parent="StateMachine"]
+script = ExtResource("15_dash_state_script")
 
 [node name="Visual" type="Node2D" parent="." unique_id=1953864850]
 

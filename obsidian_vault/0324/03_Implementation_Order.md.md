@@ -41,14 +41,103 @@
 - [x] Define how non-projectile spell actors plug into the same `StaffWeapon -> SpellActor` chain
 - [x] Decide when attack timing pressure is high enough to promote attack into a dedicated player state
 
-## Refactoring Trigger
+## Refactoring Trigger ✅ 已完成
 - [x] Keep the current prototype attack as input-driven for now
-- [ ] Promote attack into a dedicated player state only when one of these needs appears:
-  - attack startup / recovery timing
-  - movement lock during attack
-  - combo chaining
-  - cancel rules
-  - tighter animation-window control of hitbox timing
+- [x] Promote attack into a dedicated player state only when one of these needs appears:
+  - [x] attack startup / recovery timing
+  - [x] movement lock during attack
+  - [x] combo chaining
+  - [x] cancel rules
+  - [x] tighter animation-window control of hitbox timing
+
+---
+
+## Phase 4 敵人 AI 實作 (已完成 #009)
+
+### 資料層
+- [x] Create `EnemyData.gd` - 敵人模板資源
+- [x] Create `EnemyInstance.gd` - 敵人執行期實例
+
+### 狀態機層
+- [x] Create `EnemyState.gd` - 敵人狀態基類
+- [x] Create `EnemyStateMachine.gd` - 敵人狀態機
+- [x] Create `EnemyIdleState.gd` - 待機狀態
+- [x] Create `EnemyChaseState.gd` - 追擊狀態
+- [x] Create `EnemyAttackState.gd` - 攻擊狀態
+- [x] Create `EnemyDeadState.gd` - 死亡狀態
+
+### 控制器層
+- [x] Create `EnemyAIController.gd` - 敵人 AI 控制器
+  - [x] 整合 DetectionArea + RayCast2D 視線偵測
+  - [x] 動態 Hitbox 位置調整（根據面向）
+  - [x] 動畫系統（Idle/Move/Attack/Dead）
+
+### 場景與資料
+- [x] Create `Enemy_Slime.tscn` - 史萊姆敵人場景
+- [x] Create `en_slime_basic.tres` - 史萊姆資料資源
+
+### Arena 整合
+- [x] Update `ArenaTest.gd` - 添加 F6 生成敵人
+- [x] Update `DebugOverlay.tscn` - 添加 Slime 資訊顯示
+
+---
+
+## Phase 4 遠程敵人實作 (已完成 #010)
+
+### 投射物系統
+- [x] Create `EnemyProjectile.gd` - 敵人投射物
+- [x] Create `EnemyProjectile.tscn` - 投射物場景
+
+### 新敵人狀態
+- [x] Create `EnemyKeepDistanceState.gd` - 保持距離狀態
+
+### 控制器擴充
+- [x] Update `EnemyAIController.gd` - 新增 AttackType enum
+- [x] Update `EnemyAIController.gd` - 新增 perform_ranged_attack()
+- [x] Update `EnemyAIController.gd` - 新增 can_attack()
+
+### Goblin Archer 場景與資料
+- [x] Create `Enemy_GoblinArcher.tscn` - 弓箭手場景
+- [x] Create `en_goblin_archer.tres` - 弓箭手資料
+- [x] Create `lt_goblin_archer.tres` - 掉落表
+- [x] Create `material_arrowhead.tres` - 素材
+- [x] Create `material_bowstring.tres` - 素材
+
+### Arena 整合
+- [x] Update `ArenaTest.gd` - 新增 F7 生成 Archer
+- [x] Update `DebugOverlay` - 顯示 Archer 資訊
+
+## Phase 4+ Boar 突進型敵人 (已完成 #012)
+
+### 新狀態
+- [x] Create `EnemyChargeState.gd` - 蓄力狀態
+- [x] Create `EnemyDashState.gd` - 突進狀態
+
+### Boar 場景與資料
+- [x] Create `Enemy_Boar.tscn` - 野豬場景
+- [x] Create `en_boar.tres` - 野豬資料
+- [x] Create `lt_boar.tres` - 掉落表
+
+### Arena 整合
+- [x] Update `ArenaTest.gd` - F8 生成 Boar
+- [x] Update `DebugOverlay` - Boar 資訊顯示
+
+## Phase 4+ Dash 實作 (已完成 #011)
+
+### Dash 系統
+- [x] Create `PlayerDashState.gd` - Dash 狀態
+- [x] Update `Player.gd` - Dash 參數與方法
+  - [x] start_dash()
+  - [x] perform_dash_movement()
+  - [x] end_dash()
+  - [x] set_invincible()
+  - [x] enable_dash_ghost()
+  - [x] can_perform_dash()
+- [x] Update `PlayerIdleState` - Dash 輸入
+- [x] Update `PlayerWalkState` - Dash 輸入
+- [x] Update `PlayerRunState` - Dash 輸入
+- [x] Update `PlayerAttackState` - Dash Cancel
+- [x] Update `DebugOverlay` - Dash 冷卻顯示
 
 ## Acceptance Checklist
 - [x] Player can walk and run in `Arena_Test`
@@ -60,3 +149,7 @@
 - [x] Player equips weapons via `WeaponData -> WeaponInstance -> WeaponController`
 - [x] `SwordWeapon` owns melee hitbox/cooldown lifecycle
 - [x] `StaffWeapon` spawns a `SpellActor` selected from `WeaponData.attack_actor_scene`
+- [x] Dash displacement works (Space key)
+- [x] Dash can cancel attack
+- [x] Dash has invincibility frames
+- [x] Dash has cooldown display

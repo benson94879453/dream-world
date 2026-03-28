@@ -10,6 +10,8 @@ func physics_update(delta_: float) -> void:
 
 func get_transition() -> StringName:
 	var player_ := get_actor()
+	if player_.can_perform_dash() and Input.is_action_just_pressed("dash"):
+		return &"Dash"
 
 	if player_.is_controls_locked():
 		return &"Locked"

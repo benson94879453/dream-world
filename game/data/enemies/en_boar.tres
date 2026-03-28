@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/EnemyData.gd" id="1_enemydata"]
+[ext_resource type="PackedScene" path="res://game/scenes/enemies/Enemy_Boar.tscn" id="2_boar_scene"]
+[ext_resource type="Resource" path="res://game/data/loot_tables/lt_boar.tres" id="3_loottable"]
+
+[resource]
+script = ExtResource("1_enemydata")
+enemy_id = &"en_boar"
+display_name = "野豬"
+max_hp = 80
+move_speed = 80.0
+chase_speed = 120.0
+detection_radius = 200.0
+attack_range = 50.0
+attack_cooldown = 0.5
+dash_attack_range = 180.0
+dash_cooldown = 2.0
+charge_duration = 0.8
+charge_animation_fps = 15.0
+dash_speed = 400.0
+dash_duration = 0.3
+enemy_scene = ExtResource("2_boar_scene")
+loot_table = ExtResource("3_loottable")

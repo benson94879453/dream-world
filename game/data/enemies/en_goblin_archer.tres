@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/EnemyData.gd" id="1_enemydata"]
+[ext_resource type="PackedScene" path="res://game/scenes/enemies/Enemy_GoblinArcher.tscn" id="2_archer_scene"]
+[ext_resource type="Resource" path="res://game/data/loot_tables/lt_goblin_archer.tres" id="3_loottable"]
+
+[resource]
+script = ExtResource("1_enemydata")
+enemy_id = &"en_goblin_archer"
+display_name = "哥布林弓箭手"
+max_hp = 40
+move_speed = 60.0
+chase_speed = 60.0
+detection_radius = 300.0
+attack_range = 200.0
+attack_cooldown = 2.0
+enemy_scene = ExtResource("2_archer_scene")
+loot_table = ExtResource("3_loottable")

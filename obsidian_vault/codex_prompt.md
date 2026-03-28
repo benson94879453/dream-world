@@ -1,6 +1,6 @@
 # Codex 開發任務 Prompt
 
-> 最後更新: 2026-03-27
+> 最後更新: 2026-03-28
 > 本文件由 Kimi 維護，每次新任務直接覆寫此檔案
 
 ---
@@ -11,290 +11,335 @@
 - **專案名稱**: 異境 (Dream World)
 - **引擎**: Godot 4.x
 - **類型**: 2D 動作探索遊戲
-- **目前階段**: Phase 3 - 背包/掉落/存檔系統（最後任務）
+- **目前階段**: Phase 4 - 更多敵人類型
 
-### Phase 3 已完成
-- **#005 Inventory 基礎**: ✅ 20格背包，stackable + unique
-- **#006 Loot/Drop**: ✅ 掉落表、拾取、背包滿處理
+### 已完成 ✅
+- **敵人 AI**: Slime（近戰追擊）、Goblin Archer（遠程保持距離）
+- **玩家 Dash**: 衝刺位移、無敵、取消攻擊
 
 ### 當前目標
-建立完整的存檔與讀檔系統，支援：
-- 玩家資料（HP、位置、當前武器）
-- 背包內容（stackable 物品 + weapons）
-- 版本遷移（未來擴充相容）
+建立第一個**突進型敵人**，考驗玩家的 Dash 反應：
+- 敵人會短暫**蓄力**（有預警提示）
+- 然後**快速突進**向玩家衝刺
+- 玩家必須用 Dash 無敵幀躲避，或走位避開
+
+這將是對玩家反應速度的第一次真正考驗。
 
 ---
 
 ## 當前任務
 
 ### 任務標題
-#007 Save/Load 存檔與讀檔系統
+#012 突進型敵人 - Boar（野豬）
 
 ### 任務描述
-建立遊戲的存檔與讀檔機制，讓玩家可以保存進度並在之後繼續遊戲。這是 Phase 3 的最後一環，也是 MVP 的重要里程碑。
+建立一個突進型敵人：野豬。與 Slime 和 Archer 不同，Boar 會：
+1. 看到玩家後進入蓄力狀態（有明顯預警）
+2. 短暫蓄力後快速向玩家方向突進
+3. 突進過程中對碰撞到的目標造成傷害
+4. 突進結束後有冷卻時間
+
+玩家必須學會：
+- 觀察蓄力預警（準備躲避）
+- 用 Dash 無敵幀穿過突進
+- 或側向走位避開直線突進
 
 ### 具體需求
 
-#### 1. 建立 SaveManager (Autoload)
-建立 `game/scripts/core/SaveManager.gd`：
+#### 1. 建立新敵人狀態
 
+**EnemyChargeState.gd** (`game/scripts/enemies/states/EnemyChargeState.gd`):
 ```gdscript
-class_name SaveManager
-extends Node
+class_name EnemyChargeState
+extends EnemyState
 
-const SAVE_VERSION: int = 1
-const SAVE_FILE_PATH: String = "user://savegame.json"
+@export var charge_duration: float = 0.8  # 蓄力時間（給玩家反應）
+@export var charge_animation_fps: float = 15.0
 
-signal save_completed(success: bool)
-signal load_completed(success: bool)
+var charge_timer: float = 0.0
 
-# 存檔
-func save_game() -> bool:
-    # 1. 收集所有需要保存的資料
-    # 2. 轉換為 DTO (Dictionary)
-    # 3. 寫入 JSON 檔案
-    # 4. 發出 save_completed 信號
-    pass
+func enter(_previous_state: StringName = &"") -> void:
+    var enemy_: EnemyAIController = get_actor()
+    charge_timer = 0.0
+    enemy_.stop_movement()
+    enemy_.play_charge_animation(0.0)
+    
+    # 面向玩家（鎖定突進方向）
+    var player_pos := enemy_.get_player_position()
+    enemy_.face_direction((player_pos - enemy_.global_position).normalized())
 
-# 讀檔
-func load_game() -> bool:
-    # 1. 讀取 JSON 檔案
-    # 2. 驗證 save_version
-    # 3. 還原所有資料
-    # 4. 發出 load_completed 信號
-    pass
-
-# 檢查是否有存檔
-func has_save_file() -> bool:
-    return FileAccess.file_exists(SAVE_FILE_PATH)
-
-# 刪除存檔（新遊戲用）
-func delete_save() -> bool
+func physics_update(delta_: float) -> void:
+    var enemy_: EnemyAIController = get_actor()
+    
+    if enemy_.is_dead():
+        transition_to(&"Dead")
+        return
+    
+    charge_timer += delta_
+    enemy_.play_charge_animation(delta_)
+    
+    # 蓄力完成，開始突進
+    if charge_timer >= charge_duration:
+        transition_to(&"Dash")
 ```
 
-#### 2. 建立 SaveDTO 結構
-存檔 JSON 結構（參考 Tech Spec）：
-
-```json
-{
-  "save_version": 1,
-  "created_at": "2026-03-27T20:00:00Z",
-  "updated_at": "2026-03-27T22:30:00Z",
-  
-  "player": {
-    "current_hp": 85,
-    "global_position": {"x": 100.5, "y": 200.0},
-    "equipped_weapon_uid": "wpn_001"
-  },
-  
-  "inventory": {
-    "stackables": [
-      {"item_id": "mat_herb", "amount": 15},
-      {"item_id": "cns_potion", "amount": 3}
-    ],
-    "weapons": [
-      {
-        "instance_uid": "wpn_001",
-        "weapon_id": "test_weapon",
-        "enhance_level": 0
-      },
-      {
-        "instance_uid": "wpn_002",
-        "weapon_id": "test_staff_weapon",
-        "enhance_level": 0
-      }
-    ]
-  },
-  
-  "progression": {
-    "unlocked_souls": ["codex_slime"],
-    "flags": {"zone_2_unlocked": false}
-  }
-}
-```
-
-#### 3. 實作 Player 資料序列化
-在 `Player.gd` 新增：
-
+**EnemyDashState.gd** (`game/scripts/enemies/states/EnemyDashState.gd`):
 ```gdscript
-# 轉換為存檔資料
-func to_save_dict() -> Dictionary:
-    return {
-        "current_hp": health_component.current_hp,
-        "global_position": {"x": global_position.x, "y": global_position.y},
-        "equipped_weapon_uid": inventory.get_equipped_weapon_uid()
-    }
+class_name EnemyDashState
+extends EnemyState
 
-# 從存檔資料還原
-func from_save_dict(data: Dictionary) -> void:
-    health_component.current_hp = data.get("current_hp", health_component.max_hp)
-    global_position = Vector2(
-        data.get("global_position", {}).get("x", 0.0),
-        data.get("global_position", {}).get("y", 0.0)
-    )
-    # 武器還原由 Inventory 處理後再裝備
+@export var dash_speed: float = 400.0  # 突進速度（很快）
+@export var dash_duration: float = 0.3  # 突進持續時間
+@export var dash_cooldown: float = 1.5  # 突進後冷卻
+
+var dash_timer: float = 0.0
+var dash_direction: Vector2 = Vector2.ZERO
+
+func enter(_previous_state: StringName = &"") -> void:
+    var enemy_: EnemyAIController = get_actor()
+    dash_timer = 0.0
+    
+    # 記錄突進方向（進入時面向的方向）
+    var player_pos := enemy_.get_player_position()
+    dash_direction = (player_pos - enemy_.global_position).normalized()
+    
+    # 啟用突進傷害（類似攻擊判定）
+    enemy_.start_dash_attack()
+
+func physics_update(delta_: float) -> void:
+    var enemy_: EnemyAIController = get_actor()
+    
+    if enemy_.is_dead():
+        enemy_.end_dash_attack()
+        transition_to(&"Dead")
+        return
+    
+    # 執行突進位移
+    enemy_.velocity = dash_direction * dash_speed
+    enemy_.move_and_slide()
+    
+    dash_timer += delta_
+    
+    # 突進結束
+    if dash_timer >= dash_duration:
+        enemy_.end_dash_attack()
+        transition_to(&"Idle")  # 回到 Idle 冷卻
+
+func exit() -> void:
+    var enemy_: EnemyAIController = get_actor()
+    enemy_.velocity = Vector2.ZERO
+    enemy_.end_dash_attack()
+    enemy_.start_dash_cooldown()
 ```
 
-#### 4. 實作 Inventory 資料序列化
-在 `Inventory.gd` 新增：
+#### 2. 更新 EnemyAIController
 
+**EnemyAIController.gd** 新增：
 ```gdscript
-# 轉換為存檔資料
-func to_save_dict() -> Dictionary:
-    var stackables := []
-    var weapons := []
-    
-    for slot in slots:
-        if slot.weapon_instance != null:
-            weapons.append({
-                "instance_uid": slot.weapon_instance.instance_uid,
-                "weapon_id": slot.weapon_instance.weapon_id,
-                "enhance_level": slot.weapon_instance.enhance_level
-            })
-        elif slot.item_data != null:
-            stackables.append({
-                "item_id": slot.item_data.item_id,
-                "amount": slot.amount
-            })
-    
-    return {
-        "stackables": stackables,
-        "weapons": weapons
-    }
+# 突進攻擊用 Hitbox
+@onready var dash_hitbox: Hitbox = get_node_or_null("DashHitbox")
 
-# 從存檔資料還原
-func from_save_dict(data: Dictionary) -> void:
-    clear()  # 清空現有背包
-    
-    # 還原 stackables
-    for item_data in data.get("stackables", []):
-        var item_id = item_data.get("item_id")
-        var amount = item_data.get("amount", 1)
-        # 根據 item_id 載入 ItemData resource，add_item()
-    
-    # 還原 weapons
-    for weapon_data in data.get("weapons", []):
-        var weapon_id = weapon_data.get("weapon_id")
-        # 根據 weapon_id 載入 WeaponData，建立 WeaponInstance
-        # add_weapon(instance)
+var dash_cooldown_timer: float = 0.0
 
-# 獲取當前裝備武器的 UID
-func get_equipped_weapon_uid() -> String:
-    # 從 WeaponController 取得當前裝備的武器 instance_uid
-    pass
+func start_dash_attack() -> void:
+    if dash_hitbox != null:
+        dash_hitbox.activate()
+    # 可選：突進時改變碰撞層，或無視某些碰撞
 
-# 根據 UID 裝備武器
-func equip_weapon_by_uid(uid: String) -> bool
+func end_dash_attack() -> void:
+    if dash_hitbox != null:
+        dash_hitbox.deactivate()
+
+func start_dash_cooldown() -> void:
+    dash_cooldown_timer = dash_cooldown  # 從 enemy_data 讀取
+
+func can_dash_attack() -> bool:
+    return dash_cooldown_timer <= 0.0
+
+func _physics_process(delta_: float) -> void:
+    # ... 現有邏輯
+    
+    # 更新突進冷卻
+    if dash_cooldown_timer > 0.0:
+        dash_cooldown_timer -= delta_
 ```
 
-#### 5. 更新 project.godot Autoload
-在 `project.godot` 新增：
-```
-[autoload]
-SaveManager="*res://game/scripts/core/SaveManager.gd"
-```
-
-#### 6. Debug 指令
-在 `Player.gd` 或 `DebugOverlay` 添加：
-- 按鍵 `F5`: 存檔 (`SaveManager.save_game()`)
-- 按鍵 `F9`: 讀檔 (`SaveManager.load_game()`)
-- Console 顯示存檔/讀檔結果
-
-#### 7. 版本遷移（基礎）
-在 `SaveManager`：
-
+新增視覺方法：
 ```gdscript
-func _migrate_save_data(data: Dictionary, from_version: int) -> Dictionary:
-    # 如果存檔版本低於目前版本，進行遷移
-    if from_version < 1:
-        # 未來版本遷移邏輯
-        pass
-    return data
+func play_charge_animation(delta_: float) -> void:
+    # 蓄力動畫：快速閃爍或縮小後放大
+    animation_time += delta_ * charge_animation_fps
+    var frame_: int = int(animation_time) % animation_frame_count
+    sprite.frame_coords = Vector2i(frame_, charge_animation_row)
+    
+    # 可選：顏色閃爍提示
+    var flash := sin(animation_time * PI * 2) > 0
+    sprite.modulate = Color(1.5, 1.0, 1.0) if flash else Color.WHITE
+
+func reset_charge_visual() -> void:
+    sprite.modulate = Color.WHITE
 ```
 
-#### 8. Arena_Test 整合
-在 `Arena_Test.tscn` 啟動時：
-- 檢查是否有存檔 (`SaveManager.has_save_file()`)
-- 若無，使用預設狀態（目前行為）
-- 若有，載入存檔（讀檔流程）
+#### 3. 更新 EnemyIdleState（Boar 版本）
+
+Boar 的 Idle 邏輯與 Slime 不同：
+```gdscript
+# EnemyIdleState.gd - 檢查是否可以突進
+func physics_update(delta_: float) -> void:
+    var enemy_: EnemyAIController = get_actor()
+    enemy_.stop_movement()
+    
+    if enemy_.is_dead():
+        transition_to(&"Dead")
+        return
+    
+    if not enemy_.can_see_player():
+        return
+    
+    var player_pos := enemy_.get_player_position()
+    var distance := enemy_.global_position.distance_to(player_pos)
+    
+    # Boar：在突進範圍內且冷卻結束就蓄力
+    if enemy_.can_dash_attack() and distance <= enemy_.dash_attack_range:
+        transition_to(&"Charge")
+        return
+    
+    # 太遠就追擊（可選）
+    if distance > enemy_.detection_radius * 0.5:
+        transition_to(&"Chase")
+```
+
+#### 4. 建立 Boar 場景與資料
+
+**Enemy_Boar.tscn**:
+```
+EnemyAIController (root)
+├── Visual/Sprite2D
+├── StateMachine
+│   ├── EnemyIdleState      # 檢測玩家，決定突進或追擊
+│   ├── EnemyChaseState     # 追擊（可選）
+│   ├── EnemyChargeState    # 蓄力預警 ⭐ NEW
+│   ├── EnemyDashState      # 突進攻擊 ⭐ NEW
+│   └── EnemyDeadState
+├── DetectionArea
+├── Hurtbox                 # 受擊判定
+├── DashHitbox              # 突進攻擊判定 ⭐ NEW
+├── HealthComponent
+├── FeedbackReceiver
+└── DropComponent
+```
+
+**en_boar.tres**:
+```gdscript
+[resource]
+script = ExtResource("EnemyData")
+enemy_id = &"en_boar"
+display_name = "野豬"
+max_hp = 80
+move_speed = 80.0
+chase_speed = 120.0
+detection_radius = 200.0
+attack_range = 50.0  # 近戰範圍（備用）
+dash_attack_range = 180.0  # 突進啟動範圍
+attack_cooldown = 0.5  # 近戰冷卻
+dash_cooldown = 2.0    # 突進冷卻
+charge_duration = 0.8  # 蓄力時間
+enemy_scene = ExtResource("Enemy_Boar")
+loot_table = ExtResource("lt_boar")
+```
+
+#### 5. 行為流程
+
+```
+         Idle（原地待機）
+            │
+            │ 看到玩家 + 在突進範圍內 + 冷卻結束
+            ▼
+      Charge（蓄力 0.8s）
+      - 停止移動
+      - 面向玩家
+      - 視覺閃爍預警
+            │
+            │ 蓄力完成
+            ▼
+       Dash（突進 0.3s）
+       - 高速直線衝刺
+       - 啟用 DashHitbox
+       - 碰撞造成傷害
+            │
+            │ 突進結束
+            ▼
+         Idle（冷卻 2.0s）
+         - 短暫眩暈或減速
+```
+
+#### 6. Arena_Test 整合
+
+- **按 F8**: 生成 Boar（在玩家位置附近）
+- DebugOverlay 顯示：
+  - Boar 狀態
+  - Boar HP
+  - 突進冷卻時間
+
+#### 7. 平衡考量
+
+| 參數 | 值 | 理由 |
+|------|-----|------|
+| charge_duration | 0.8s | 給玩家足夠反應時間 |
+| dash_speed | 400 | 很快，必須用 Dash 躲避 |
+| dash_duration | 0.3s | 短暫但有威脅 |
+| dash_cooldown | 2.0s | 突進後有破綻可攻擊 |
+| HP | 80 | 比 Slime 硬，需要多次攻擊 |
 
 ### 驗收標準 (Acceptance Criteria)
-- [ ] `SaveManager` Autoload 存在，有 `save_game()` 和 `load_game()`
-- [ ] 按 F5 存檔，Console 顯示成功/失敗
-- [ ] 按 F9 讀檔，Console 顯示成功/失敗
-- [ ] 存檔後關閉遊戲，重新開啟後讀檔，玩家位置正確
-- [ ] 存檔後背包內容正確保存（stackables + weapons）
-- [ ] 存檔後裝備武器正確保存
-- [ ] 存檔後 HP 正確保存
-- [ ] 存檔 JSON 有 `save_version` 欄位
-- [ ] 讀檔時驗證版本，過舊版本可安全處理（至少不 crash）
-- [ ] 新遊戲（無存檔）可正常開始
+- [ ] `EnemyChargeState` 存在，敵人會停止並蓄力
+- [ ] 蓄力期間有明顯視覺提示（閃爍/動畫）
+- [ ] `EnemyDashState` 存在，敵人會高速直線突進
+- [ ] 突進過程中啟用 DashHitbox，玩家接觸會受傷
+- [ ] 突進結束後有冷卻時間（無法連續突進）
+- [ ] 玩家可以用 Dash 無敵幀穿過突進不受傷
+- [ ] 玩家可以側向走位避開直線突進
+- [ ] Boar HP 歸零時正常死亡並掉落
+- [ ] 按 F8 可以生成測試 Boar
+- [ ] DebugOverlay 顯示 Boar 狀態和突進冷卻
 
 ### 技術約束
-- 存檔路徑使用 `user://savegame.json`（Godot 跨平台使用者目錄）
-- JSON 格式，人類可讀，方便除錯
-- 序列化時只存 ID，不存整個 Resource
-- 還原時根據 ID 重新載入 Resource
-- WeaponInstance 的 UID 使用 `str(randi())` 或遞增計數器
-- 遵循現有命名風格 (snake_case)
+- 沿用現有 EnemyAIController 架構
+- Charge/Dash 狀態與現有狀態（Idle/Chase/Attack/Dead）共存
+- 突進傷害使用獨立的 DashHitbox（與普通攻擊 Hitbox 分開）
+- 蓄力時間必須足夠長（>0.5s），給玩家反應時間
+
+### ⚠️ 必須遵守的 Coding Habits
+詳見 `obsidian_vault/0324/04_Coding_Habits.md.md`：
+
+1. **Fail Fast, Not Softly** - 使用 `assert()` 檢查必要節點
+2. **Underscore Rules** - 局部變數使用後綴 `_`
+3. **Type Annotation Rules** - 明確標註型別
+4. **Region Style** - 使用 `#region` 分區
 
 ### 參考檔案
 ```
-game/scripts/core/SaveManager.gd         # 需新增
-game/scripts/Player.gd                    # 需修改（to_save_dict, from_save_dict）
-game/scripts/inventory/Inventory.gd       # 需修改（序列化）
-game/scripts/inventory/InventorySlot.gd   # 參考
-project.godot                             # 需修改（Autoload）
-game/scenes/Arena_Test.tscn               # 可選（啟動時讀檔）
+game/scripts/enemies/states/EnemyChargeState.gd     # 需新增
+game/scripts/enemies/states/EnemyDashState.gd       # 需新增
+game/scripts/enemies/EnemyAIController.gd           # 需修改（+ Dash 方法）
+game/scripts/enemies/states/EnemyIdleState.gd       # 可能需修改（Boar 邏輯）
+game/scenes/enemies/Enemy_Boar.tscn                 # 需新增
+game/data/enemies/en_boar.tres                      # 需新增
+game/data/loot_tables/lt_boar.tres                  # 需新增
+game/scripts/core/ArenaTest.gd                      # 需修改（+ F8 生成）
+game/scripts/ui/DebugOverlay.gd                     # 需修改（+ Boar 資訊）
 ```
 
-### 架構說明
+### 三種敵人對比
 
-**存檔流程：**
-```
-F5 按下
- │
- ▼
-SaveManager.save_game()
- │
- ▼
-收集資料:
-  - Player.to_save_dict() → player 資料
-  - Inventory.to_save_dict() → inventory 資料
-  - progression 資料（目前可先放 placeholder）
- │
- ▼
-組成 SaveDTO (Dictionary)
- │
- ▼
-寫入 user://savegame.json
- │
- ▼
-發出 save_completed 信號
-```
-
-**讀檔流程：**
-```
-F9 按下（或啟動時自動）
- │
- ▼
-SaveManager.load_game()
- │
- ▼
-讀取 user://savegame.json
- │
- ▼
-驗證 save_version
- │
- ▼
-還原資料:
-  - Player.from_save_dict() → 還原位置、HP
-  - Inventory.from_save_dict() → 清空後重新添加
-  - equip_weapon_by_uid() → 裝備正確武器
- │
- ▼
-發出 load_completed 信號
-```
+| 特性 | Slime | Archer | Boar |
+|------|-------|--------|------|
+| **類型** | 近戰追擊 | 遠程保持 | 突進爆發 |
+| **攻擊** | 碰撞 | 投射物 | 直線突進 |
+| **預警** | 無 | 無 | 蓄力閃爍 |
+| **反制** | 拉開距離 | 靠近逼迫 | Dash 無敵 |
+| **HP** | 60 | 40 | 80 |
+| **Debug** | F6 | F7 | F8 |
 
 ---
 
@@ -313,20 +358,27 @@ SaveManager.load_game()
 - [x] 已完成
 
 ### 實作摘要
-- 新增 `SaveManager` autoload、`Player` / `Inventory` / `WeaponInstance` 的序列化與還原 API，存檔格式為可讀 JSON，包含 `save_version`、玩家資料、背包 stackables、武器清單與 progression placeholder。
-- `Arena_Test` 已整合啟動時自動讀檔；`Player` 也加入 F5 存檔、F9 讀檔的 debug 操作，並支援還原位置、HP、背包內容與當前裝備武器。
-- 以 headless smoke 驗證存檔與讀檔完整流程，確認 `save=true`、`load=true`，並從 `user://savegame.json` 讀回 `save_version=1`、HP 與裝備武器 UID。
+- 新增 `EnemyChargeState` 與 `EnemyDashState`，讓 Boar 會先蓄力預警，再沿鎖定方向高速直線突進；突進期間啟用獨立 `DashHitbox` 對玩家造成傷害。
+- `EnemyAIController` 與 `EnemyData` 已擴充突進參數、冷卻、視覺閃爍與除錯欄位，並保持與 Slime / Archer 共用同一套敵人骨架。
+- 建立 `Enemy_Boar.tscn`、`en_boar.tres`、專屬掉落表與素材資源，Arena_Test 支援預放與 `F8` 生成 Boar，DebugOverlay 會顯示 Boar 狀態、HP 與突進冷卻。
 
 ### 修改檔案
-- `game/scripts/core/SaveManager.gd`
+- `game/scripts/data/EnemyData.gd`
+- `game/scripts/enemies/EnemyAIController.gd`
+- `game/scripts/enemies/states/EnemyIdleState.gd`
+- `game/scripts/enemies/states/EnemyChaseState.gd`
+- `game/scripts/enemies/states/EnemyChargeState.gd`
+- `game/scripts/enemies/states/EnemyDashState.gd`
+- `game/scenes/enemies/Enemy_Boar.tscn`
+- `game/data/enemies/en_boar.tres`
+- `game/data/loot_tables/lt_boar.tres`
+- `game/data/items/material_boar_tusk.tres`
+- `game/data/items/material_boar_hide.tres`
 - `game/scripts/core/ArenaTest.gd`
-- `game/scripts/Player.gd`
-- `game/scripts/inventory/Inventory.gd`
-- `game/scripts/data/WeaponInstance.gd`
 - `game/scenes/Arena_Test.tscn`
-- `project.godot`
-- `obsidian_vault/codex_prompt.md`
+- `game/scripts/ui/DebugOverlay.gd`
+- `game/scenes/DebugOverlay.tscn`
 
 ### 備註/問題
-- Godot autoload 名稱若與 `class_name SaveManager` 相同會直接報衝突，因此本次保留 autoload 名稱 `SaveManager`，但 `SaveManager.gd` 不再宣告同名 `class_name`。
-- 為了避免依賴 `AppData` 外部路徑直接讀檔，本次驗證改由 `Arena_Test` 在 `DW_RUN_SAVE_SMOKE=1` 時跑內建 smoke flow：先存檔，再改亂狀態，再讀檔並列印結果；平常遊戲流程不會啟用。
+- Boar 目前沿用現有 `spider_boss_sheet.png` 做棕色暫時視覺，重點先放在蓄力提示、突進路徑與 DashHitbox 行為；正式野豬美術可後續直接替換。
+- 突進邏輯特別避免落回一般 `Attack` state，因為 Boar 的主要威脅是蓄力後直線突進，不是近身揮擊；`Chase` 也已補上 state 檢查，避免跳到不存在的普通攻擊狀態。

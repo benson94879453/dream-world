@@ -1,8 +1,23 @@
 extends Node2D
 
+const EnemyDataResource = preload("res://game/scripts/data/EnemyData.gd")
+const EnemyAIControllerResource = preload("res://game/scripts/enemies/EnemyAIController.gd")
 const WeaponInstanceResource = preload("res://game/scripts/data/WeaponInstance.gd")
 
+@export var enemy_container_path: NodePath = NodePath("World/Enemies")
+@export var debug_spawn_enemy_data: EnemyDataResource = preload("res://game/data/enemies/en_slime_basic.tres")
+@export var debug_spawn_archer_data: EnemyDataResource = preload("res://game/data/enemies/en_goblin_archer.tres")
+@export var debug_spawn_boar_data: EnemyDataResource = preload("res://game/data/enemies/en_boar.tres")
+@export var debug_spawn_archer_offset: Vector2 = Vector2(160.0, 0.0)
+@export var debug_spawn_boar_offset: Vector2 = Vector2(96.0, 96.0)
+
+var enemy_container: Node2D = null
+
+#region Core Lifecycle
 func _ready() -> void:
+	enemy_container = get_node_or_null(enemy_container_path) as Node2D
+	assert(enemy_container != null, "Arena_Test enemy_container_path must point to Node2D")
+
 	var save_manager_ = get_tree().root.get_node_or_null("SaveManager")
 	if save_manager_ == null:
 		push_warning("[Arena_Test] SaveManager autoload is missing")
@@ -17,6 +32,10 @@ func _ready() -> void:
 		return
 
 	save_manager_.load_game()
+
+
+func _unhandled_input(event_: InputEvent) -> void:
+	_try_handle_debug_enemy_spawn(event_)
 
 
 func _run_save_smoke(save_manager_) -> void:
@@ -83,3 +102,45 @@ func _run_save_smoke(save_manager_) -> void:
 		save_manager_.delete_save()
 
 	get_tree().quit(0)
+#endregion
+
+#region Helpers
+func _try_handle_debug_enemy_spawn(event_: InputEvent) -> bool:
+	var key_event_ := event_ as InputEventKey
+	if key_event_ == null or not key_event_.pressed or key_event_.echo:
+		return false
+
+	if key_event_.physical_keycode != KEY_F6:
+		if key_event_.physical_keycode != KEY_F7:
+			if key_event_.physical_keycode != KEY_F8:
+				return false
+
+	var player_ := get_tree().get_first_node_in_group("player") as PlayerController
+	if player_ == null:
+		push_warning("[Arena_Test] Cannot spawn debug enemy without Player")
+		return true
+
+	if key_event_.physical_keycode == KEY_F6:
+		_spawn_enemy(debug_spawn_enemy_data, player_.global_position)
+		return true
+
+	if key_event_.physical_keycode == KEY_F7:
+		_spawn_enemy(debug_spawn_archer_data, player_.global_position + debug_spawn_archer_offset)
+		return true
+
+	_spawn_enemy(debug_spawn_boar_data, player_.global_position + debug_spawn_boar_offset)
+	return true
+
+
+func _spawn_enemy(enemy_data_: EnemyDataResource, global_position_: Vector2) -> EnemyAIControllerResource:
+	assert(enemy_data_ != null, "Arena_Test requires debug_spawn_enemy_data")
+	assert(enemy_data_.enemy_scene != null, "Arena_Test requires EnemyData.enemy_scene")
+
+	var enemy_ := enemy_data_.enemy_scene.instantiate() as EnemyAIControllerResource
+	assert(enemy_ != null, "EnemyData.enemy_scene must instantiate EnemyAIController")
+
+	enemy_.enemy_data = enemy_data_
+	enemy_container.add_child(enemy_)
+	enemy_.global_position = global_position_
+	return enemy_
+#endregion

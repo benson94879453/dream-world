@@ -1,0 +1,107 @@
+[gd_scene load_steps=17 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/enemies/EnemyAIController.gd" id="1_enemy_ai_script"]
+[ext_resource type="Texture2D" uid="uid://dhj7siyaeqc2p" path="res://game/assets/entities/spider_normal_sheet.png" id="2_enemy_texture"]
+[ext_resource type="Script" path="res://game/scripts/enemies/EnemyStateMachine.gd" id="3_enemy_state_machine_script"]
+[ext_resource type="Script" path="res://game/scripts/enemies/states/EnemyIdleState.gd" id="4_enemy_idle_state_script"]
+[ext_resource type="Script" path="res://game/scripts/enemies/states/EnemyChaseState.gd" id="5_enemy_chase_state_script"]
+[ext_resource type="Script" path="res://game/scripts/enemies/states/EnemyAttackState.gd" id="6_enemy_attack_state_script"]
+[ext_resource type="Script" path="res://game/scripts/enemies/states/EnemyDeadState.gd" id="7_enemy_dead_state_script"]
+[ext_resource type="Script" uid="uid://dr50fxtlekb7h" path="res://game/scripts/combat/Hurtbox.gd" id="8_hurtbox_script"]
+[ext_resource type="Script" uid="uid://b5cemxj7ceuje" path="res://game/scripts/combat/Hitbox.gd" id="9_hitbox_script"]
+[ext_resource type="Script" uid="uid://h500tq7ebu60" path="res://game/scripts/combat/HealthComponent.gd" id="10_health_component_script"]
+[ext_resource type="Script" uid="uid://cvcqep5bl7753" path="res://game/scripts/combat/FeedbackReceiver.gd" id="11_feedback_receiver_script"]
+[ext_resource type="Script" uid="uid://cqmxxwf5v8fg3" path="res://game/scripts/combat/DamageReceiver.gd" id="12_damage_receiver_script"]
+[ext_resource type="Script" path="res://game/scripts/components/DropComponent.gd" id="13_drop_component_script"]
+
+[sub_resource type="RectangleShape2D" id="1_enemy_body_shape"]
+size = Vector2(20, 26)
+
+[sub_resource type="CircleShape2D" id="2_detection_shape"]
+radius = 250.0
+
+[sub_resource type="RectangleShape2D" id="3_enemy_hurtbox_shape"]
+size = Vector2(22, 24)
+
+[sub_resource type="RectangleShape2D" id="4_enemy_hitbox_shape"]
+size = Vector2(18, 16)
+
+[node name="Enemy_Slime" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 12
+script = ExtResource("1_enemy_ai_script")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Sprite2D" type="Sprite2D" parent="Visual"]
+position = Vector2(0, -10)
+scale = Vector2(0.75, 0.75)
+modulate = Color(0.55, 1, 0.55, 1)
+texture = ExtResource("2_enemy_texture")
+hframes = 4
+vframes = 6
+
+[node name="EnemyCollision" type="CollisionShape2D" parent="."]
+position = Vector2(0, -4)
+shape = SubResource("1_enemy_body_shape")
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("3_enemy_state_machine_script")
+
+[node name="Idle" type="Node" parent="StateMachine"]
+script = ExtResource("4_enemy_idle_state_script")
+
+[node name="Chase" type="Node" parent="StateMachine"]
+script = ExtResource("5_enemy_chase_state_script")
+
+[node name="Attack" type="Node" parent="StateMachine"]
+script = ExtResource("6_enemy_attack_state_script")
+
+[node name="Dead" type="Node" parent="StateMachine"]
+script = ExtResource("7_enemy_dead_state_script")
+
+[node name="PlayerDetectionRay" type="RayCast2D" parent="."]
+enabled = true
+target_position = Vector2(64, 0)
+collision_mask = 13
+
+[node name="DetectionArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 1
+
+[node name="DetectionCollision" type="CollisionShape2D" parent="DetectionArea"]
+shape = SubResource("2_detection_shape")
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 32
+collision_mask = 16
+script = ExtResource("8_hurtbox_script")
+
+[node name="HurtboxCollision" type="CollisionShape2D" parent="Hurtbox"]
+position = Vector2(0, -10)
+shape = SubResource("3_enemy_hurtbox_shape")
+
+[node name="Hitbox" type="Area2D" parent="."]
+position = Vector2(14, -4)
+collision_layer = 16
+collision_mask = 32
+script = ExtResource("9_hitbox_script")
+attacker_faction = &"enemy"
+base_damage = 12.0
+active_duration = 0.18
+
+[node name="HitboxCollision" type="CollisionShape2D" parent="Hitbox"]
+shape = SubResource("4_enemy_hitbox_shape")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("10_health_component_script")
+max_hp = 60.0
+
+[node name="DamageReceiver" type="Node" parent="."]
+script = ExtResource("12_damage_receiver_script")
+
+[node name="FeedbackReceiver" type="Node" parent="."]
+script = ExtResource("11_feedback_receiver_script")
+
+[node name="DropComponent" type="Node" parent="."]
+script = ExtResource("13_drop_component_script")

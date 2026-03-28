@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="LootTableData" format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/LootTableData.gd" id="1_loot_table_script"]
+[ext_resource type="Script" path="res://game/scripts/data/LootEntryData.gd" id="2_loot_entry_script"]
+[ext_resource type="Resource" path="res://game/data/items/material_boar_tusk.tres" id="3_tusk_item"]
+[ext_resource type="Resource" path="res://game/data/items/material_boar_hide.tres" id="4_hide_item"]
+
+[sub_resource type="Resource" id="1_tusk_entry"]
+script = ExtResource("2_loot_entry_script")
+item_data = ExtResource("3_tusk_item")
+min_amount = 1
+max_amount = 2
+drop_chance = 0.75
+
+[sub_resource type="Resource" id="2_hide_entry"]
+script = ExtResource("2_loot_entry_script")
+item_data = ExtResource("4_hide_item")
+min_amount = 1
+max_amount = 3
+drop_chance = 0.9
+
+[resource]
+script = ExtResource("1_loot_table_script")
+loot_entries = Array[ExtResource("2_loot_entry_script")]([SubResource("1_tusk_entry"), SubResource("2_hide_entry")])

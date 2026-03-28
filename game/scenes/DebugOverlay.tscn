@@ -9,7 +9,7 @@ script = ExtResource("1_debug_overlay_script")
 offset_left = 12.0
 offset_top = 12.0
 offset_right = 320.0
-offset_bottom = 300.0
+offset_bottom = 450.0
 
 [node name="Panel" type="PanelContainer" parent="Root"]
 
@@ -36,14 +36,41 @@ text = "Combo Ready: N/A"
 [node name="PlayerComboQueued" type="Label" parent="Root/Panel/DebugInfo"]
 text = "Combo Queued: N/A"
 
+[node name="DashCooldown" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Dash: N/A"
+
 [node name="InventoryUsage" type="Label" parent="Root/Panel/DebugInfo"]
 text = "Inventory: N/A"
 
 [node name="RecentPickup" type="Label" parent="Root/Panel/DebugInfo"]
 text = "Recent Pickup: N/A"
 
-[node name="DummyState" type="Label" parent="Root/Panel/DebugInfo"]
-text = "Dummy State: N/A"
+[node name="SlimeState" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Slime State: N/A"
 
-[node name="DummyHP" type="Label" parent="Root/Panel/DebugInfo"]
-text = "Dummy HP: N/A"
+[node name="SlimeHP" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Slime HP: N/A"
+
+[node name="SlimeDistance" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Slime Distance: N/A"
+
+[node name="ArcherState" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Archer State: N/A"
+
+[node name="ArcherHP" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Archer HP: N/A"
+
+[node name="ArcherDistance" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Archer Distance: N/A"
+
+[node name="ArcherVisibility" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Archer Can See Player: N/A"
+
+[node name="BoarState" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Boar State: N/A"
+
+[node name="BoarHP" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Boar HP: N/A"
+
+[node name="BoarDashCooldown" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Boar Dash: N/A"

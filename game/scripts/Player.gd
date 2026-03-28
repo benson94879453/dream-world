@@ -10,6 +10,12 @@ const WeaponInstanceResource = preload("res://game/scripts/data/WeaponInstance.g
 @export var walk_animation_fps: float = 7.0
 @export var run_animation_fps: float = 10.0
 @export var attack_cancel_lock_seconds: float = 0.12
+@export var dash_distance: float = 120.0
+@export var dash_duration: float = 0.15
+@export var dash_cooldown: float = 0.8
+@export var dash_invincible: bool = true
+@export var dash_ghost_count: int = 3
+@export var dash_ghost_interval: float = 0.05
 @export var equipped_weapon_data: WeaponData
 @export var enable_debug_weapon_switching: bool = false
 @export var debug_equip_slot_1: WeaponData = preload("res://game/data/weapons/wpn_unarmed.tres")
@@ -24,13 +30,24 @@ var facing_left: bool = false
 var animation_time: float = 0.0
 var controls_locked: bool = false
 var transient_lock_time_remaining: float = 0.0
+var is_dashing: bool = false
+var can_dash: bool = true
+var dash_timer: float = 0.0
+var dash_cooldown_timer: float = 0.0
+var dash_direction: Vector2 = Vector2.ZERO
 var equipped_weapon: WeaponInstance = null
 var equipped_weapon_controller: WeaponController = null
 var recent_pickup_summary: String = "N/A"
+var dash_ghost_enabled: bool = false
+var ghost_timer: float = 0.0
+var ghost_sprites: Array[Sprite2D] = []
+var hurtbox_monitoring_default: bool = true
+var hurtbox_monitorable_default: bool = true
 
 @onready var sprite: Sprite2D = $Visual/Sprite2D
 @onready var state_machine: PlayerStateMachine = $StateMachine
 @onready var weapon_pivot: Marker2D = $WeaponPivot
+@onready var hurtbox: Hurtbox = $Hurtbox
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var inventory: InventoryNode = $Inventory
 
@@ -39,20 +56,34 @@ func _ready() -> void:
 	assert(sprite != null, "PlayerController requires Sprite2D")
 	assert(state_machine != null, "PlayerController requires StateMachine")
 	assert(weapon_pivot != null, "PlayerController requires WeaponPivot")
+	assert(hurtbox != null, "PlayerController requires Hurtbox")
 	assert(health_component != null, "PlayerController requires HealthComponent")
 	assert(inventory != null, "PlayerController requires Inventory")
 	assert(equipped_weapon_data != null, "PlayerController requires equipped_weapon_data")
+	assert(dash_duration > 0.0, "PlayerController dash_duration must be greater than 0")
+	assert(dash_distance >= 0.0, "PlayerController dash_distance must be non-negative")
+	assert(dash_cooldown >= 0.0, "PlayerController dash_cooldown must be non-negative")
+	assert(dash_ghost_count >= 0, "PlayerController dash_ghost_count must be non-negative")
+	assert(dash_ghost_interval >= 0.0, "PlayerController dash_ghost_interval must be non-negative")
 
+	hurtbox_monitoring_default = hurtbox.monitoring
+	hurtbox_monitorable_default = hurtbox.monitorable
 	equip_weapon_data(equipped_weapon_data)
 	add_to_group("player")
 	state_machine.start()
 
 
 func _physics_process(delta_: float) -> void:
-	if transient_lock_time_remaining <= 0.0:
-		return
+	if dash_cooldown_timer > 0.0:
+		dash_cooldown_timer = maxf(dash_cooldown_timer - delta_, 0.0)
+		if dash_cooldown_timer <= 0.0:
+			can_dash = true
 
-	transient_lock_time_remaining = maxf(transient_lock_time_remaining - delta_, 0.0)
+	if dash_ghost_enabled:
+		_update_dash_ghosts(delta_)
+
+	if transient_lock_time_remaining > 0.0:
+		transient_lock_time_remaining = maxf(transient_lock_time_remaining - delta_, 0.0)
 
 
 func _unhandled_input(event_: InputEvent) -> void:
@@ -67,7 +98,7 @@ func _unhandled_input(event_: InputEvent) -> void:
 
 	state_machine.handle_input(event_)
 
-	if is_controls_locked():
+	if is_controls_locked() or is_dashing:
 		return
 
 	if event_.is_action_pressed("attack"):
@@ -76,7 +107,7 @@ func _unhandled_input(event_: InputEvent) -> void:
 
 #region Public
 func get_move_input() -> Vector2:
-	if is_controls_locked():
+	if is_controls_locked() or is_dashing:
 		return Vector2.ZERO
 	return Input.get_vector("move_left", "move_right", "move_up", "move_down")
 
@@ -104,6 +135,10 @@ func play_move_animation(delta_: float, animation_fps_: float) -> void:
 func play_weapon_attack_animation(_animation_name_: String) -> void:
 	# Placeholder hook until dedicated player attack clips are authored.
 	animation_time = 0.0
+
+
+func play_dash_animation(delta_: float) -> void:
+	play_move_animation(delta_, run_animation_fps * 1.5)
 
 
 func set_controls_locked(value_: bool) -> void:
@@ -192,7 +227,7 @@ func get_attack_direction() -> Vector2:
 func request_attack_state() -> void:
 	if state_machine == null:
 		return
-	if get_current_state_name() == &"Attack":
+	if get_current_state_name() == &"Attack" or get_current_state_name() == &"Dash" or is_dashing:
 		return
 
 	state_machine.transition_to(&"Attack")
@@ -286,6 +321,71 @@ func restore_equipped_weapon_from_save(data_: Dictionary) -> bool:
 	}
 	equip_weapon_instance(WeaponInstanceResource.create_from_save_dict(weapon_data_, weapon_save_data_))
 	return true
+
+
+#region Dash Functions
+func start_dash() -> void:
+	assert(dash_duration > 0.0, "PlayerController dash_duration must be greater than 0 before dash")
+
+	var input_direction_: Vector2 = Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	if input_direction_ != Vector2.ZERO:
+		dash_direction = input_direction_.normalized()
+	else:
+		dash_direction = Vector2.LEFT if facing_left else Vector2.RIGHT
+
+	is_dashing = true
+	can_dash = false
+	dash_timer = 0.0
+	set_controls_locked(true)
+	_update_facing(dash_direction)
+
+
+func perform_dash_movement(delta_: float) -> void:
+	if not is_dashing:
+		return
+
+	var dash_speed_: float = dash_distance / dash_duration
+	velocity = dash_direction * dash_speed_
+	move_and_slide()
+	dash_timer += delta_
+
+
+func end_dash() -> void:
+	is_dashing = false
+	dash_timer = 0.0
+	velocity = Vector2.ZERO
+	set_controls_locked(false)
+
+
+func start_dash_cooldown() -> void:
+	dash_cooldown_timer = dash_cooldown
+	if dash_cooldown_timer <= 0.0:
+		can_dash = true
+
+
+func set_invincible(invincible_: bool) -> void:
+	assert(hurtbox != null, "PlayerController requires Hurtbox before toggling invincibility")
+
+	hurtbox.monitoring = false if invincible_ else hurtbox_monitoring_default
+	hurtbox.monitorable = false if invincible_ else hurtbox_monitorable_default
+
+
+func enable_dash_ghost(enabled_: bool) -> void:
+	dash_ghost_enabled = enabled_
+	ghost_timer = 0.0
+
+	if enabled_:
+		return
+
+	for ghost_ in ghost_sprites:
+		if is_instance_valid(ghost_):
+			ghost_.queue_free()
+	ghost_sprites.clear()
+
+
+func can_perform_dash() -> bool:
+	return can_dash and dash_cooldown_timer <= 0.0 and not is_dashing and not controls_locked
+#endregion
 #endregion
 
 #region Helpers
@@ -429,6 +529,50 @@ func _update_facing(input_vector_: Vector2) -> void:
 
 	sprite.flip_h = facing_left
 	weapon_pivot.scale.x = -1.0 if facing_left else 1.0
+
+
+func _update_dash_ghosts(delta_: float) -> void:
+	if not is_dashing:
+		return
+
+	ghost_timer += delta_
+	if ghost_timer < dash_ghost_interval:
+		return
+
+	ghost_timer = 0.0
+	_create_ghost()
+
+
+func _create_ghost() -> void:
+	if dash_ghost_count <= 0:
+		return
+
+	var parent_node_ := get_parent()
+	if parent_node_ == null:
+		return
+
+	var ghost_: Sprite2D = Sprite2D.new()
+	ghost_.texture = sprite.texture
+	ghost_.hframes = sprite.hframes
+	ghost_.vframes = sprite.vframes
+	ghost_.frame = sprite.frame
+	ghost_.frame_coords = sprite.frame_coords
+	ghost_.flip_h = sprite.flip_h
+	ghost_.centered = sprite.centered
+	ghost_.offset = sprite.offset
+	ghost_.global_position = sprite.global_position
+	ghost_.modulate = Color(1.0, 1.0, 1.0, 0.45)
+	parent_node_.add_child(ghost_)
+	ghost_sprites.append(ghost_)
+
+	while ghost_sprites.size() > dash_ghost_count:
+		var oldest_ghost_: Sprite2D = ghost_sprites.pop_front()
+		if is_instance_valid(oldest_ghost_):
+			oldest_ghost_.queue_free()
+
+	var tween_ := create_tween()
+	tween_.tween_property(ghost_, "modulate:a", 0.0, 0.2)
+	tween_.tween_callback(Callable(ghost_, "queue_free"))
 
 
 func _get_save_manager():

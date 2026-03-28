@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/EnemyData.gd" id="1_enemydata"]
+[ext_resource type="PackedScene" path="res://game/scenes/enemies/Enemy_Slime.tscn" id="2_slimescene"]
+[ext_resource type="Resource" path="res://game/data/loot_tables/loot_dummy_basic.tres" id="3_loottable"]
+
+[resource]
+script = ExtResource("1_enemydata")
+enemy_id = &"en_slime_basic"
+display_name = "史萊姆"
+max_hp = 60
+move_speed = 40.0
+chase_speed = 80.0
+detection_radius = 250.0
+attack_range = 35.0
+attack_cooldown = 1.2
+enemy_scene = ExtResource("2_slimescene")
+loot_table = ExtResource("3_loottable")
