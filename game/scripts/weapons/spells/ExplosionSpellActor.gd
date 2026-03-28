@@ -72,10 +72,12 @@ func _apply_explosion() -> void:
 func _build_attack_context() -> AttackContext:
 	var attack_context_ := AttackContext.new()
 	attack_context_.source_node = self
+	attack_context_.attacker_node = owner_actor
 	attack_context_.attacker_faction = &"player" if owner_actor != null and owner_actor.is_in_group("player") else &"enemy"
 	attack_context_.base_damage = explosion_damage
 	attack_context_.damage_type = &"magic"
-	attack_context_.tags = [&"spell", &"explosion", weapon_data.weapon_type]
+	attack_context_.tags = _get_attack_tags([&"spell", &"explosion", weapon_data.weapon_type])
+	attack_context_.weapon_instance = weapon_instance
 
 	var attack_profile_ = weapon_data.attack_profile
 	if attack_profile_ != null:

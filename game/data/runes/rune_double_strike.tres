@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="RuneData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/RuneData.gd" id="1_rune_data_script"]
+
+[resource]
+script = ExtResource("1_rune_data_script")
+item_id = &"rune_double_strike"
+display_name = "雙重打擊"
+description = "近戰攻擊有 15% 機率造成兩次傷害。"
+item_type = 0
+max_stack = 99
+rune_id = &"rune_double_strike"
+tier = 1
+rune_tags = Array[int]([])
+stat_modifiers = {
+&"double_strike_chance_pct": 0.15
+}
+special_effects = Array[StringName]([&"double_strike_on_melee_hit"])

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RuneData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/RuneData.gd" id="1_rune_data_script"]
+
+[resource]
+script = ExtResource("1_rune_data_script")
+item_id = &"rune_vampiric_thirst"
+display_name = "吸血渴望"
+description = "攻擊時回復 5% 傷害值的 HP，滿血時轉為護盾。"
+item_type = 0
+max_stack = 99
+rune_id = &"rune_vampiric_thirst"
+tier = 1
+rune_tags = Array[int]([])
+stat_modifiers = {
+&"lifesteal_pct": 0.05,
+&"overheal_shield_pct": 1.0
+}
+special_effects = Array[StringName]([&"overheal_to_shield"])

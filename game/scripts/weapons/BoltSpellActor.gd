@@ -43,7 +43,8 @@ func _activate_spell() -> void:
 	lifetime_remaining = maxf(weapon_instance.get_attack_range(), 0.25) * seconds_per_range_unit
 	hitbox.source_root = owner_actor
 	hitbox.base_damage = weapon_instance.get_base_attack()
-	hitbox.attack_tags = [&"spell", &"projectile", weapon_data.weapon_type]
+	hitbox.weapon_instance = weapon_instance
+	hitbox.attack_tags = _get_attack_tags([&"spell", &"projectile", weapon_data.weapon_type])
 	var attack_profile_ = weapon_data.attack_profile
 	hitbox.hit_audio = attack_profile_.hit_audio if attack_profile_ != null else null
 	hitbox.hit_effect_scene = attack_profile_.hit_effect_scene if attack_profile_ != null else null

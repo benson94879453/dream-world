@@ -126,4 +126,16 @@ func _get_target_hurtbox(target_: Node) -> Hurtbox:
 	if target_ == null:
 		return null
 	return target_.get_node_or_null("Hurtbox") as Hurtbox
+
+
+func _get_attack_tags(base_tags_: Array[StringName]) -> Array[StringName]:
+	var tags_: Array[StringName] = base_tags_.duplicate()
+	if weapon_instance == null:
+		return tags_
+
+	for element_tag_ in weapon_instance.get_attack_element_tags():
+		if not tags_.has(element_tag_):
+			tags_.append(element_tag_)
+
+	return tags_
 #endregion

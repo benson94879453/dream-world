@@ -39,7 +39,7 @@ func can_combo() -> bool:
 	if current_phase != PHASE_RECOVERY or attack_phase_timer == null:
 		return false
 
-	var recovery_seconds_ := _get_recovery_seconds()
+	var recovery_seconds_: float = _get_recovery_seconds()
 	if recovery_seconds_ <= 0.0:
 		return false
 
@@ -78,10 +78,9 @@ func _setup_weapon() -> void:
 	attack_phase_timer.one_shot = true
 	add_child(attack_phase_timer)
 	attack_phase_timer.timeout.connect(_on_attack_phase_timer_timeout)
+	attack_hitbox.hit_landed.connect(_on_attack_hitbox_hit)
 
 	attack_hitbox.source_root = owner_actor
-	attack_hitbox.base_damage = weapon_instance.get_base_attack()
-	attack_hitbox.attack_tags = [&"melee", weapon_data.weapon_type]
 	default_active_duration = attack_hitbox.active_duration
 	hitbox_shape_.size.x = 18.0 * maxf(weapon_instance.get_attack_range(), 0.25)
 	attack_hitbox_collision.position.x = hitbox_shape_.size.x * 0.5
@@ -91,6 +90,7 @@ func _setup_weapon() -> void:
 
 func _begin_attack() -> void:
 	_refresh_attack_profile()
+	_refresh_attack_hitbox_state()
 	attack_cooldown_timer.wait_time = _get_attack_cooldown_seconds()
 	attack_cooldown_timer.start()
 
@@ -145,6 +145,9 @@ func _on_attack_phase_timer_timeout() -> void:
 		PHASE_ACTIVE:
 			_enter_phase(PHASE_RECOVERY)
 		PHASE_RECOVERY:
+			if _should_trigger_endless_blade():
+				attack_cooldown_timer.stop()
+				print("[Rune][Sword] Endless Blade cooldown refunded")
 			current_phase = PHASE_IDLE
 
 
@@ -186,4 +189,69 @@ func _spawn_muzzle_flash() -> void:
 		return
 
 	_spawn_presentation_scene(attack_profile_.muzzle_flash_scene, attack_hitbox_collision.global_position)
+
+
+func _refresh_attack_hitbox_state() -> void:
+	attack_hitbox.base_damage = weapon_instance.get_base_attack()
+	attack_hitbox.weapon_instance = weapon_instance
+	attack_hitbox.attack_tags = _get_attack_tags([&"melee", weapon_data.weapon_type])
+
+
+func _should_trigger_endless_blade() -> bool:
+	if not _has_active_rune_effect(&"cooldown_refund_on_attack"):
+		return false
+	var should_trigger_ := _roll_proc(_get_total_weapon_modifier(&"cooldown_refund_chance_pct"))
+	_record_endless_blade_test_result(should_trigger_)
+	return should_trigger_
+
+
+func _on_attack_hitbox_hit(hurtbox_: Hurtbox, attack_context_: AttackContext, _applied_damage_: float) -> void:
+	if hurtbox_ == null or attack_context_ == null:
+		return
+	if not _should_trigger_double_strike(attack_context_):
+		return
+
+	print("[Rune][Sword] Double Strike triggered")
+	_trigger_double_strike(hurtbox_, attack_context_.duplicate_context())
+
+
+func _should_trigger_double_strike(attack_context_: AttackContext) -> bool:
+	if attack_context_ == null or not attack_context_.tags.has(&"melee"):
+		return false
+	if not _has_active_rune_effect(&"double_strike_on_melee_hit"):
+		return false
+	var should_trigger_ := _roll_proc(_get_total_weapon_modifier(&"double_strike_chance_pct"))
+	_record_double_strike_test_result(should_trigger_)
+	return should_trigger_
+
+
+func _trigger_double_strike(hurtbox_: Hurtbox, attack_context_: AttackContext) -> void:
+	attack_context_.can_trigger_on_hit = false
+	_resolve_double_strike_hit(hurtbox_, attack_context_)
+
+
+func _resolve_double_strike_hit(hurtbox_: Hurtbox, attack_context_: AttackContext) -> void:
+	await get_tree().create_timer(0.05).timeout
+	if hurtbox_ == null or attack_context_ == null:
+		return
+	if not is_instance_valid(hurtbox_) or not is_inside_tree():
+		return
+
+	hurtbox_.receive_hit(attack_context_)
+
+
+func _record_endless_blade_test_result(triggered_: bool) -> void:
+	var rune_test_manager_ = _get_rune_test_manager()
+	if rune_test_manager_ == null or not rune_test_manager_.is_test_mode_enabled():
+		return
+
+	rune_test_manager_.record_endless_blade_result(triggered_)
+
+
+func _record_double_strike_test_result(triggered_: bool) -> void:
+	var rune_test_manager_ = _get_rune_test_manager()
+	if rune_test_manager_ == null or not rune_test_manager_.is_test_mode_enabled():
+		return
+
+	rune_test_manager_.record_double_strike_result(triggered_)
 #endregion

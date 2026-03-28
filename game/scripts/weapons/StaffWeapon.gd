@@ -107,6 +107,9 @@ func _on_attack_phase_timer_timeout() -> void:
 		PHASE_ACTIVE:
 			_enter_phase(PHASE_RECOVERY)
 		PHASE_RECOVERY:
+			if _should_trigger_endless_blade():
+				attack_cooldown_timer.stop()
+				print("[Rune][Staff] Endless Blade cooldown refunded")
 			current_phase = PHASE_IDLE
 
 
@@ -151,15 +154,16 @@ func _spawn_muzzle_flash() -> void:
 func _spawn_spell_actor() -> void:
 	assert(owner_actor != null, "StaffWeapon owner_actor must be initialized")
 
-	var spell_parent_ := owner_actor.get_parent()
+	var spell_parent_: Node = owner_actor.get_parent()
 	assert(spell_parent_ != null, "StaffWeapon owner_actor must have a parent to spawn spell actors")
 
 	var spell_actor_ := weapon_data.attack_actor_scene.instantiate() as SpellActor
 	assert(spell_actor_ != null, "WeaponData.attack_actor_scene must instantiate SpellActor")
+	var spell_direction_: Vector2 = _get_spell_direction()
 
 	spell_parent_.add_child(spell_actor_)
 	spell_actor_.global_position = spell_spawn_point.global_position
-	spell_actor_.setup(owner_actor, weapon_instance, _get_attack_direction())
+	spell_actor_.setup(owner_actor, weapon_instance, spell_direction_)
 
 	match spell_actor_.spell_type:
 		SpellActor.SpellType.PROJECTILE:
@@ -172,4 +176,27 @@ func _spawn_spell_actor() -> void:
 			print("[StaffWeapon] SpellType: continuous")
 			spell_actor_.activate_spell()
 			spell_actor_.start_lifetime_timer()
+
+
+func _should_trigger_endless_blade() -> bool:
+	if not _has_active_rune_effect(&"cooldown_refund_on_attack"):
+		return false
+	var should_trigger_ := _roll_proc(_get_total_weapon_modifier(&"cooldown_refund_chance_pct"))
+	var rune_test_manager_ = _get_rune_test_manager()
+	if rune_test_manager_ != null and rune_test_manager_.is_test_mode_enabled():
+		rune_test_manager_.record_endless_blade_result(should_trigger_)
+	return should_trigger_
+
+
+func _get_spell_direction() -> Vector2:
+	assert(owner_actor != null, "StaffWeapon owner_actor must be initialized before resolving spell direction")
+	assert(spell_spawn_point != null, "StaffWeapon spell_spawn_point must be initialized before resolving spell direction")
+
+	var mouse_position_: Vector2 = owner_actor.get_global_mouse_position()
+	var spell_origin_: Vector2 = spell_spawn_point.global_position
+	var spell_direction_: Vector2 = mouse_position_ - spell_origin_
+	if spell_direction_.is_zero_approx():
+		return _get_attack_direction()
+
+	return spell_direction_.normalized()
 #endregion

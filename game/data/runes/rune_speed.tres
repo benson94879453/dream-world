@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="RuneData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/RuneData.gd" id="1_rune_data_script"]
+
+[resource]
+script = ExtResource("1_rune_data_script")
+item_id = &"rune_speed"
+display_name = "加速符文"
+description = "移動速度 +10%。"
+item_type = 0
+max_stack = 99
+rune_id = &"rune_speed"
+tier = 0
+rune_tags = Array[int]([4])
+stat_modifiers = {
+&"move_speed_bonus_pct": 0.1
+}
+special_effects = Array[StringName]([])

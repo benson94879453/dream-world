@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/ItemData.gd" id="1_item_data_script"]
+
+[resource]
+script = ExtResource("1_item_data_script")
+item_id = &"mat_soul_shard"
+display_name = "靈魂碎片"
+description = "蘊含殘留意志的碎片。"
+item_type = 0
+max_stack = 99

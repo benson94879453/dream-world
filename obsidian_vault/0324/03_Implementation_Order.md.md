@@ -139,6 +139,49 @@
 - [x] Update `PlayerAttackState` - Dash Cancel
 - [x] Update `DebugOverlay` - Dash 冷卻顯示
 
+## Phase 5A: NPC 對話系統 (已完成 #013)
+
+### 對話資料模型
+- [x] Create `DialogData.gd` - 對話資料
+- [x] Create `DialogNodeData.gd` - 對話節點
+- [x] Create `DialogChoiceData.gd` - 對話選項
+
+### 對話管理與 UI
+- [x] Create `DialogManager.gd` - Autoload 對話管理
+- [x] Create `DialogUI.gd` - 對話 UI
+- [x] Create `DialogUI.tscn` - 對話場景
+- [x] Create `NPCDialogTrigger.gd` - NPC 觸發器
+
+### 對話資料
+- [x] Create `dlg_blacksmith_intro.tres` - 鐵匠對話範例
+
+### Save 整合
+- [x] Update `SaveManager.gd` - Save v2，保存對話 flags
+
+## Phase 5B: 武器升級系統 (已完成 #014)
+
+### 詞綴系統
+- [x] Create `AffixData.gd` - 詞綴資料
+- [x] Create `AffixTable.gd` - 詞綴表
+- [x] Create `affix_table_basic.tres` - 基礎詞綴表
+
+### 升級系統
+- [x] Create `UpgradeManager.gd` - Autoload 升級管理
+- [x] Create `WeaponUpgradeUI.gd` - 升級 UI
+- [x] Create `WeaponUpgradeUI.tscn` - 升級場景
+- [x] Create `upgrade_costs.tres` - 升級成本表
+
+### Weapon 擴充
+- [x] Update `WeaponInstance.gd` - 新增 star_level, affixes
+- [x] Update `WeaponData.gd` - 新增 weapon_category
+
+### Save 整合
+- [x] Update `SaveManager.gd` - Save v3，保存星級與詞綴
+- [x] Update `Player.gd` - 保存/還原武器升級狀態
+
+### Debug 工具
+- [x] Update `DebugOverlay.gd` - 顯示武器星級、L 鍵素材包
+
 ## Acceptance Checklist
 - [x] Player can walk and run in `Arena_Test`
 - [x] Player can trigger a melee attack
@@ -153,3 +196,18 @@
 - [x] Dash can cancel attack
 - [x] Dash has invincibility frames
 - [x] Dash has cooldown display
+- [x] NPC dialog system works (F key interaction)
+- [x] Dialog choices affect flags
+- [x] Dialog flags save and load correctly (save_version=2)
+- [x] Weapon upgrade system works (star level 0-5)
+- [x] Weapon affixes are granted on upgrade
+- [x] Upgrade state saves and loads correctly (save_version=3)
+- [x] Blacksmith dialog opens upgrade UI
+- [x] Rune data structure (RuneData, RuneSlot, RuneInstance)
+- [x] 12 rune stone resources (8 common + 4 core)
+- [x] Three slot types (FREE, TYPED, CORE) with restrictions
+- [x] Rune equip/unequip with gold cost calculation
+- [x] RuneSocketUI with slot display and rune list
+- [x] WeaponUpgradeUI tabbed interface (Upgrade/Runes)
+- [x] Rune state saves and loads correctly (save_version=4)
+- [x] Debug K key gives test rune stones

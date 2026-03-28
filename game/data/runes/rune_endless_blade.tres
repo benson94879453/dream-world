@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="RuneData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/RuneData.gd" id="1_rune_data_script"]
+
+[resource]
+script = ExtResource("1_rune_data_script")
+item_id = &"rune_endless_blade"
+display_name = "無盡之刃"
+description = "攻擊有 10% 機率不消耗攻擊冷卻。"
+item_type = 0
+max_stack = 99
+rune_id = &"rune_endless_blade"
+tier = 1
+rune_tags = Array[int]([])
+stat_modifiers = {
+&"cooldown_refund_chance_pct": 0.1
+}
+special_effects = Array[StringName]([&"cooldown_refund_on_attack"])

@@ -14,6 +14,6 @@ func _ready() -> void:
 #endregion
 
 #region Public
-func receive_hit(attack_context_: AttackContext) -> void:
-	damage_receiver.receive_hit(attack_context_)
+func receive_hit(attack_context_: AttackContext) -> float:
+	return damage_receiver.receive_hit(attack_context_)
 #endregion

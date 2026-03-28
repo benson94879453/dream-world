@@ -8,8 +8,8 @@ script = ExtResource("1_debug_overlay_script")
 [node name="Root" type="MarginContainer" parent="."]
 offset_left = 12.0
 offset_top = 12.0
-offset_right = 320.0
-offset_bottom = 450.0
+offset_right = 460.0
+offset_bottom = 620.0
 
 [node name="Panel" type="PanelContainer" parent="Root"]
 
@@ -27,6 +27,9 @@ text = "Player HP: N/A"
 [node name="PlayerWeapon" type="Label" parent="Root/Panel/DebugInfo"]
 text = "Player Weapon: N/A"
 
+[node name="PlayerWeaponStars" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Weapon Stars: N/A"
+
 [node name="PlayerAttackPhase" type="Label" parent="Root/Panel/DebugInfo"]
 text = "Attack Phase: N/A"
 
@@ -42,8 +45,24 @@ text = "Dash: N/A"
 [node name="InventoryUsage" type="Label" parent="Root/Panel/DebugInfo"]
 text = "Inventory: N/A"
 
+[node name="HotbarStatus" type="Label" parent="Root/Panel/DebugInfo"]
+autowrap_mode = 3
+text = "Hotbar: N/A"
+
+[node name="PlayerGold" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Gold: N/A"
+
 [node name="RecentPickup" type="Label" parent="Root/Panel/DebugInfo"]
 text = "Recent Pickup: N/A"
+
+[node name="DialogState" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Dialog: N/A"
+
+[node name="DialogNode" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Dialog Node: N/A"
+
+[node name="DialogFlags" type="Label" parent="Root/Panel/DebugInfo"]
+text = "Dialog Flags: N/A"
 
 [node name="SlimeState" type="Label" parent="Root/Panel/DebugInfo"]
 text = "Slime State: N/A"
@@ -74,3 +93,32 @@ text = "Boar HP: N/A"
 
 [node name="BoarDashCooldown" type="Label" parent="Root/Panel/DebugInfo"]
 text = "Boar Dash: N/A"
+
+[node name="RuneTestTitle" type="Label" parent="Root/Panel/DebugInfo"]
+visible = false
+text = "=== 符文效果測試 ==="
+
+[node name="RuneTestMode" type="Label" parent="Root/Panel/DebugInfo"]
+visible = false
+text = "Test Mode: OFF"
+
+[node name="RuneTestEndless" type="Label" parent="Root/Panel/DebugInfo"]
+visible = false
+text = "[無盡之刃] 觸發: 0/0 (0.0%) | 期望: 10%"
+
+[node name="RuneTestDouble" type="Label" parent="Root/Panel/DebugInfo"]
+visible = false
+text = "[雙重打擊] 觸發: 0/0 (0.0%) | 期望: 15%"
+
+[node name="RuneTestElemental" type="Label" parent="Root/Panel/DebugInfo"]
+visible = false
+text = "[元素共鳴] 基礎: 0 | 火焰: 0 (+0%) | 共鳴: 0 (+0%)"
+
+[node name="RuneTestShield" type="Label" parent="Root/Panel/DebugInfo"]
+visible = false
+text = "[護盾測試] 起始: Shield 0 | HP 0/0 | hit=0"
+
+[node name="RuneTestShieldDetail" type="Label" parent="Root/Panel/DebugInfo"]
+visible = false
+autowrap_mode = 3
+text = "受擊後: Shield 0 | HP 0/0 | 最終: Shield 0 | HP 0/0"

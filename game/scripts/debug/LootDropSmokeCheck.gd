@@ -15,7 +15,9 @@ func _ready() -> void:
 		var descriptions_: PackedStringArray = []
 
 		for drop_ in drops_:
-			if drop_.has("item_data"):
+			if drop_.has("gold"):
+				descriptions_.append("Gold x%d" % int(drop_.get("gold", 0)))
+			elif drop_.has("item_data"):
 				var item_data_: ItemDataResource = drop_["item_data"]
 				descriptions_.append("%s x%d" % [item_data_.display_name, int(drop_.get("amount", 1))])
 			elif drop_.has("weapon_data"):

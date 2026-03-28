@@ -1,17 +1,20 @@
 extends Node
 
 const ItemDataResource = preload("res://game/scripts/data/ItemData.gd")
+const RuneDataResource = preload("res://game/scripts/data/RuneData.gd")
 const WeaponDataResource = preload("res://game/scripts/data/WeaponData.gd")
 
-const SAVE_VERSION: int = 1
+const SAVE_VERSION: int = 5
 const SAVE_FILE_PATH: String = "user://savegame.json"
 const ITEM_DATA_ROOT: String = "res://game/data/items"
+const RUNE_DATA_ROOT: String = "res://game/data/runes"
 const WEAPON_DATA_ROOT: String = "res://game/data/weapons"
 
 signal save_completed(success: bool)
 signal load_completed(success: bool)
 
 var item_data_by_id: Dictionary = {}
+var rune_data_by_id: Dictionary = {}
 var weapon_data_by_id: Dictionary = {}
 
 #region Core Lifecycle
@@ -35,6 +38,7 @@ func save_game() -> bool:
 
 	var existing_data_ = _read_save_file()
 	var created_at_ = existing_data_.get("created_at", _get_iso8601_utc_now()) if not existing_data_.is_empty() else _get_iso8601_utc_now()
+	var dialog_manager_ = _get_dialog_manager()
 	var save_data_ = {
 		"save_version": SAVE_VERSION,
 		"created_at": created_at_,
@@ -44,7 +48,8 @@ func save_game() -> bool:
 		"progression": {
 			"unlocked_souls": [],
 			"flags": {}
-		}
+		},
+		"dialog": dialog_manager_.to_save_dict() if dialog_manager_ != null else {}
 	}
 
 	var save_file_ := FileAccess.open(SAVE_FILE_PATH, FileAccess.WRITE)
@@ -103,6 +108,11 @@ func load_game() -> bool:
 	if not equipped_restored_:
 		push_warning("[SaveManager] Equipped weapon could not be fully restored")
 
+	var dialog_manager_ = _get_dialog_manager()
+	if dialog_manager_ != null:
+		var dialog_data_ = migrated_data_.get("dialog", {})
+		dialog_manager_.from_save_dict(dialog_data_ if typeof(dialog_data_) == TYPE_DICTIONARY else {})
+
 	print("[SaveManager] Load completed from: %s" % ProjectSettings.globalize_path(SAVE_FILE_PATH))
 	load_completed.emit(true)
 	return true
@@ -137,15 +147,33 @@ func resolve_weapon_data(weapon_id_: StringName) -> WeaponDataResource:
 		_refresh_resource_caches()
 
 	return weapon_data_by_id.get(weapon_id_, null)
+
+
+func resolve_rune_data(rune_id_: StringName) -> RuneDataResource:
+	if rune_id_.is_empty():
+		return null
+
+	if rune_data_by_id.is_empty():
+		_refresh_resource_caches()
+
+	return rune_data_by_id.get(rune_id_, null)
 #endregion
 
 #region Helpers
-func _get_player():
+func _get_player() -> Node:
 	return get_tree().get_first_node_in_group("player")
+
+
+func _get_dialog_manager() -> Node:
+	var tree_: SceneTree = get_tree()
+	if tree_ == null or tree_.root == null:
+		return null
+	return tree_.root.get_node_or_null("DialogManager")
 
 
 func _refresh_resource_caches() -> void:
 	item_data_by_id.clear()
+	rune_data_by_id.clear()
 	weapon_data_by_id.clear()
 
 	for item_path_ in _collect_resource_paths(ITEM_DATA_ROOT):
@@ -153,6 +181,18 @@ func _refresh_resource_caches() -> void:
 		if item_resource_ == null or item_resource_.item_id.is_empty():
 			continue
 		item_data_by_id[item_resource_.item_id] = item_resource_
+
+	for rune_path_ in _collect_resource_paths(RUNE_DATA_ROOT):
+		var rune_resource_ := load(rune_path_) as RuneDataResource
+		if rune_resource_ == null:
+			continue
+
+		var rune_id_ := rune_resource_.get_runtime_rune_id()
+		if rune_id_.is_empty():
+			continue
+
+		item_data_by_id[rune_resource_.item_id] = rune_resource_
+		rune_data_by_id[rune_id_] = rune_resource_
 
 	for weapon_path_ in _collect_resource_paths(WEAPON_DATA_ROOT):
 		var weapon_resource_ := load(weapon_path_) as WeaponDataResource
@@ -220,5 +260,18 @@ func _migrate_save_data(data_: Dictionary, from_version_: int) -> Dictionary:
 	var migrated_data_ := data_.duplicate(true)
 	if from_version_ < 1:
 		return migrated_data_
+	if from_version_ < 2 and not migrated_data_.has("dialog"):
+		migrated_data_["dialog"] = {}
+	if from_version_ < 3:
+		pass
+	if from_version_ < 4:
+		pass
+	if from_version_ < 5:
+		var player_data_ = migrated_data_.get("player", {})
+		if typeof(player_data_) != TYPE_DICTIONARY:
+			player_data_ = {}
+		if not player_data_.has("gold"):
+			player_data_["gold"] = 0
+		migrated_data_["player"] = player_data_
 	return migrated_data_
 #endregion

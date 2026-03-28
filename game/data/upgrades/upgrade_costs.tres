@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="UpgradeCostTable" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/UpgradeCostTable.gd" id="1_upgrade_cost_table_script"]
+[ext_resource type="Script" path="res://game/scripts/data/UpgradeCostEntry.gd" id="2_upgrade_cost_entry_script"]
+
+[sub_resource type="Resource" id="1_upgrade_cost_1"]
+script = ExtResource("2_upgrade_cost_entry_script")
+star_level = 1
+item_costs = {
+&"mat_iron_ore": 5
+}
+
+[sub_resource type="Resource" id="2_upgrade_cost_2"]
+script = ExtResource("2_upgrade_cost_entry_script")
+star_level = 2
+item_costs = {
+&"mat_iron_ore": 10,
+&"mat_soul_shard": 3
+}
+
+[sub_resource type="Resource" id="3_upgrade_cost_3"]
+script = ExtResource("2_upgrade_cost_entry_script")
+star_level = 3
+item_costs = {
+&"mat_iron_ore": 20,
+&"mat_soul_shard": 5,
+&"mat_crystal": 2
+}
+
+[sub_resource type="Resource" id="4_upgrade_cost_4"]
+script = ExtResource("2_upgrade_cost_entry_script")
+star_level = 4
+item_costs = {
+&"mat_steel_ingot": 10,
+&"mat_soul_shard": 10,
+&"mat_crystal": 5
+}
+
+[sub_resource type="Resource" id="5_upgrade_cost_5"]
+script = ExtResource("2_upgrade_cost_entry_script")
+star_level = 5
+item_costs = {
+&"mat_steel_ingot": 20,
+&"mat_essence": 5,
+&"mat_crystal": 10
+}
+
+[resource]
+script = ExtResource("1_upgrade_cost_table_script")
+entries = Array[Resource]([SubResource("1_upgrade_cost_1"), SubResource("2_upgrade_cost_2"), SubResource("3_upgrade_cost_3"), SubResource("4_upgrade_cost_4"), SubResource("5_upgrade_cost_5")])

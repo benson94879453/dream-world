@@ -16,21 +16,27 @@ func on_death() -> void:
 	if has_dropped or loot_table == null:
 		return
 
-	var owner_node_ := get_parent() as Node2D
-	if owner_node_ == null:
-		return
+	var owner_node_: Node2D = get_parent() as Node2D
+	assert(owner_node_ != null, "DropComponent requires Node2D parent for on_death")
 
-	var spawn_parent_ := owner_node_.get_parent()
-	if spawn_parent_ == null:
-		return
+	var spawn_parent_: Node = owner_node_.get_parent()
+	assert(spawn_parent_ != null, "DropComponent requires grandparent node for drop spawning")
 
 	var rng_ := RandomNumberGenerator.new()
 	rng_.randomize()
 
 	var drops_ := loot_table.generate_drops()
 	has_dropped = true
+	var player_ = get_tree().get_first_node_in_group("player")
 
 	for drop_ in drops_:
+		if drop_.has("gold"):
+			var gold_amount_: int = int(drop_.get("gold", 0))
+			if player_ != null and gold_amount_ > 0:
+				player_.add_gold(gold_amount_)
+				player_.record_recent_pickup("金幣", gold_amount_)
+			continue
+
 		var pickup_item_ := PickupItemScene.instantiate() as PickupItemResource
 		if pickup_item_ == null:
 			continue

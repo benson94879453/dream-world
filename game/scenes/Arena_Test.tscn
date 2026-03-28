@@ -9,6 +9,14 @@
 [ext_resource type="Resource" path="res://game/data/enemies/en_goblin_archer.tres" id="7_archer_data"]
 [ext_resource type="PackedScene" path="res://game/scenes/enemies/Enemy_Boar.tscn" id="8_boar_scene"]
 [ext_resource type="Resource" path="res://game/data/enemies/en_boar.tres" id="9_boar_data"]
+[ext_resource type="PackedScene" path="res://game/scenes/ui/DialogUI.tscn" id="10_dialog_ui"]
+[ext_resource type="Resource" path="res://game/data/dialogs/dlg_blacksmith_intro.tres" id="11_blacksmith_dialog"]
+[ext_resource type="Script" path="res://game/scripts/components/NPCDialogTrigger.gd" id="12_npc_trigger_script"]
+[ext_resource type="PackedScene" path="res://game/scenes/ui/WeaponUpgradeUI.tscn" id="13_weapon_upgrade_ui"]
+[ext_resource type="PackedScene" path="res://game/scenes/ui/InventoryUI.tscn" id="14_inventory_ui"]
+
+[sub_resource type="CircleShape2D" id="1_blacksmith_trigger_shape"]
+radius = 28.0
 
 [node name="Arena_Test" type="Node2D" unique_id=1677964282]
 script = ExtResource("5_arena_test_script")
@@ -18,6 +26,35 @@ script = ExtResource("5_arena_test_script")
 [node name="Player" parent="World" unique_id=532138571 instance=ExtResource("1_player")]
 position = Vector2(160, 120)
 enable_debug_weapon_switching = true
+
+[node name="Blacksmith" type="Area2D" parent="World"]
+position = Vector2(232, 120)
+script = ExtResource("12_npc_trigger_script")
+npc_name = "鐵匠"
+dialog_data = ExtResource("11_blacksmith_dialog")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Blacksmith"]
+shape = SubResource("1_blacksmith_trigger_shape")
+
+[node name="Body" type="Polygon2D" parent="World/Blacksmith"]
+polygon = PackedVector2Array(-12, -28, 12, -28, 12, 0, -12, 0)
+color = Color(0.85098, 0.541176, 0.243137, 1)
+
+[node name="NameLabel" type="Label" parent="World/Blacksmith"]
+offset_left = -14.0
+offset_top = -46.0
+offset_right = 34.0
+offset_bottom = -23.0
+text = "鐵匠"
+
+[node name="InteractionPrompt" type="Label" parent="World/Blacksmith"]
+visible = false
+offset_left = -54.0
+offset_top = -64.0
+offset_right = 88.0
+offset_bottom = -41.0
+modulate = Color(1, 0.92549, 0.592157, 1)
+text = "[F] 與鐵匠交談"
 
 [node name="Enemies" type="Node2D" parent="World" unique_id=1064754264]
 
@@ -57,3 +94,9 @@ position = Vector2(500, 240)
 [node name="UI" type="Node" parent="." unique_id=858223093]
 
 [node name="DebugOverlay" parent="UI" unique_id=1337540790 instance=ExtResource("4_debug")]
+
+[node name="DialogUI" parent="UI" instance=ExtResource("10_dialog_ui")]
+
+[node name="WeaponUpgradeUI" parent="UI" instance=ExtResource("13_weapon_upgrade_ui")]
+
+[node name="InventoryUI" parent="UI" instance=ExtResource("14_inventory_ui")]

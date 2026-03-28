@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/ItemData.gd" id="1_item_data_script"]
+
+[resource]
+script = ExtResource("1_item_data_script")
+item_id = &"mat_iron_ore"
+display_name = "鐵礦石"
+description = "鐵匠升級常用的基礎礦石。"
+item_type = 0
+max_stack = 99

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="RuneData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/RuneData.gd" id="1_rune_data_script"]
+
+[resource]
+script = ExtResource("1_rune_data_script")
+item_id = &"rune_life"
+display_name = "生命符文"
+description = "最大 HP +15%。"
+item_type = 0
+max_stack = 99
+rune_id = &"rune_life"
+tier = 0
+rune_tags = Array[int]([])
+stat_modifiers = {
+&"max_hp_bonus_pct": 0.15
+}
+special_effects = Array[StringName]([])

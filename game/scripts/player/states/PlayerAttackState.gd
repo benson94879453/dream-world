@@ -42,7 +42,7 @@ func handle_input(event_: InputEvent) -> void:
 		(get_parent() as PlayerStateMachine).transition_to(DASH_STATE)
 		return
 
-	if event_.is_action_pressed("attack") and weapon_.can_combo():
+	if (event_.is_action_pressed("attack") or event_.is_action_pressed("attack_mouse")) and weapon_.can_combo():
 		combo_queued = true
 
 

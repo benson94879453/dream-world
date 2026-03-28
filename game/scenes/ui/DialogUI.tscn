@@ -1,0 +1,43 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/ui/DialogUI.gd" id="1_dialog_ui_script"]
+
+[node name="DialogUI" type="CanvasLayer"]
+script = ExtResource("1_dialog_ui_script")
+
+[node name="Panel" type="Panel" parent="."]
+visible = false
+offset_left = 72.0
+offset_top = 392.0
+offset_right = 952.0
+offset_bottom = 616.0
+
+[node name="SpeakerLabel" type="Label" parent="Panel"]
+offset_left = 24.0
+offset_top = 20.0
+offset_right = 272.0
+offset_bottom = 48.0
+text = "Speaker"
+
+[node name="TextLabel" type="Label" parent="Panel"]
+offset_left = 24.0
+offset_top = 56.0
+offset_right = 856.0
+offset_bottom = 148.0
+autowrap_mode = 3
+text = "Dialog text."
+
+[node name="ContinueIndicator" type="Label" parent="Panel"]
+offset_left = 728.0
+offset_top = 164.0
+offset_right = 856.0
+offset_bottom = 192.0
+text = "[F] 繼續"
+horizontal_alignment = 2
+
+[node name="ChoicesContainer" type="VBoxContainer" parent="Panel"]
+offset_left = 24.0
+offset_top = 160.0
+offset_right = 520.0
+offset_bottom = 208.0
+theme_override_constants/separation = 8

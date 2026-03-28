@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RuneData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/RuneData.gd" id="1_rune_data_script"]
+
+[resource]
+script = ExtResource("1_rune_data_script")
+item_id = &"rune_ice"
+display_name = "寒冰符文"
+description = "攻擊會讓敵人緩速 20%，持續 2 秒。"
+item_type = 0
+max_stack = 99
+rune_id = &"rune_ice"
+tier = 0
+rune_tags = Array[int]([3])
+stat_modifiers = {
+&"slow_strength_pct": 0.2,
+&"slow_duration_sec": 2.0
+}
+special_effects = Array[StringName]([&"ice_slow_on_hit"])

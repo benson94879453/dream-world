@@ -18,7 +18,7 @@ func _ready() -> void:
 	_initialize_slots()
 #endregion
 
-#region Public API
+#region Public
 func add_item(item_data_: ItemDataResource, amount_: int) -> int:
 	if item_data_ == null or amount_ <= 0:
 		return amount_
@@ -111,6 +111,10 @@ func remove_weapon(weapon_instance_: WeaponInstanceResource) -> bool:
 	return true
 
 
+func contains_weapon(weapon_instance_: WeaponInstanceResource) -> bool:
+	return _find_weapon_slot(weapon_instance_) != -1
+
+
 func get_item_count(item_data_: ItemDataResource) -> int:
 	if item_data_ == null:
 		return 0
@@ -132,6 +136,29 @@ func has_items(item_data_: ItemDataResource, amount_: int) -> bool:
 	return get_item_count(item_data_) >= amount_
 
 
+func can_add_item(item_data_: ItemDataResource, amount_: int) -> bool:
+	if item_data_ == null or amount_ <= 0:
+		return false
+
+	if item_data_.item_type == ItemData.ItemType.WEAPON:
+		return false
+
+	var remaining_amount_: int = amount_
+	for slot_ in slots:
+		if slot_.weapon_instance != null:
+			continue
+
+		if slot_.item_data == null:
+			remaining_amount_ -= item_data_.max_stack
+		elif slot_.item_data.item_id == item_data_.item_id:
+			remaining_amount_ -= maxi(item_data_.max_stack - slot_.amount, 0)
+
+		if remaining_amount_ <= 0:
+			return true
+
+	return false
+
+
 func get_all_weapons() -> Array[WeaponInstanceResource]:
 	var weapons_: Array[WeaponInstanceResource] = []
 
@@ -140,6 +167,28 @@ func get_all_weapons() -> Array[WeaponInstanceResource]:
 			weapons_.append(slot_.weapon_instance)
 
 	return weapons_
+
+
+func get_slot(slot_index_: int) -> InventorySlotResource:
+	if not _is_valid_slot_index(slot_index_):
+		return null
+	return slots[slot_index_]
+
+
+func swap_slots(from_index_: int, to_index_: int) -> bool:
+	if from_index_ == to_index_:
+		return _is_valid_slot_index(from_index_)
+
+	if not _is_valid_slot_index(from_index_) or not _is_valid_slot_index(to_index_):
+		return false
+
+	var from_slot_: InventorySlotResource = slots[from_index_]
+	var to_slot_: InventorySlotResource = slots[to_index_]
+	slots[from_index_] = to_slot_
+	slots[to_index_] = from_slot_
+	slot_changed.emit(from_index_)
+	slot_changed.emit(to_index_)
+	return true
 
 
 func get_empty_slot_count() -> int:
@@ -320,12 +369,16 @@ func _find_weapon_slot(weapon_instance_: WeaponInstanceResource) -> int:
 	return -1
 
 
-func _get_owner_player():
+func _is_valid_slot_index(slot_index_: int) -> bool:
+	return slot_index_ >= 0 and slot_index_ < slots.size()
+
+
+func _get_owner_player() -> Node:
 	return get_parent()
 
 
-func _get_save_manager():
-	var tree_ := get_tree()
+func _get_save_manager() -> Node:
+	var tree_: SceneTree = get_tree()
 	if tree_ == null or tree_.root == null:
 		return null
 	return tree_.root.get_node_or_null("SaveManager")

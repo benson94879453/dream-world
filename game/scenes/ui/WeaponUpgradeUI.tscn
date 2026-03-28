@@ -1,0 +1,205 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/ui/WeaponUpgradeUI.gd" id="1_weapon_upgrade_ui_script"]
+[ext_resource type="PackedScene" path="res://game/scenes/ui/RuneSocketUI.tscn" id="2_rune_socket_ui_scene"]
+
+[node name="WeaponUpgradeUI" type="CanvasLayer"]
+script = ExtResource("1_weapon_upgrade_ui_script")
+
+[node name="Panel" type="Panel" parent="."]
+visible = false
+offset_left = 136.0
+offset_top = 64.0
+offset_right = 920.0
+offset_bottom = 636.0
+
+[node name="TitleLabel" type="Label" parent="Panel"]
+offset_left = 28.0
+offset_top = 20.0
+offset_right = 300.0
+offset_bottom = 48.0
+text = "鐵匠武器升級"
+
+[node name="GoldLabel" type="Label" parent="Panel"]
+offset_left = 528.0
+offset_top = 20.0
+offset_right = 736.0
+offset_bottom = 48.0
+horizontal_alignment = 2
+text = "持有金幣：0"
+
+[node name="TabContainer" type="TabContainer" parent="Panel"]
+offset_left = 24.0
+offset_top = 60.0
+offset_right = 752.0
+offset_bottom = 508.0
+current_tab = 0
+
+[node name="Upgrade" type="Control" parent="Panel/TabContainer"]
+layout_mode = 2
+
+[node name="UpgradeContent" type="VBoxContainer" parent="Panel/TabContainer/Upgrade"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+theme_override_constants/separation = 12
+
+[node name="WeaponSummary" type="HBoxContainer" parent="Panel/TabContainer/Upgrade/UpgradeContent"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="WeaponIcon" type="TextureRect" parent="Panel/TabContainer/Upgrade/UpgradeContent/WeaponSummary"]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+stretch_mode = 5
+
+[node name="WeaponNameLabel" type="Label" parent="Panel/TabContainer/Upgrade/UpgradeContent/WeaponSummary"]
+layout_mode = 2
+size_flags_horizontal = 3
+vertical_alignment = 1
+text = "武器名稱"
+
+[node name="Stats" type="VBoxContainer" parent="Panel/TabContainer/Upgrade/UpgradeContent"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="StarLabel" type="Label" parent="Panel/TabContainer/Upgrade/UpgradeContent/Stats"]
+layout_mode = 2
+text = "星級：☆☆☆☆☆"
+
+[node name="AttackLabel" type="Label" parent="Panel/TabContainer/Upgrade/UpgradeContent/Stats"]
+layout_mode = 2
+text = "攻擊力：N/A"
+
+[node name="RuneSlotsLabel" type="Label" parent="Panel/TabContainer/Upgrade/UpgradeContent/Stats"]
+layout_mode = 2
+text = "符文槽：N/A"
+
+[node name="Columns" type="HBoxContainer" parent="Panel/TabContainer/Upgrade/UpgradeContent"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="AffixesLabel" type="Label" parent="Panel/TabContainer/Upgrade/UpgradeContent/Columns"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+autowrap_mode = 3
+text = "詞綴："
+
+[node name="MaterialsLabel" type="Label" parent="Panel/TabContainer/Upgrade/UpgradeContent/Columns"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+autowrap_mode = 3
+text = "材料："
+
+[node name="StatusLabel" type="Label" parent="Panel/TabContainer/Upgrade/UpgradeContent"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+autowrap_mode = 3
+text = ""
+
+[node name="Buttons" type="HBoxContainer" parent="Panel/TabContainer/Upgrade/UpgradeContent"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="UpgradeButton" type="Button" parent="Panel/TabContainer/Upgrade/UpgradeContent/Buttons"]
+custom_minimum_size = Vector2(140, 36)
+layout_mode = 2
+text = "升級武器"
+
+[node name="Runes" type="Control" parent="Panel/TabContainer"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Panel/TabContainer/Runes"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="RuneSocketUI" parent="Panel/TabContainer/Runes/Margin" instance=ExtResource("2_rune_socket_ui_scene")]
+layout_mode = 2
+
+[node name="Decompose" type="Control" parent="Panel/TabContainer"]
+layout_mode = 2
+
+[node name="DecomposeContent" type="VBoxContainer" parent="Panel/TabContainer/Decompose"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = -12.0
+theme_override_constants/separation = 12
+
+[node name="InfoLabel" type="Label" parent="Panel/TabContainer/Decompose/DecomposeContent"]
+layout_mode = 2
+autowrap_mode = 3
+text = "分解目前裝備武器，直接轉為金幣與素材。"
+
+[node name="RewardColumns" type="HBoxContainer" parent="Panel/TabContainer/Decompose/DecomposeContent"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="DecomposeGoldLabel" type="Label" parent="Panel/TabContainer/Decompose/DecomposeContent/RewardColumns"]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+autowrap_mode = 3
+text = "分解可得金幣：0"
+
+[node name="DecomposeMaterialsLabel" type="Label" parent="Panel/TabContainer/Decompose/DecomposeContent/RewardColumns"]
+custom_minimum_size = Vector2(0, 140)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+autowrap_mode = 3
+text = "固定素材："
+
+[node name="DecomposeBonusLabel" type="Label" parent="Panel/TabContainer/Decompose/DecomposeContent/RewardColumns"]
+custom_minimum_size = Vector2(0, 140)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+autowrap_mode = 3
+text = "額外機率獎勵："
+
+[node name="StatusLabel" type="Label" parent="Panel/TabContainer/Decompose/DecomposeContent"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+autowrap_mode = 3
+text = ""
+
+[node name="Buttons" type="HBoxContainer" parent="Panel/TabContainer/Decompose/DecomposeContent"]
+layout_mode = 2
+
+[node name="DecomposeButton" type="Button" parent="Panel/TabContainer/Decompose/DecomposeContent/Buttons"]
+custom_minimum_size = Vector2(160, 36)
+layout_mode = 2
+text = "分解目前武器"
+
+[node name="CloseButton" type="Button" parent="Panel"]
+offset_left = 636.0
+offset_top = 520.0
+offset_right = 740.0
+offset_bottom = 556.0
+text = "關閉"
+
+[node name="DecomposeConfirmDialog" type="ConfirmationDialog" parent="Panel"]
+title = "確認分解"
+ok_button_text = "確認分解"
+dialog_text = "確定要分解目前武器嗎？"

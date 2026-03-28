@@ -5,6 +5,8 @@ const InventoryNode = preload("res://game/scripts/inventory/Inventory.gd")
 const ItemDataResource = preload("res://game/scripts/data/ItemData.gd")
 const WeaponInstanceResource = preload("res://game/scripts/data/WeaponInstance.gd")
 
+signal gold_changed(new_amount: int, delta: int)
+
 @export var walk_speed: float = 140.0
 @export var run_speed: float = 220.0
 @export var walk_animation_fps: float = 7.0
@@ -25,6 +27,11 @@ const WeaponInstanceResource = preload("res://game/scripts/data/WeaponInstance.g
 @export var debug_equip_slot_5: WeaponData = preload("res://game/data/weapons/test_explosion_staff.tres")
 @export var debug_inventory_herb_data: ItemDataResource = preload("res://game/data/items/material_herb.tres")
 @export var debug_inventory_potion_data: ItemDataResource = preload("res://game/data/items/consumable_potion.tres")
+@export var debug_inventory_iron_ore_data: ItemDataResource = preload("res://game/data/items/material_iron_ore.tres")
+@export var debug_inventory_soul_shard_data: ItemDataResource = preload("res://game/data/items/material_soul_shard.tres")
+@export var debug_inventory_crystal_data: ItemDataResource = preload("res://game/data/items/material_crystal.tres")
+@export var debug_inventory_steel_ingot_data: ItemDataResource = preload("res://game/data/items/material_steel_ingot.tres")
+@export var debug_inventory_essence_data: ItemDataResource = preload("res://game/data/items/material_essence.tres")
 
 var facing_left: bool = false
 var animation_time: float = 0.0
@@ -38,6 +45,8 @@ var dash_direction: Vector2 = Vector2.ZERO
 var equipped_weapon: WeaponInstance = null
 var equipped_weapon_controller: WeaponController = null
 var recent_pickup_summary: String = "N/A"
+var gold: int = 0
+var inventory_ui_open: bool = false
 var dash_ghost_enabled: bool = false
 var ghost_timer: float = 0.0
 var ghost_sprites: Array[Sprite2D] = []
@@ -90,11 +99,28 @@ func _unhandled_input(event_: InputEvent) -> void:
 	if _try_handle_debug_save_load(event_):
 		return
 
+	if _try_handle_debug_inventory(event_):
+		return
+
+	if event_.is_action_pressed("ui_inventory"):
+		get_viewport().set_input_as_handled()
+		return
+
+	if inventory_ui_open:
+		return
+
+	if _try_handle_hotbar_input(event_):
+		return
+
 	if _try_handle_debug_weapon_switch(event_):
 		return
 
-	if _try_handle_debug_inventory(event_):
-		return
+	var can_update_attack_facing_: bool = not is_dashing
+	if can_update_attack_facing_ and is_controls_locked() and get_current_state_name() != &"Attack":
+		can_update_attack_facing_ = false
+
+	if can_update_attack_facing_ and event_.is_action_pressed("attack_mouse"):
+		_update_attack_facing_from_mouse()
 
 	state_machine.handle_input(event_)
 
@@ -102,6 +128,10 @@ func _unhandled_input(event_: InputEvent) -> void:
 		return
 
 	if event_.is_action_pressed("attack"):
+		request_attack_state()
+		return
+
+	if event_.is_action_pressed("attack_mouse"):
 		request_attack_state()
 #endregion
 
@@ -117,8 +147,12 @@ func is_run_requested() -> bool:
 
 
 func move_character(input_vector_: Vector2, speed_: float) -> void:
+	var runtime_speed_multiplier_: float = 1.0
+	if equipped_weapon != null:
+		runtime_speed_multiplier_ += equipped_weapon.get_total_stat_modifier(&"move_speed_bonus_pct")
+
 	_update_facing(input_vector_)
-	velocity = input_vector_ * speed_
+	velocity = input_vector_ * speed_ * maxf(runtime_speed_multiplier_, 0.1)
 	move_and_slide()
 
 
@@ -146,7 +180,7 @@ func set_controls_locked(value_: bool) -> void:
 
 
 func is_controls_locked() -> bool:
-	return controls_locked or transient_lock_time_remaining > 0.0
+	return controls_locked or transient_lock_time_remaining > 0.0 or inventory_ui_open
 
 
 func lock_controls_for(duration_: float) -> void:
@@ -161,6 +195,12 @@ func get_current_state_name() -> StringName:
 
 func get_health_component() -> HealthComponent:
 	return health_component
+
+
+func get_temporary_hp() -> float:
+	if health_component == null:
+		return 0.0
+	return health_component.temporary_hp
 
 
 func get_inventory() -> InventoryNode:
@@ -190,6 +230,37 @@ func get_recent_pickup_summary() -> String:
 	return recent_pickup_summary
 
 
+func get_gold() -> int:
+	return gold
+
+
+func set_gold(amount_: int) -> void:
+	var previous_gold_: int = gold
+	gold = maxi(0, amount_)
+	var delta_: int = gold - previous_gold_
+	if delta_ != 0:
+		gold_changed.emit(gold, delta_)
+
+
+func add_gold(amount_: int) -> void:
+	if amount_ == 0:
+		return
+	set_gold(gold + amount_)
+
+
+func can_spend_gold(amount_: int) -> bool:
+	return gold >= maxi(amount_, 0)
+
+
+func spend_gold(amount_: int) -> bool:
+	var safe_amount_: int = maxi(amount_, 0)
+	if not can_spend_gold(safe_amount_):
+		return false
+
+	set_gold(gold - safe_amount_)
+	return true
+
+
 func get_inventory_usage_summary() -> String:
 	if inventory == null:
 		return "N/A"
@@ -200,6 +271,14 @@ func get_current_attack_phase() -> StringName:
 	if equipped_weapon_controller == null:
 		return &"idle"
 	return equipped_weapon_controller.get_current_phase()
+
+
+func set_inventory_ui_open(value_: bool) -> void:
+	inventory_ui_open = value_
+
+
+func is_inventory_ui_open() -> bool:
+	return inventory_ui_open
 
 
 func can_current_weapon_combo() -> bool:
@@ -268,12 +347,14 @@ func equip_weapon_instance(weapon_instance_: WeaponInstanceResource) -> void:
 
 
 func to_save_dict() -> Dictionary:
-	var equipped_weapon_uid_ := inventory.get_equipped_weapon_uid() if inventory != null else ""
-	var equipped_weapon_id_ := String(equipped_weapon.weapon_id) if equipped_weapon != null else ""
-	var equipped_weapon_enhance_ := equipped_weapon.enhance_level if equipped_weapon != null else 0
+	var equipped_weapon_uid_: String = inventory.get_equipped_weapon_uid() if inventory != null else ""
+	var equipped_weapon_id_: String = String(equipped_weapon.weapon_id) if equipped_weapon != null else ""
+	var equipped_weapon_enhance_: int = equipped_weapon.enhance_level if equipped_weapon != null else 0
 
 	return {
 		"current_hp": health_component.current_hp,
+		"temporary_hp": health_component.temporary_hp,
+		"gold": gold,
 		"global_position": {
 			"x": global_position.x,
 			"y": global_position.y
@@ -281,15 +362,20 @@ func to_save_dict() -> Dictionary:
 		"equipped_weapon_uid": equipped_weapon_uid_,
 		"equipped_weapon_id": equipped_weapon_id_,
 		"equipped_weapon_enhance_level": equipped_weapon_enhance_,
+		"equipped_weapon_star_level": equipped_weapon.star_level if equipped_weapon != null else 0,
 		"equipped_weapon_temporary_enchants": equipped_weapon.temporary_enchants.map(func(value_: StringName) -> String: return String(value_)) if equipped_weapon != null else [],
-		"equipped_weapon_socketed_gems": equipped_weapon.socketed_gems.map(func(value_: StringName) -> String: return String(value_)) if equipped_weapon != null else []
+		"equipped_weapon_socketed_gems": equipped_weapon.socketed_gems.map(func(value_: StringName) -> String: return String(value_)) if equipped_weapon != null else [],
+		"equipped_weapon_affixes": equipped_weapon.affixes.map(func(value_) -> Dictionary: return value_.to_save_dict()) if equipped_weapon != null else [],
+		"equipped_weapon_runes": equipped_weapon.get_equipped_rune_ids().map(func(value_: StringName) -> String: return String(value_)) if equipped_weapon != null else []
 	}
 
 
 func from_save_dict(data_: Dictionary) -> void:
-	var current_hp_ := float(data_.get("current_hp", health_component.max_hp))
+	var current_hp_: float = float(data_.get("current_hp", health_component.max_hp))
 	health_component.current_hp = clampf(current_hp_, 0.0, health_component.max_hp)
+	health_component.set_temporary_hp(float(data_.get("temporary_hp", 0.0)))
 	health_component.health_changed.emit(health_component.current_hp, health_component.max_hp)
+	set_gold(int(data_.get("gold", 0)))
 
 	var position_data_ = data_.get("global_position", {})
 	if typeof(position_data_) == TYPE_DICTIONARY:
@@ -316,14 +402,19 @@ func restore_equipped_weapon_from_save(data_: Dictionary) -> bool:
 		"instance_uid": String(data_.get("equipped_weapon_uid", "")),
 		"weapon_id": String(weapon_id_),
 		"enhance_level": int(data_.get("equipped_weapon_enhance_level", 0)),
+		"star_level": int(data_.get("equipped_weapon_star_level", 0)),
 		"temporary_enchants": data_.get("equipped_weapon_temporary_enchants", []),
-		"socketed_gems": data_.get("equipped_weapon_socketed_gems", [])
+		"socketed_gems": data_.get("equipped_weapon_socketed_gems", []),
+		"affixes": data_.get("equipped_weapon_affixes", []),
+		"runes": data_.get("equipped_weapon_runes", [])
 	}
 	equip_weapon_instance(WeaponInstanceResource.create_from_save_dict(weapon_data_, weapon_save_data_))
 	return true
 
 
-#region Dash Functions
+#endregion
+
+#region Dash
 func start_dash() -> void:
 	assert(dash_duration > 0.0, "PlayerController dash_duration must be greater than 0 before dash")
 
@@ -385,7 +476,6 @@ func enable_dash_ghost(enabled_: bool) -> void:
 
 func can_perform_dash() -> bool:
 	return can_dash and dash_cooldown_timer <= 0.0 and not is_dashing and not controls_locked
-#endregion
 #endregion
 
 #region Helpers
@@ -484,7 +574,21 @@ func _try_handle_debug_inventory(event_: InputEvent) -> bool:
 		return true
 
 	if key_event_.physical_keycode == KEY_K:
+		_debug_add_all_runes()
+		return true
+
+	if key_event_.physical_keycode == KEY_O:
 		_debug_print_inventory()
+		return true
+
+	if key_event_.physical_keycode == KEY_L:
+		_debug_add_upgrade_materials()
+		return true
+
+	if key_event_.physical_keycode == KEY_G:
+		add_gold(1000)
+		record_recent_pickup("金幣", 1000)
+		print("[Debug][Gold] Added 1000 gold (current=%d)" % gold)
 		return true
 
 	return false
@@ -520,15 +624,125 @@ func _debug_print_inventory() -> void:
 	inventory.debug_print_contents()
 
 
+func _debug_add_upgrade_materials() -> void:
+	_debug_add_inventory_item(debug_inventory_iron_ore_data, 40)
+	_debug_add_inventory_item(debug_inventory_soul_shard_data, 20)
+	_debug_add_inventory_item(debug_inventory_crystal_data, 15)
+	_debug_add_inventory_item(debug_inventory_steel_ingot_data, 20)
+	_debug_add_inventory_item(debug_inventory_essence_data, 10)
+
+
+func _debug_add_all_runes() -> void:
+	if inventory == null:
+		push_warning("[Debug][Runes] Inventory node is missing")
+		return
+
+	var rune_manager_ = _get_rune_manager()
+	if rune_manager_ == null:
+		push_warning("[Debug][Runes] RuneManager is unavailable")
+		return
+
+	for rune_data_ in rune_manager_.available_runes:
+		var remaining_amount_: int = inventory.add_item(rune_data_, 2)
+		assert(remaining_amount_ == 0, "Debug rune grant should fit inside the test inventory")
+
+	print("[Debug][Runes] Added all rune stones x2")
+
+
 func _update_facing(input_vector_: Vector2) -> void:
 	if input_vector_.x < 0.0:
-		facing_left = true
+		_set_facing_left()
 	elif input_vector_.x > 0.0:
-		facing_left = false
-	# Keep the previous facing when input_vector_.x = 0.0
+		_set_facing_right()
 
-	sprite.flip_h = facing_left
-	weapon_pivot.scale.x = -1.0 if facing_left else 1.0
+
+func _update_attack_facing_from_mouse() -> void:
+	var attack_direction_: Vector2 = get_global_mouse_position() - global_position
+	if attack_direction_ == Vector2.ZERO:
+		return
+
+	_set_facing_by_direction(attack_direction_)
+
+
+func _set_facing_by_direction(direction_: Vector2) -> void:
+	if direction_.x < -0.1:
+		_set_facing_left()
+	elif direction_.x > 0.1:
+		_set_facing_right()
+
+
+func _set_facing_left() -> void:
+	facing_left = true
+	sprite.flip_h = true
+
+	var weapon_scale_: Vector2 = weapon_pivot.scale
+	weapon_scale_.x = -absf(weapon_scale_.x)
+	weapon_pivot.scale = weapon_scale_
+
+
+func _try_handle_hotbar_input(event_: InputEvent) -> bool:
+	var hotbar_index_: int = -1
+	if event_.is_action_pressed("hotbar_use_1"):
+		hotbar_index_ = 0
+	elif event_.is_action_pressed("hotbar_use_2"):
+		hotbar_index_ = 1
+	elif event_.is_action_pressed("hotbar_use_3"):
+		hotbar_index_ = 2
+	elif event_.is_action_pressed("hotbar_use_4"):
+		hotbar_index_ = 3
+	elif event_.is_action_pressed("hotbar_use_5"):
+		hotbar_index_ = 4
+
+	if hotbar_index_ == -1 or is_controls_locked() or is_dashing:
+		return false
+
+	var hotbar_manager_ = _get_hotbar_manager()
+	if hotbar_manager_ != null and hotbar_manager_.use_hotbar_slot(self, hotbar_index_):
+		return true
+
+	if not enable_debug_weapon_switching:
+		return false
+
+	var debug_weapon_data_: WeaponData = _get_debug_weapon_for_index(hotbar_index_)
+	if debug_weapon_data_ == null:
+		return false
+
+	_debug_equip_weapon(debug_weapon_data_)
+	return true
+
+
+func _toggle_inventory_ui() -> void:
+	var inventory_ui_ = _get_inventory_ui()
+	if inventory_ui_ == null:
+		return
+
+	var next_open_: bool = not bool(inventory_ui_.call("is_open"))
+	inventory_ui_.call("set_inventory_open", next_open_)
+
+
+func _get_debug_weapon_for_index(hotbar_index_: int) -> WeaponData:
+	match hotbar_index_:
+		0:
+			return debug_equip_slot_1
+		1:
+			return debug_equip_slot_2
+		2:
+			return debug_equip_slot_3
+		3:
+			return debug_equip_slot_4
+		4:
+			return debug_equip_slot_5
+		_:
+			return null
+
+
+func _set_facing_right() -> void:
+	facing_left = false
+	sprite.flip_h = false
+
+	var weapon_scale_: Vector2 = weapon_pivot.scale
+	weapon_scale_.x = absf(weapon_scale_.x)
+	weapon_pivot.scale = weapon_scale_
 
 
 func _update_dash_ghosts(delta_: float) -> void:
@@ -575,9 +789,35 @@ func _create_ghost() -> void:
 	tween_.tween_callback(Callable(ghost_, "queue_free"))
 
 
-func _get_save_manager():
-	var tree_ := get_tree()
+func _get_save_manager() -> Node:
+	var tree_: SceneTree = get_tree()
 	if tree_ == null or tree_.root == null:
 		return null
 	return tree_.root.get_node_or_null("SaveManager")
+
+
+func _get_rune_manager() -> Node:
+	var tree_: SceneTree = get_tree()
+	if tree_ == null or tree_.root == null:
+		return null
+	return tree_.root.get_node_or_null("RuneManager")
+
+
+func _get_hotbar_manager() -> Node:
+	var tree_: SceneTree = get_tree()
+	if tree_ == null or tree_.root == null:
+		return null
+	return tree_.root.get_node_or_null("HotbarRuntime")
+
+
+func _get_inventory_ui() -> Node:
+	var tree_: SceneTree = get_tree()
+	if tree_ == null:
+		return null
+
+	var inventory_ui_nodes_: Array[Node] = tree_.get_nodes_in_group("inventory_ui")
+	if inventory_ui_nodes_.is_empty():
+		return null
+
+	return inventory_ui_nodes_[0]
 #endregion

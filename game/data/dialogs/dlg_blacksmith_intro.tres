@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="DialogData" format=3 uid="uid://k3u67ua4m337"]
+
+[ext_resource type="Script" path="res://game/scripts/data/DialogData.gd" id="1_dialog_data_script"]
+[ext_resource type="Script" path="res://game/scripts/data/DialogNodeData.gd" id="2_dialog_node_data_script"]
+[ext_resource type="Script" path="res://game/scripts/data/DialogChoiceData.gd" id="3_dialog_choice_data_script"]
+
+[sub_resource type="Resource" id="3_node_intro"]
+script = ExtResource("2_dialog_node_data_script")
+node_id = &"intro"
+speaker_name = "鐵匠"
+text = "歡迎來到我的鐵匠鋪。我看你是新來的冒險者？"
+next_node_id = &"choice_response"
+
+[sub_resource type="Resource" id="1_choice_upgrade"]
+script = ExtResource("3_dialog_choice_data_script")
+choice_text = "我想升級武器"
+action_id = &"open_weapon_upgrade"
+set_flags = Array[StringName]([&"asked_upgrade", &"knows_upgrade"])
+
+[sub_resource type="Resource" id="2_choice_look"]
+script = ExtResource("3_dialog_choice_data_script")
+choice_text = "我只是看看"
+next_node_id = &"end_goodbye"
+
+[sub_resource type="Resource" id="4_node_choice"]
+script = ExtResource("2_dialog_node_data_script")
+node_id = &"choice_response"
+node_type = 1
+speaker_name = "鐵匠"
+text = "需要我幫你什麼嗎？"
+choices = Array[ExtResource("3_dialog_choice_data_script")]([SubResource("1_choice_upgrade"), SubResource("2_choice_look")])
+
+[sub_resource type="Resource" id="6_node_goodbye"]
+script = ExtResource("2_dialog_node_data_script")
+node_id = &"end_goodbye"
+speaker_name = "鐵匠"
+text = "慢走，有需要再來。"
+next_node_id = &"end"
+
+[sub_resource type="Resource" id="7_node_end"]
+script = ExtResource("2_dialog_node_data_script")
+node_id = &"end"
+node_type = 2
+
+[resource]
+script = ExtResource("1_dialog_data_script")
+dialog_id = &"dlg_blacksmith_intro"
+nodes = Array[ExtResource("2_dialog_node_data_script")]([SubResource("3_node_intro"), SubResource("4_node_choice"), SubResource("6_node_goodbye"), SubResource("7_node_end")])
+start_node_id = &"intro"

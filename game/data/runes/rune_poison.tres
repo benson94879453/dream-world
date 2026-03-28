@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RuneData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/RuneData.gd" id="1_rune_data_script"]
+
+[resource]
+script = ExtResource("1_rune_data_script")
+item_id = &"rune_poison"
+display_name = "毒蝕符文"
+description = "攻擊附加中毒，每秒 5% 傷害，持續 3 秒。"
+item_type = 0
+max_stack = 99
+rune_id = &"rune_poison"
+tier = 0
+rune_tags = Array[int]([3])
+stat_modifiers = {
+&"poison_damage_pct_per_sec": 0.05,
+&"poison_duration_sec": 3.0
+}
+special_effects = Array[StringName]([&"poison_on_hit"])

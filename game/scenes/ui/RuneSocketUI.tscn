@@ -1,0 +1,93 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/ui/RuneSocketUI.gd" id="1_rune_socket_ui_script"]
+
+[node name="RuneSocketUI" type="Control"]
+custom_minimum_size = Vector2(0, 300)
+script = ExtResource("1_rune_socket_ui_script")
+
+[node name="Root" type="VBoxContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+theme_override_constants/separation = 10
+
+[node name="SlotContainer" type="HBoxContainer" parent="Root"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="GoldLabel" type="Label" parent="Root"]
+layout_mode = 2
+text = "持有金幣：0"
+
+[node name="SlotButton1" type="Button" parent="Root/SlotContainer"]
+custom_minimum_size = Vector2(96, 42)
+layout_mode = 2
+text = "1"
+
+[node name="SlotButton2" type="Button" parent="Root/SlotContainer"]
+custom_minimum_size = Vector2(96, 42)
+layout_mode = 2
+text = "2"
+
+[node name="SlotButton3" type="Button" parent="Root/SlotContainer"]
+custom_minimum_size = Vector2(96, 42)
+layout_mode = 2
+text = "3"
+
+[node name="SlotButton4" type="Button" parent="Root/SlotContainer"]
+custom_minimum_size = Vector2(96, 42)
+layout_mode = 2
+text = "4"
+
+[node name="SlotButton5" type="Button" parent="Root/SlotContainer"]
+custom_minimum_size = Vector2(96, 42)
+layout_mode = 2
+text = "5"
+
+[node name="SelectedSlotLabel" type="Label" parent="Root"]
+layout_mode = 2
+text = "請先選擇槽位"
+
+[node name="EquippedRuneInfo" type="Label" parent="Root"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+autowrap_mode = 3
+text = ""
+
+[node name="RuneListPanel" type="ScrollContainer" parent="Root"]
+custom_minimum_size = Vector2(0, 176)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="RuneGrid" type="GridContainer" parent="Root/RuneListPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+
+[node name="StatusLabel" type="Label" parent="Root"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+autowrap_mode = 3
+text = ""
+
+[node name="ActionRow" type="HBoxContainer" parent="Root"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EquipButton" type="Button" parent="Root/ActionRow"]
+custom_minimum_size = Vector2(120, 36)
+layout_mode = 2
+text = "鑲嵌符文"
+
+[node name="UnequipButton" type="Button" parent="Root/ActionRow"]
+custom_minimum_size = Vector2(120, 36)
+layout_mode = 2
+text = "拆卸符文"

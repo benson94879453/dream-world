@@ -1,0 +1,71 @@
+[gd_resource type="Resource" script_class="AffixTable" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/AffixTable.gd" id="1_affix_table_script"]
+[ext_resource type="Script" path="res://game/scripts/data/AffixData.gd" id="2_affix_data_script"]
+
+[sub_resource type="Resource" id="1_affix_sharp"]
+script = ExtResource("2_affix_data_script")
+affix_id = &"sharp"
+affix_name = "鋒利"
+description = "暴擊率 +5%"
+stat_modifiers = {
+&"critical_chance_bonus_pct": 0.05
+}
+weight = 10
+
+[sub_resource type="Resource" id="2_affix_heavy"]
+script = ExtResource("2_affix_data_script")
+affix_id = &"heavy"
+affix_name = "沉重"
+description = "攻擊力 +10%，攻擊速度 -5%"
+stat_modifiers = {
+&"attack_bonus_pct": 0.1,
+&"attack_speed_bonus_pct": -0.05
+}
+weight = 8
+valid_categories = Array[StringName]([&"sword", &"unarmed"])
+
+[sub_resource type="Resource" id="3_affix_swift"]
+script = ExtResource("2_affix_data_script")
+affix_id = &"swift"
+affix_name = "迅捷"
+description = "攻擊速度 +10%"
+stat_modifiers = {
+&"attack_speed_bonus_pct": 0.1
+}
+weight = 9
+
+[sub_resource type="Resource" id="4_affix_focus"]
+script = ExtResource("2_affix_data_script")
+affix_id = &"focus"
+affix_name = "專注"
+description = "法術傷害 +10%"
+stat_modifiers = {
+&"spell_damage_bonus_pct": 0.1
+}
+weight = 7
+valid_categories = Array[StringName]([&"staff"])
+
+[sub_resource type="Resource" id="5_affix_lifesteal"]
+script = ExtResource("2_affix_data_script")
+affix_id = &"lifesteal"
+affix_name = "吸血"
+description = "攻擊時回復 3% 傷害值的 HP"
+stat_modifiers = {
+&"lifesteal_pct": 0.03
+}
+weight = 6
+
+[sub_resource type="Resource" id="6_affix_stun"]
+script = ExtResource("2_affix_data_script")
+affix_id = &"stun"
+affix_name = "暈眩"
+description = "攻擊有 5% 機率暈眩敵人"
+stat_modifiers = {
+&"stun_chance_pct": 0.05
+}
+weight = 5
+
+[resource]
+script = ExtResource("1_affix_table_script")
+affixes = Array[Resource]([SubResource("1_affix_sharp"), SubResource("2_affix_heavy"), SubResource("3_affix_swift"), SubResource("4_affix_focus"), SubResource("5_affix_lifesteal"), SubResource("6_affix_stun")])

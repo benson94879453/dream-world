@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="RuneData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/RuneData.gd" id="1_rune_data_script"]
+
+[resource]
+script = ExtResource("1_rune_data_script")
+item_id = &"rune_lightning"
+display_name = "閃電符文"
+description = "暴擊時有機率觸發連鎖閃電。"
+item_type = 0
+max_stack = 99
+rune_id = &"rune_lightning"
+tier = 0
+rune_tags = Array[int]([3])
+stat_modifiers = {
+&"lightning_chain_chance_pct": 0.2
+}
+special_effects = Array[StringName]([&"chain_lightning_on_crit"])

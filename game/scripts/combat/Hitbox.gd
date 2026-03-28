@@ -1,6 +1,8 @@
 class_name Hitbox
 extends Area2D
 
+signal hit_landed(hurtbox_: Hurtbox, attack_context_: AttackContext, applied_damage_: float)
+
 @export var attacker_faction: StringName = &"player"
 @export var base_damage: float = 20.0
 @export var damage_type: StringName = &"physical"
@@ -11,6 +13,7 @@ extends Area2D
 var active_time_remaining: float = 0.0
 var already_hit: Array[Hurtbox] = []
 var source_root: Node = null
+var weapon_instance: WeaponInstance = null
 var attack_tags: Array[StringName] = [&"melee"]
 var hit_audio: AudioStream = null
 var hit_effect_scene: PackedScene = null
@@ -62,13 +65,18 @@ func _try_hit(area_: Area2D) -> void:
 		return
 
 	already_hit.append(hurtbox_)
-	hurtbox_.receive_hit(_build_attack_context())
+	var attack_context_ := _build_attack_context()
+	var applied_damage_: float = hurtbox_.receive_hit(attack_context_)
+	if applied_damage_ > 0.0:
+		hit_landed.emit(hurtbox_, attack_context_, applied_damage_)
 
 
 func _build_attack_context() -> AttackContext:
 	var attack_context_: AttackContext = AttackContext.new()
+	var source_root_ := _resolve_source_root()
 
 	attack_context_.source_node = self
+	attack_context_.attacker_node = source_root_
 	attack_context_.attacker_faction = attacker_faction
 	attack_context_.base_damage = base_damage
 	attack_context_.damage_type = damage_type
@@ -77,6 +85,7 @@ func _build_attack_context() -> AttackContext:
 	attack_context_.tags = attack_tags.duplicate()
 	attack_context_.hit_audio = hit_audio
 	attack_context_.hit_effect_scene = hit_effect_scene
+	attack_context_.weapon_instance = weapon_instance
 
 	return attack_context_
 
