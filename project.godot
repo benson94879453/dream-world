@@ -19,16 +19,20 @@ config/icon="res://icon.svg"
 
 SaveManager="*res://game/scripts/core/SaveManager.gd"
 DialogManager="*res://game/scripts/core/DialogManager.gd"
+QuestManager="*res://game/scripts/core/QuestManager.gd"
 UpgradeManager="*res://game/scripts/core/UpgradeManager.gd"
 RuneManager="*res://game/scripts/core/RuneManager.gd"
 DecomposeManager="*res://game/scripts/core/DecomposeManager.gd"
 RuneTestManager="*res://game/scripts/debug/RuneTestManager.gd"
 HotbarRuntime="*res://game/scripts/core/HotbarManager.gd"
+HitStopManager="*res://game/scripts/core/HitStopManager.gd"
 
 [display]
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
+window/stretch/mode="canvas_items"
+window/stretch/scale_mode="integer"
 
 [dotnet]
 

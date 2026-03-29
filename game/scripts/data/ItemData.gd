@@ -17,3 +17,8 @@ enum ItemType {
 @export var max_stack: int = 1
 @export var is_consumable: bool = false
 @export var tags: Array[StringName] = []
+
+#region Public
+func get_stack_key(instance_data_: Dictionary = {}) -> StringName:
+	return item_id
+#endregion

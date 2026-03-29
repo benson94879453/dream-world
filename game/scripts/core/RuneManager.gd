@@ -33,8 +33,13 @@ func get_available_runes_from_inventory(inventory_: InventoryResource) -> Array[
 
 	var grouped_entries_: Dictionary = {}
 	for slot_ in inventory_.slots:
-		var rune_data_ := slot_.item_data as RuneDataResource
-		if rune_data_ == null or slot_.amount <= 0:
+		if slot_ == null or slot_.amount <= 0:
+			continue
+		if slot_.weapon_instance != null or slot_.gear_instance != null:
+			continue
+
+		var rune_data_ := _resolve_rune_data_from_slot(slot_)
+		if rune_data_ == null:
 			continue
 
 		var rune_id_ := rune_data_.get_runtime_rune_id()
@@ -212,6 +217,21 @@ func _refresh_rune_cache() -> void:
 	available_runes.sort_custom(func(left_: RuneDataResource, right_: RuneDataResource) -> bool:
 		return left_.display_name < right_.display_name
 	)
+
+
+func _resolve_rune_data_from_slot(slot_) -> RuneDataResource:
+	if slot_ == null or slot_.item_data == null:
+		return null
+
+	var rune_data_ := slot_.item_data as RuneDataResource
+	if rune_data_ != null:
+		return rune_data_
+
+	var item_id_ := StringName(slot_.item_data.item_id)
+	if item_id_.is_empty() or not String(item_id_).begins_with("rune_"):
+		return null
+
+	return get_rune_data(item_id_)
 
 
 func _collect_resource_paths(root_path_: String) -> PackedStringArray:

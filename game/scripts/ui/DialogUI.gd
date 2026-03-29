@@ -3,6 +3,7 @@ extends CanvasLayer
 
 const DIALOG_MANAGER_PATH: NodePath = NodePath("/root/DialogManager")
 const DialogChoiceDataResource = preload("res://game/scripts/data/DialogChoiceData.gd")
+const CHOICE_BUTTON_MIN_WIDTH: float = 420.0
 
 @export var text_speed: float = 50.0
 @export var advance_action: StringName = &"interact"
@@ -157,6 +158,10 @@ func _show_choices(choices_: Array) -> void:
 	for index_ in range(choices_.size()):
 		var button_: Button = Button.new()
 		button_.text = choices_[index_].choice_text
+		button_.custom_minimum_size = Vector2(CHOICE_BUTTON_MIN_WIDTH, 44.0)
+		button_.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button_.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		button_.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button_.focus_mode = Control.FOCUS_ALL
 		button_.pressed.connect(_on_choice_selected.bind(index_))
 		choices_container.add_child(button_)

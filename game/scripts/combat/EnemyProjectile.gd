@@ -4,6 +4,8 @@ extends Area2D
 @export var speed: float = 150.0
 @export var lifetime: float = 3.0
 @export var damage: float = 8.0
+@export var hitstop_duration_ms: int = 90
+@export var hitstop_scale: float = 0.0
 
 var direction: Vector2 = Vector2.ZERO
 var source_node: Node2D = null
@@ -49,9 +51,12 @@ func _on_body_entered(body_: Node) -> void:
 
 	var attack_context_: AttackContext = AttackContext.new()
 	attack_context_.source_node = source_node
+	attack_context_.attacker_node = source_node
 	attack_context_.attacker_faction = &"enemy"
 	attack_context_.base_damage = damage
 	attack_context_.damage_type = &"physical"
+	attack_context_.hitstop_duration_ms = hitstop_duration_ms
+	attack_context_.hitstop_scale = hitstop_scale
 	attack_context_.tags = [&"enemy", &"projectile"]
 
 	damage_receiver_.receive_hit(attack_context_)

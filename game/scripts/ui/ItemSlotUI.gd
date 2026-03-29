@@ -3,6 +3,7 @@ extends PanelContainer
 
 const InventoryResource = preload("res://game/scripts/inventory/Inventory.gd")
 const InventorySlotResource = preload("res://game/scripts/inventory/InventorySlot.gd")
+const GearInstanceResource = preload("res://game/scripts/data/GearInstance.gd")
 const ItemDataResource = preload("res://game/scripts/data/ItemData.gd")
 const HotbarManagerNode = preload("res://game/scripts/core/HotbarManager.gd")
 const RuneDataResource = preload("res://game/scripts/data/RuneData.gd")
@@ -10,6 +11,8 @@ const WeaponInstanceResource = preload("res://game/scripts/data/WeaponInstance.g
 
 signal hover_started(slot_ui: ItemSlotUI)
 signal hover_ended(slot_ui: ItemSlotUI)
+signal slot_clicked(slot_ui: ItemSlotUI)
+signal slot_shift_clicked(slot_ui: ItemSlotUI)
 
 @export var slot_index: int = -1
 @export var is_hotbar_slot: bool = false
@@ -19,6 +22,7 @@ var inventory: InventoryResource = null
 var hotbar_manager = null
 var current_item: ItemDataResource = null
 var current_weapon: WeaponInstanceResource = null
+var current_gear: GearInstanceResource = null
 var current_amount: int = 0
 var bound_inventory_index: int = -1
 var filter_hidden: bool = false
@@ -88,6 +92,7 @@ func setup_hotbar_slot(slot_data_: InventorySlotResource, inventory_index_: int)
 func clear() -> void:
 	current_item = null
 	current_weapon = null
+	current_gear = null
 	current_amount = 0
 	bound_inventory_index = -1
 	filter_hidden = false
@@ -105,7 +110,7 @@ func clear() -> void:
 func has_display_content() -> bool:
 	if filter_hidden:
 		return false
-	return current_item != null or current_weapon != null
+	return current_item != null or current_weapon != null or current_gear != null
 
 
 func build_tooltip_payload() -> Dictionary:
@@ -123,6 +128,17 @@ func build_tooltip_payload() -> Dictionary:
 			"slot_text": _get_slot_label()
 		}
 
+	if current_gear != null:
+		var gear_name_: String = current_gear.gear_data.display_name if current_gear.gear_data != null else String(current_gear.gear_id)
+		return {
+			"kind": &"gear",
+			"name": gear_name_,
+			"type": "裝備",
+			"description": _build_gear_description(),
+			"stats": _build_gear_stats(),
+			"slot_text": _get_slot_label()
+		}
+
 	if current_item == null:
 		return {}
 
@@ -137,6 +153,20 @@ func build_tooltip_payload() -> Dictionary:
 #endregion
 
 #region Drag And Drop
+func _gui_input(event_: InputEvent) -> void:
+	var mouse_event_ := event_ as InputEventMouseButton
+	if mouse_event_ == null or not mouse_event_.pressed:
+		return
+	if mouse_event_.button_index != MOUSE_BUTTON_LEFT or not has_display_content():
+		return
+
+	if mouse_event_.shift_pressed:
+		slot_shift_clicked.emit(self)
+		return
+
+	slot_clicked.emit(self)
+
+
 func _get_drag_data(_at_position_: Vector2) -> Variant:
 	if not has_display_content():
 		return null
@@ -165,7 +195,9 @@ func _can_drop_data(_at_position_: Vector2, data_: Variant) -> bool:
 		if hotbar_manager == null:
 			return false
 		if source_type_ == &"inventory":
-			return int(data_.get("slot_index", -1)) >= 0
+			if inventory == null:
+				return false
+			return hotbar_manager.can_bind_inventory_slot(inventory, int(data_.get("slot_index", -1)))
 		if source_type_ == &"hotbar":
 			return int(data_.get("hotbar_index", -1)) >= 0
 		return false
@@ -187,7 +219,7 @@ func _drop_data(_at_position_: Vector2, data_: Variant) -> void:
 		if hotbar_manager == null:
 			return
 		if source_type_ == &"inventory":
-			hotbar_manager.bind_slot(hotbar_index, int(data_.get("slot_index", -1)))
+			hotbar_manager.bind_slot(hotbar_index, int(data_.get("slot_index", -1)), inventory)
 			return
 		if source_type_ == &"hotbar":
 			hotbar_manager.swap_slots(int(data_.get("hotbar_index", -1)), hotbar_index)
@@ -204,6 +236,7 @@ func _drop_data(_at_position_: Vector2, data_: Variant) -> void:
 func _assign_slot_content(slot_data_: InventorySlotResource) -> void:
 	current_item = null
 	current_weapon = null
+	current_gear = null
 	current_amount = 0
 	icon_rect.texture = null
 	icon_rect.visible = false
@@ -220,6 +253,13 @@ func _assign_slot_content(slot_data_: InventorySlotResource) -> void:
 		current_amount = 1
 		icon_rect.texture = current_weapon.weapon_data.weapon_sprite_texture if current_weapon.weapon_data != null else null
 		_set_fallback_text(_get_weapon_short_label(current_weapon))
+		return
+
+	current_gear = slot_data_.gear_instance
+	if current_gear != null:
+		current_amount = 1
+		icon_rect.texture = current_gear.gear_data.icon if current_gear.gear_data != null else null
+		_set_fallback_text(_get_gear_short_label(current_gear))
 		return
 
 	current_item = slot_data_.item_data
@@ -302,6 +342,15 @@ func _build_drag_preview() -> Control:
 		center_.add_child(icon_preview_)
 		return preview_root_
 
+	if current_gear != null and current_gear.gear_data != null and current_gear.gear_data.icon != null:
+		var gear_preview_: TextureRect = TextureRect.new()
+		gear_preview_.texture = current_gear.gear_data.icon
+		gear_preview_.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		gear_preview_.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		gear_preview_.custom_minimum_size = Vector2(32.0, 32.0)
+		center_.add_child(gear_preview_)
+		return preview_root_
+
 	if current_item != null and current_item.icon != null:
 		var item_preview_: TextureRect = TextureRect.new()
 		item_preview_.texture = current_item.icon
@@ -359,6 +408,30 @@ func _build_weapon_stats() -> String:
 		affix_text_,
 		rune_text_
 	]
+
+
+func _build_gear_description() -> String:
+	if current_gear == null or current_gear.gear_data == null:
+		return ""
+
+	return "部位：%s\n耐久：%s" % [
+		_get_gear_slot_text(current_gear),
+		"無" if current_gear.current_durability < 0 else str(current_gear.current_durability)
+	]
+
+
+func _build_gear_stats() -> String:
+	if current_gear == null:
+		return ""
+
+	var details_: Array[String] = ["防禦: %.1f" % current_gear.get_total_defense()]
+	if current_gear.gear_data != null:
+		for modifier_key_ in current_gear.gear_data.stat_modifiers:
+			var modifier_name_ := _format_stat_key(StringName(String(modifier_key_)))
+			var value_ := float(current_gear.gear_data.stat_modifiers.get(modifier_key_, 0.0))
+			details_.append("%s: %+.1f" % [modifier_name_, value_])
+
+	return "\n".join(details_)
 
 
 func _build_item_stats() -> String:
@@ -423,6 +496,23 @@ func _get_item_short_label(item_data_: ItemDataResource) -> String:
 	return item_data_.display_name.left(1)
 
 
+func _get_gear_short_label(gear_: GearInstanceResource) -> String:
+	if gear_ == null or gear_.gear_data == null:
+		return "裝"
+
+	match gear_.gear_data.get_equipment_slot_id():
+		&"helmet":
+			return "盔"
+		&"chestplate":
+			return "甲"
+		&"leggings":
+			return "褲"
+		&"boots":
+			return "靴"
+		_:
+			return gear_.gear_data.display_name.left(1)
+
+
 func _get_weapon_short_label(weapon_: WeaponInstanceResource) -> String:
 	if weapon_ == null or weapon_.weapon_data == null:
 		return "武"
@@ -431,6 +521,33 @@ func _get_weapon_short_label(weapon_: WeaponInstanceResource) -> String:
 	if weapon_.weapon_data.weapon_type == &"sword":
 		return "劍"
 	return weapon_.weapon_data.display_name.left(1)
+
+
+func _get_gear_slot_text(gear_: GearInstanceResource) -> String:
+	if gear_ == null or gear_.gear_data == null:
+		return "未知"
+
+	match gear_.gear_data.get_equipment_slot_id():
+		&"helmet":
+			return "頭盔"
+		&"chestplate":
+			return "胸甲"
+		&"leggings":
+			return "護腿"
+		&"boots":
+			return "靴子"
+		_:
+			return "裝備"
+
+
+func _format_stat_key(stat_key_: StringName) -> String:
+	match stat_key_:
+		&"max_hp_bonus":
+			return "最大生命"
+		&"move_speed_bonus_pct":
+			return "移動速度%"
+		_:
+			return String(stat_key_)
 
 
 func _get_rune_tag_text(tag_: int) -> String:

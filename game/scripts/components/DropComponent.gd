@@ -1,6 +1,7 @@
 class_name DropComponent
 extends Node
 
+const GearDataResource = preload("res://game/scripts/data/GearData.gd")
 const LootTableResource = preload("res://game/scripts/data/LootTableData.gd")
 const PickupItemResource = preload("res://game/scripts/items/PickupItem.gd")
 const PickupItemScene = preload("res://game/scenes/items/PickupItem.tscn")
@@ -41,8 +42,14 @@ func on_death() -> void:
 		if pickup_item_ == null:
 			continue
 
-		if drop_.has("weapon_data"):
+		if drop_.has("weapon_instance"):
+			pickup_item_.setup_from_weapon_instance(drop_["weapon_instance"])
+		elif drop_.has("gear_instance"):
+			pickup_item_.setup_from_gear_instance(drop_["gear_instance"])
+		elif drop_.has("weapon_data"):
 			pickup_item_.setup_from_weapon(drop_["weapon_data"] as WeaponData)
+		elif drop_.has("gear_data"):
+			pickup_item_.setup_from_gear(drop_["gear_data"] as GearDataResource)
 		elif drop_.has("item_data"):
 			pickup_item_.setup_from_item(drop_["item_data"], int(drop_.get("amount", 1)))
 		else:

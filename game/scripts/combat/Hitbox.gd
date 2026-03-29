@@ -8,7 +8,8 @@ signal hit_landed(hurtbox_: Hurtbox, attack_context_: AttackContext, applied_dam
 @export var damage_type: StringName = &"physical"
 @export var poise_damage: float = 0.0
 @export var active_duration: float = 0.12
-@export var hitstop_scale: float = 1.0
+@export var hitstop_duration_ms: int = 70
+@export var hitstop_scale: float = 0.0
 
 var active_time_remaining: float = 0.0
 var already_hit: Array[Hurtbox] = []
@@ -81,6 +82,7 @@ func _build_attack_context() -> AttackContext:
 	attack_context_.base_damage = base_damage
 	attack_context_.damage_type = damage_type
 	attack_context_.poise_damage = poise_damage
+	attack_context_.hitstop_duration_ms = hitstop_duration_ms
 	attack_context_.hitstop_scale = hitstop_scale
 	attack_context_.tags = attack_tags.duplicate()
 	attack_context_.hit_audio = hit_audio

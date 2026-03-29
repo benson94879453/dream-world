@@ -9,6 +9,7 @@ var base_damage: float = 0.0
 var damage_type: StringName = &"physical"
 var poise_damage: float = 0.0
 var knockback_force: Vector2 = Vector2.ZERO
+var hitstop_duration_ms: int = 0
 var hitstop_scale: float = 1.0
 var tags: Array[StringName] = []
 var can_trigger_on_hit: bool = true
@@ -27,6 +28,7 @@ func duplicate_context() -> AttackContext:
 	copy_.damage_type = damage_type
 	copy_.poise_damage = poise_damage
 	copy_.knockback_force = knockback_force
+	copy_.hitstop_duration_ms = hitstop_duration_ms
 	copy_.hitstop_scale = hitstop_scale
 	copy_.tags = tags.duplicate()
 	copy_.can_trigger_on_hit = can_trigger_on_hit

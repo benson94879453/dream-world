@@ -15,17 +15,19 @@ signal dialog_action_requested(action_id: StringName)
 var current_dialog: DialogDataResource = null
 var current_node: DialogNodeDataResource = null
 var current_choices: Array[DialogChoiceDataResource] = []
+var current_npc_id: StringName = &""
 var is_dialog_active: bool = false
 var dialog_flags: Dictionary = {}
 
 #region Public
-func start_dialog(dialog_data_: DialogDataResource) -> void:
+func start_dialog(dialog_data_: DialogDataResource, npc_id_: StringName = &"") -> void:
 	assert(dialog_data_ != null, "DialogManager.start_dialog requires DialogData")
 	assert(not is_dialog_active, "DialogManager cannot start a dialog while another dialog is active")
 
 	current_dialog = dialog_data_
 	current_node = null
 	current_choices.clear()
+	current_npc_id = npc_id_
 	is_dialog_active = true
 	_set_player_dialog_lock(true)
 	dialog_started.emit(dialog_data_.dialog_id)
@@ -84,12 +86,15 @@ func end_dialog() -> void:
 		return
 
 	var dialog_id_: StringName = current_dialog.dialog_id if current_dialog != null else &""
+	var npc_id_: StringName = current_npc_id
 	current_dialog = null
 	current_node = null
 	current_choices.clear()
+	current_npc_id = &""
 	is_dialog_active = false
 	_set_player_dialog_lock(false)
 	dialog_ended.emit(dialog_id_)
+	_report_npc_talked(npc_id_)
 
 
 func has_flag(flag_name_: StringName) -> bool:
@@ -211,4 +216,19 @@ func _set_player_dialog_lock(enabled_: bool) -> void:
 	player_.set_controls_locked(enabled_)
 	if enabled_:
 		player_.velocity = Vector2.ZERO
+
+
+func _report_npc_talked(npc_id_: StringName) -> void:
+	if npc_id_.is_empty():
+		return
+
+	var tree_: SceneTree = get_tree()
+	if tree_ == null or tree_.root == null:
+		return
+
+	var quest_manager_ = tree_.root.get_node_or_null("QuestManager")
+	if quest_manager_ == null or not quest_manager_.has_method("report_npc_talked"):
+		return
+
+	quest_manager_.report_npc_talked(npc_id_)
 #endregion

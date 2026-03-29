@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="GearData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/GearData.gd" id="1_gear_data_script"]
+
+[resource]
+script = ExtResource("1_gear_data_script")
+item_id = &"gear_iron_chestplate"
+display_name = "鐵胸甲"
+description = "標準鐵製胸甲，提供穩定的全身防護。"
+item_type = 3
+max_stack = 1
+tags = Array[StringName]([&"heavy_armor", &"metal"])
+gear_id = &"gear_iron_chestplate"
+gear_type = 1
+defense = 10.0
+max_durability = 180
+stat_modifiers = {}

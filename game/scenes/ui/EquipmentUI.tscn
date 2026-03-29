@@ -1,0 +1,74 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/ui/EquipmentUI.gd" id="1_equipment_ui_script"]
+[ext_resource type="PackedScene" path="res://game/scenes/ui/EquipmentSlotUI.tscn" id="2_equipment_slot_scene"]
+
+[node name="EquipmentUI" type="PanelContainer"]
+custom_minimum_size = Vector2(284, 0)
+visible = false
+script = ExtResource("1_equipment_ui_script")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="Root" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleLabel" type="Label" parent="Margin/Root"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "裝備"
+
+[node name="HintLabel" type="Label" parent="Margin/Root"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.77, 0.79, 0.84, 0.9)
+theme_override_font_sizes/font_size = 12
+text = "Shift+左鍵可快速卸下"
+
+[node name="WeaponSlot" parent="Margin/Root" instance=ExtResource("2_equipment_slot_scene")]
+custom_minimum_size = Vector2(0, 104)
+slot_type = 0
+
+[node name="ArmorLabel" type="Label" parent="Margin/Root"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "防具"
+
+[node name="ArmorGrid" type="GridContainer" parent="Margin/Root"]
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 2
+
+[node name="HelmetSlot" parent="Margin/Root/ArmorGrid" instance=ExtResource("2_equipment_slot_scene")]
+slot_type = 1
+
+[node name="ChestplateSlot" parent="Margin/Root/ArmorGrid" instance=ExtResource("2_equipment_slot_scene")]
+slot_type = 2
+
+[node name="LeggingsSlot" parent="Margin/Root/ArmorGrid" instance=ExtResource("2_equipment_slot_scene")]
+slot_type = 3
+
+[node name="BootsSlot" parent="Margin/Root/ArmorGrid" instance=ExtResource("2_equipment_slot_scene")]
+slot_type = 4
+
+[node name="StatsPanel" type="VBoxContainer" parent="Margin/Root"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="DefenseLabel" type="Label" parent="Margin/Root/StatsPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "總防禦: 0.0"
+
+[node name="StatsLabel" type="Label" parent="Margin/Root/StatsPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84, 0.86, 0.90, 0.96)
+theme_override_font_sizes/font_size = 13
+text = "無裝備加成"
+autowrap_mode = 3

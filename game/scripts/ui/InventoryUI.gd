@@ -5,6 +5,7 @@ const InventoryResource = preload("res://game/scripts/inventory/Inventory.gd")
 const InventorySlotResource = preload("res://game/scripts/inventory/InventorySlot.gd")
 const ItemDataResource = preload("res://game/scripts/data/ItemData.gd")
 const ItemSlotUIScene = preload("res://game/scenes/ui/ItemSlotUI.tscn")
+const EquipmentUIScript = preload("res://game/scripts/ui/EquipmentUI.gd")
 const RuneDataResource = preload("res://game/scripts/data/RuneData.gd")
 const HotbarManagerNode = preload("res://game/scripts/core/HotbarManager.gd")
 
@@ -15,7 +16,8 @@ const FILTER_WEAPON: StringName = &"weapon"
 const FILTER_RUNE: StringName = &"rune"
 const FILTER_KEY: StringName = &"key"
 const TOOLTIP_OFFSET: Vector2 = Vector2(18.0, 18.0)
-const TOOLTIP_DELAY_SECONDS: float = 0.5
+const TOOLTIP_DELAY_SECONDS: float = 0.35
+const OPEN_ANIMATION_SECONDS: float = 0.18
 
 var current_filter: StringName = FILTER_ALL
 var tracked_player: PlayerController = null
@@ -25,17 +27,21 @@ var inventory_slot_uis: Array = []
 var hotbar_slot_uis: Array = []
 var hovered_slot_ui = null
 
+@onready var backdrop: ColorRect = $Backdrop
 @onready var main_panel: PanelContainer = $MainPanel
-@onready var title_label: Label = $MainPanel/PanelMargin/Root/TitleBar/TitleLabel
-@onready var tab_all_button: Button = $MainPanel/PanelMargin/Root/CategoryTabs/TabAll
-@onready var tab_material_button: Button = $MainPanel/PanelMargin/Root/CategoryTabs/TabMaterial
-@onready var tab_consumable_button: Button = $MainPanel/PanelMargin/Root/CategoryTabs/TabConsumable
-@onready var tab_weapon_button: Button = $MainPanel/PanelMargin/Root/CategoryTabs/TabWeapon
-@onready var tab_rune_button: Button = $MainPanel/PanelMargin/Root/CategoryTabs/TabRune
-@onready var tab_key_button: Button = $MainPanel/PanelMargin/Root/CategoryTabs/TabKey
-@onready var item_grid: GridContainer = $MainPanel/PanelMargin/Root/ItemGrid
-@onready var hotbar_slots: HBoxContainer = $MainPanel/PanelMargin/Root/HotbarSection/HotbarSlots
-@onready var info_label: Label = $MainPanel/PanelMargin/Root/InfoLabel
+@onready var title_label: Label = $MainPanel/PanelMargin/Root/TopSection/TitleBar/TitleLabel
+@onready var inventory_panel: PanelContainer = $MainPanel/PanelMargin/Root/BodyRow/InventoryPanel
+@onready var tab_all_button: Button = $MainPanel/PanelMargin/Root/BottomSection/CategoryPanel/CategoryMargin/CategoryTabs/TabAll
+@onready var tab_material_button: Button = $MainPanel/PanelMargin/Root/BottomSection/CategoryPanel/CategoryMargin/CategoryTabs/TabMaterial
+@onready var tab_consumable_button: Button = $MainPanel/PanelMargin/Root/BottomSection/CategoryPanel/CategoryMargin/CategoryTabs/TabConsumable
+@onready var tab_weapon_button: Button = $MainPanel/PanelMargin/Root/BottomSection/CategoryPanel/CategoryMargin/CategoryTabs/TabWeapon
+@onready var tab_rune_button: Button = $MainPanel/PanelMargin/Root/BottomSection/CategoryPanel/CategoryMargin/CategoryTabs/TabRune
+@onready var tab_key_button: Button = $MainPanel/PanelMargin/Root/BottomSection/CategoryPanel/CategoryMargin/CategoryTabs/TabKey
+@onready var item_grid: GridContainer = $MainPanel/PanelMargin/Root/BodyRow/InventoryPanel/InventoryMargin/InventoryContent/ItemGrid
+@onready var equipment_ui: EquipmentUIScript = $MainPanel/PanelMargin/Root/BodyRow/EquipmentUI
+@onready var hotbar_panel: PanelContainer = $MainPanel/PanelMargin/Root/BottomSection/HotbarPanel
+@onready var hotbar_slots: HBoxContainer = $MainPanel/PanelMargin/Root/BottomSection/HotbarPanel/HotbarMargin/HotbarContent/HotbarSlots
+@onready var info_label: Label = $MainPanel/PanelMargin/Root/BottomSection/InfoLabel
 @onready var tooltip_panel: PanelContainer = $TooltipPanel
 @onready var tooltip_name_label: Label = $TooltipPanel/TooltipMargin/TooltipContent/ItemNameLabel
 @onready var tooltip_type_label: Label = $TooltipPanel/TooltipMargin/TooltipContent/ItemTypeLabel
@@ -46,8 +52,10 @@ var hovered_slot_ui = null
 
 #region Core Lifecycle
 func _ready() -> void:
+	assert(backdrop != null, "InventoryUI requires Backdrop")
 	assert(main_panel != null, "InventoryUI requires MainPanel")
 	assert(title_label != null, "InventoryUI requires TitleLabel")
+	assert(inventory_panel != null, "InventoryUI requires InventoryPanel")
 	assert(tab_all_button != null, "InventoryUI requires TabAll")
 	assert(tab_material_button != null, "InventoryUI requires TabMaterial")
 	assert(tab_consumable_button != null, "InventoryUI requires TabConsumable")
@@ -55,6 +63,7 @@ func _ready() -> void:
 	assert(tab_rune_button != null, "InventoryUI requires TabRune")
 	assert(tab_key_button != null, "InventoryUI requires TabKey")
 	assert(item_grid != null, "InventoryUI requires ItemGrid")
+	assert(equipment_ui != null, "InventoryUI requires EquipmentUI")
 	assert(hotbar_slots != null, "InventoryUI requires HotbarSlots")
 	assert(info_label != null, "InventoryUI requires InfoLabel")
 	assert(tooltip_panel != null, "InventoryUI requires TooltipPanel")
@@ -69,6 +78,7 @@ func _ready() -> void:
 	layer = 10
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
+	backdrop.visible = true
 	tooltip_panel.visible = false
 	tooltip_delay_timer.wait_time = TOOLTIP_DELAY_SECONDS
 	tooltip_delay_timer.one_shot = true
@@ -113,21 +123,30 @@ func set_inventory_open(open_: bool) -> void:
 
 	visible = open_
 	if not open_:
+		_reset_open_animation_state()
+		equipment_ui.close()
 		tooltip_delay_timer.stop()
 		hovered_slot_ui = null
 		tooltip_panel.visible = false
 		return
 
+	equipment_ui.open(tracked_player, self)
 	refresh_all()
+	_play_open_animation()
 
 
 func toggle_inventory() -> void:
 	set_inventory_open(not is_open())
 
 
+func refresh() -> void:
+	refresh_all()
+
+
 func refresh_all() -> void:
 	_refresh_item_grid()
 	_refresh_hotbar()
+	equipment_ui.refresh_view()
 	_update_category_tab_states()
 #endregion
 
@@ -149,6 +168,7 @@ func _build_slot_ui() -> void:
 		slot_ui_.configure_inventory_slot(tracked_inventory, slot_index_)
 		slot_ui_.hover_started.connect(_on_slot_hover_started)
 		slot_ui_.hover_ended.connect(_on_slot_hover_ended)
+		slot_ui_.slot_shift_clicked.connect(_on_inventory_slot_shift_clicked)
 		inventory_slot_uis.append(slot_ui_)
 
 	for hotbar_index_ in range(HotbarManagerNode.HOTBAR_SIZE):
@@ -172,8 +192,11 @@ func _connect_category_tabs() -> void:
 
 func _style_ui() -> void:
 	title_label.text = "背包"
-	info_label.text = "[E / I] 開關背包   [1-5] 使用快捷欄   拖曳可整理與綁定"
-	_apply_panel_style(main_panel, Color(0.16, 0.16, 0.16, 0.96), Color(0.68, 0.68, 0.68, 1.0), 4)
+	info_label.text = "[E / I] 開關背包   [1-5] 使用快捷欄   拖曳整理/綁定   Shift+左鍵 快速裝備或分堆"
+	backdrop.color = Color(0.03, 0.03, 0.04, 0.64)
+	_apply_panel_style(main_panel, Color(0.09, 0.10, 0.12, 0.97), Color(0.84, 0.71, 0.40, 1.0), 3)
+	_apply_panel_style(inventory_panel, Color(0.14, 0.15, 0.18, 0.98), Color(0.42, 0.46, 0.52, 1.0), 2)
+	_apply_panel_style(hotbar_panel, Color(0.13, 0.11, 0.09, 0.98), Color(0.69, 0.56, 0.33, 1.0), 2)
 	_apply_panel_style(tooltip_panel, Color(0.12, 0.12, 0.12, 0.97), Color(0.95, 0.85, 0.42, 1.0), 3)
 
 	var tab_buttons_: Array[Button] = [
@@ -185,7 +208,7 @@ func _style_ui() -> void:
 		tab_key_button
 	]
 	for button_ in tab_buttons_:
-		button_.custom_minimum_size = Vector2(90.0, 36.0)
+		button_.custom_minimum_size = Vector2(84.0, 34.0)
 
 
 func _apply_panel_style(panel_: Control, bg_color_: Color, border_color_: Color, border_width_: int) -> void:
@@ -205,8 +228,8 @@ func _apply_panel_style(panel_: Control, bg_color_: Color, border_color_: Color,
 
 func _apply_tab_button_style(button_: Button, active_: bool) -> void:
 	var normal_style_: StyleBoxFlat = StyleBoxFlat.new()
-	normal_style_.bg_color = Color(0.27, 0.27, 0.27, 1.0) if active_ else Color(0.18, 0.18, 0.18, 1.0)
-	normal_style_.border_color = Color(0.95, 0.85, 0.42, 1.0) if active_ else Color(0.46, 0.46, 0.46, 1.0)
+	normal_style_.bg_color = Color(0.46, 0.32, 0.17, 1.0) if active_ else Color(0.18, 0.19, 0.22, 1.0)
+	normal_style_.border_color = Color(0.94, 0.82, 0.49, 1.0) if active_ else Color(0.39, 0.43, 0.50, 1.0)
 	normal_style_.border_width_left = 2
 	normal_style_.border_width_top = 2
 	normal_style_.border_width_right = 2
@@ -221,6 +244,7 @@ func _apply_tab_button_style(button_: Button, active_: bool) -> void:
 	button_.add_theme_stylebox_override("pressed", normal_style_)
 	button_.add_theme_stylebox_override("focus", normal_style_)
 	button_.add_theme_color_override("font_color", Color(1.0, 0.96, 0.82, 1.0) if active_ else Color(0.88, 0.88, 0.88, 1.0))
+	button_.add_theme_font_size_override("font_size", 13)
 
 
 func _resolve_inventory_context() -> void:
@@ -277,6 +301,8 @@ func _should_show_slot(slot_data_: InventorySlotResource) -> bool:
 		return true
 	if slot_data_.weapon_instance != null:
 		return current_filter == FILTER_WEAPON
+	if slot_data_.gear_instance != null:
+		return current_filter == FILTER_ALL
 	if slot_data_.item_data == null:
 		return true
 
@@ -390,8 +416,36 @@ func _on_hotbar_binding_changed(hotbar_index_: int, _inventory_index_: int) -> v
 		_show_tooltip_for_slot(hovered_slot_ui)
 
 
+func _on_inventory_slot_shift_clicked(slot_ui_) -> void:
+	if not visible or tracked_player == null or slot_ui_ == null:
+		return
+	if slot_ui_.is_hotbar_slot or slot_ui_.slot_index < 0:
+		return
+
+	if tracked_player.quick_move_from_inventory(tracked_inventory, slot_ui_.slot_index, null):
+		refresh_all()
+
+
 func _get_hotbar_manager() -> Node:
 	var tree_: SceneTree = get_tree()
 	assert(tree_ != null and tree_.root != null, "InventoryUI requires SceneTree root")
 	return tree_.root.get_node_or_null("HotbarRuntime")
+
+
+func _play_open_animation() -> void:
+	var tween_ := create_tween()
+	tween_.set_parallel(true)
+	main_panel.pivot_offset = main_panel.size * 0.5
+	backdrop.modulate.a = 0.0
+	main_panel.modulate.a = 0.0
+	main_panel.scale = Vector2(0.97, 0.97)
+	tween_.tween_property(backdrop, "modulate:a", 1.0, OPEN_ANIMATION_SECONDS)
+	tween_.tween_property(main_panel, "modulate:a", 1.0, OPEN_ANIMATION_SECONDS)
+	tween_.tween_property(main_panel, "scale", Vector2.ONE, OPEN_ANIMATION_SECONDS)
+
+
+func _reset_open_animation_state() -> void:
+	backdrop.modulate = Color.WHITE
+	main_panel.modulate = Color.WHITE
+	main_panel.scale = Vector2.ONE
 #endregion

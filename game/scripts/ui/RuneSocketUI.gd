@@ -5,6 +5,7 @@ const InventoryResource = preload("res://game/scripts/inventory/Inventory.gd")
 const RuneDataResource = preload("res://game/scripts/data/RuneData.gd")
 const RuneSlotResource = preload("res://game/scripts/data/RuneSlot.gd")
 const WeaponInstanceResource = preload("res://game/scripts/data/WeaponInstance.gd")
+const WRAPPED_TEXT_MIN_WIDTH: float = 220.0
 
 var current_weapon: WeaponInstanceResource = null
 var current_inventory: InventoryResource = null
@@ -19,7 +20,8 @@ var selected_rune: RuneDataResource = null
 @onready var gold_label: Label = $Root/GoldLabel
 @onready var selected_slot_label: Label = $Root/SelectedSlotLabel
 @onready var equipped_rune_info: Label = $Root/EquippedRuneInfo
-@onready var rune_grid: GridContainer = $Root/RuneListPanel/RuneGrid
+@onready var empty_state_label: Label = $Root/RuneListPanel/RuneListContent/EmptyStateLabel
+@onready var rune_list: VBoxContainer = $Root/RuneListPanel/RuneListContent/RuneList
 @onready var status_label: Label = $Root/StatusLabel
 @onready var equip_button: Button = $Root/ActionRow/EquipButton
 @onready var unequip_button: Button = $Root/ActionRow/UnequipButton
@@ -36,11 +38,13 @@ func _ready() -> void:
 	assert(gold_label != null, "RuneSocketUI requires GoldLabel")
 	assert(selected_slot_label != null, "RuneSocketUI requires SelectedSlotLabel")
 	assert(equipped_rune_info != null, "RuneSocketUI requires EquippedRuneInfo")
-	assert(rune_grid != null, "RuneSocketUI requires RuneGrid")
+	assert(empty_state_label != null, "RuneSocketUI requires EmptyStateLabel")
+	assert(rune_list != null, "RuneSocketUI requires RuneList")
 	assert(status_label != null, "RuneSocketUI requires StatusLabel")
 	assert(equip_button != null, "RuneSocketUI requires EquipButton")
 	assert(unequip_button != null, "RuneSocketUI requires UnequipButton")
 
+	_configure_wrapped_labels()
 	slot_buttons = [slot_button_1, slot_button_2, slot_button_3, slot_button_4, slot_button_5]
 	for slot_index_ in range(slot_buttons.size()):
 		slot_buttons[slot_index_].pressed.connect(_on_slot_button_pressed.bind(slot_index_))
@@ -59,7 +63,7 @@ func setup(weapon_: WeaponInstanceResource, inventory_: InventoryResource) -> vo
 		selected_slot_index = -1
 		selected_rune = null
 	elif selected_slot_index < 0 or selected_slot_index >= current_weapon.rune_slots.size():
-		selected_slot_index = 0
+		selected_slot_index = _get_first_unlocked_slot_index()
 		selected_rune = null
 
 	refresh_ui()
@@ -123,36 +127,49 @@ func _update_selected_slot_info() -> void:
 
 
 func _update_rune_list() -> void:
-	for child_ in rune_grid.get_children():
-		child_.queue_free()
+	_clear_rune_list()
+	_set_empty_state("")
 
 	var rune_manager_ = _get_rune_manager()
 	if rune_manager_ == null or current_inventory == null:
-		_add_placeholder_label("找不到符文背包資料。")
+		_set_empty_state("找不到符文背包資料。")
 		return
 
 	var rune_entries_: Array[Dictionary] = rune_manager_.get_available_runes_from_inventory(current_inventory)
 	if rune_entries_.is_empty():
-		_add_placeholder_label("背包裡沒有符文，按 K 可給予測試符文。")
+		_set_empty_state("背包裡沒有符文，按 K 可給予測試符文。")
 		return
 
+	var selected_slot_ := _get_slot(selected_slot_index)
+	var created_button_count_: int = 0
 	for rune_entry_ in rune_entries_:
 		var rune_data_ := rune_entry_.get("rune_data", null) as RuneDataResource
 		var amount_: int = int(rune_entry_.get("amount", 0))
 		if rune_data_ == null or amount_ <= 0:
 			continue
 
+		var can_equip_selected_slot_: bool = selected_slot_ != null and selected_slot_.can_equip(rune_data_)
 		var button_ := Button.new()
 		button_.text = _build_rune_button_text(rune_data_, amount_)
-		button_.custom_minimum_size = Vector2(0.0, 60.0)
+		button_.custom_minimum_size = Vector2(WRAPPED_TEXT_MIN_WIDTH, 68.0)
+		button_.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button_.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		button_.tooltip_text = rune_data_.description
 		button_.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		button_.disabled = selected_slot_index < 0 or not rune_data_.can_equip_in_slot(_get_slot(selected_slot_index).slot_type, _get_slot(selected_slot_index).required_tag)
+		button_.disabled = false
+		if selected_slot_ == null:
+			button_.tooltip_text += "\n\n先選擇符文槽，再進行鑲嵌。"
+		elif not can_equip_selected_slot_:
+			button_.tooltip_text += "\n\n目前選中的槽位無法鑲嵌這顆符文。"
+			button_.modulate = Color(0.78, 0.78, 0.78, 0.92)
 		if selected_rune == rune_data_:
 			button_.text = "> " + button_.text
 		button_.pressed.connect(_on_rune_button_pressed.bind(rune_data_))
-		rune_grid.add_child(button_)
+		rune_list.add_child(button_)
+		created_button_count_ += 1
+
+	if created_button_count_ == 0:
+		_set_empty_state("背包內沒有可用的符文條目。")
 
 
 func _update_action_buttons() -> void:
@@ -242,11 +259,22 @@ func _build_rune_button_text(rune_data_: RuneDataResource, amount_: int) -> Stri
 	]
 
 
-func _add_placeholder_label(text_: String) -> void:
-	var label_ := Label.new()
-	label_.text = text_
-	label_.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	rune_grid.add_child(label_)
+func _clear_rune_list() -> void:
+	for child_ in rune_list.get_children():
+		rune_list.remove_child(child_)
+		child_.queue_free()
+
+
+func _configure_wrapped_labels() -> void:
+	var wrapped_labels_: Array[Label] = [equipped_rune_info, empty_state_label, status_label]
+	for label_ in wrapped_labels_:
+		label_.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		label_.custom_minimum_size = Vector2(maxf(label_.custom_minimum_size.x, WRAPPED_TEXT_MIN_WIDTH), label_.custom_minimum_size.y)
+
+
+func _set_empty_state(text_: String) -> void:
+	empty_state_label.text = text_
+	empty_state_label.visible = not text_.is_empty()
 
 
 func _get_slot(slot_index_: int) -> RuneSlotResource:
@@ -255,6 +283,14 @@ func _get_slot(slot_index_: int) -> RuneSlotResource:
 	if slot_index_ < 0 or slot_index_ >= current_weapon.rune_slots.size():
 		return null
 	return current_weapon.rune_slots[slot_index_]
+
+
+func _get_first_unlocked_slot_index() -> int:
+	if current_weapon == null:
+		return -1
+	if current_weapon.rune_slots.is_empty():
+		return -1
+	return 0
 
 
 func _get_slot_type_text(slot_: RuneSlotResource) -> String:

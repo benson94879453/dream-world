@@ -13,19 +13,25 @@ const DEFAULT_HEAL_AMOUNT: float = 25.0
 var hotbar_inventory_indices: Array[int] = [-1, -1, -1, -1, -1]
 
 #region Public
-func bind_slot(hotbar_index_: int, inventory_index_: int) -> bool:
+func bind_slot(hotbar_index_: int, inventory_index_: int, inventory_: InventoryResource) -> bool:
 	if not _is_valid_hotbar_index(hotbar_index_):
 		return false
 	if inventory_index_ < -1:
 		return false
+	if inventory_index_ == -1:
+		return _apply_binding(hotbar_index_, inventory_index_)
+	if inventory_ == null:
+		return false
+	if not can_bind_inventory_slot(inventory_, inventory_index_):
+		return false
 
-	hotbar_inventory_indices[hotbar_index_] = inventory_index_
-	binding_changed.emit(hotbar_index_, inventory_index_)
-	return true
+	return _apply_binding(hotbar_index_, inventory_index_)
 
 
 func clear_slot(hotbar_index_: int) -> bool:
-	return bind_slot(hotbar_index_, -1)
+	if not _is_valid_hotbar_index(hotbar_index_):
+		return false
+	return _apply_binding(hotbar_index_, -1)
 
 
 func swap_slots(from_index_: int, to_index_: int) -> bool:
@@ -59,12 +65,37 @@ func get_bound_slot(inventory_: InventoryResource, hotbar_index_: int):
 	return inventory_.get_slot(inventory_index_)
 
 
+func can_bind_inventory_slot(inventory_: InventoryResource, inventory_index_: int) -> bool:
+	if inventory_ == null or inventory_index_ < 0:
+		return false
+
+	var slot_ = inventory_.get_slot(inventory_index_)
+	if slot_ == null:
+		return false
+
+	match slot_.get_content_type():
+		&"weapon":
+			return true
+		&"item":
+			return slot_.item_data != null and slot_.item_data.tags.has(&"hotbar_bindable")
+		&"gear", &"empty":
+			return false
+		_:
+			return false
+
+
 func get_slot_display_name(inventory_: InventoryResource, hotbar_index_: int) -> String:
 	var slot_ = get_bound_slot(inventory_, hotbar_index_)
 	if slot_ == null or slot_.is_empty():
 		return "Empty"
-	if slot_.weapon_instance != null and slot_.weapon_instance.weapon_data != null:
-		return slot_.weapon_instance.weapon_data.display_name
+	if slot_.weapon_instance != null:
+		if slot_.weapon_instance.weapon_data != null:
+			return slot_.weapon_instance.weapon_data.display_name
+		return "[武器] Unknown"
+	if slot_.gear_instance != null:
+		if slot_.gear_instance.gear_data != null:
+			return "[裝備] %s" % slot_.gear_instance.gear_data.display_name
+		return "[裝備] Unknown"
 	if slot_.item_data != null:
 		return slot_.item_data.display_name
 	return "Empty"
@@ -92,6 +123,10 @@ func use_hotbar_slot(player_: PlayerController, hotbar_index_: int) -> bool:
 		print("[Hotbar] Equipped weapon from slot %d: %s" % [inventory_index_, get_slot_display_name(inventory_, hotbar_index_)])
 		return true
 
+	if slot_.gear_instance != null:
+		print("[Hotbar] Cannot use gear from hotbar")
+		return false
+
 	var item_data_: ItemDataResource = slot_.item_data
 	if item_data_ == null:
 		return false
@@ -114,6 +149,12 @@ func use_hotbar_slot(player_: PlayerController, hotbar_index_: int) -> bool:
 #endregion
 
 #region Helpers
+func _apply_binding(hotbar_index_: int, inventory_index_: int) -> bool:
+	hotbar_inventory_indices[hotbar_index_] = inventory_index_
+	binding_changed.emit(hotbar_index_, inventory_index_)
+	return true
+
+
 func _is_valid_hotbar_index(hotbar_index_: int) -> bool:
 	return hotbar_index_ >= 0 and hotbar_index_ < HOTBAR_SIZE
 #endregion

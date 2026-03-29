@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="GearData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/GearData.gd" id="1_gear_data_script"]
+
+[resource]
+script = ExtResource("1_gear_data_script")
+item_id = &"gear_iron_leggings"
+display_name = "鐵護腿"
+description = "兼顧防護與活動性的鐵製護腿。"
+item_type = 3
+max_stack = 1
+tags = Array[StringName]([&"heavy_armor", &"metal"])
+gear_id = &"gear_iron_leggings"
+gear_type = 2
+defense = 7.0
+max_durability = 150
+stat_modifiers = {}

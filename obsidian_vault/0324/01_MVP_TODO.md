@@ -225,8 +225,40 @@
 **操作**：E/I 開關背包，拖曳整理/綁定，1-5 快捷使用
 
 **已知限制**：
-- ⚠️ Hotbar 綁定尚未進存檔（建議 Save v6）
+- ⚠️ Hotbar 綁定尚未進存檔（建議與新版 Inventory / Equipment schema 一併規劃）
 - ⚠️ 消耗品效果為通用 heal 25 HP（可擴充 ConsumableData）
+- ⚠️ `Inventory` 仍混有裝備責任，尚未拆出 `Equipment` / `GearInstance` / 多容器快速移動
+
+---
+
+### Phase 8: 物品 / 武器 / 裝備 / 背包架構重整（規格已定稿）
+**目標**：在不推翻現有雛形的前提下，將背包、裝備、快捷欄、掉落物與存檔正式拆分，支援單機、多容器、唯一實例裝備與版本化存檔。
+
+| 任務 | 工時 | 相依性 | 驗收標準 | 狀態 |
+|------|:---:|:------:|----------|:----:|
+| P8.1 `GearData` / `GearInstance` | 小(4-6h) | - | 裝備改為唯一實例模型 | ⬜ |
+| P8.2 `ItemData.get_stack_key()` | 小(1-2h) | - | 一般 item 改用 stack key 判斷堆疊 | ⬜ |
+| P8.3 `InventorySlot` 擴充 | 小(2-4h) | P8.1, P8.2 | 同時支援 item / weapon / gear 三型態 | ⬜ |
+| P8.4 `Inventory` 重構 | 中(1-2d) | P8.3 | 支援 gear、多容器、slot-based save/load、v1→v2 migration | ⬜ |
+| P8.5 `Equipment.gd` | 中(1d) | P8.1 | `weapon_main/helmet/chestplate/leggings/boots` 可裝卸與交換 | ⬜ |
+| P8.6 Player 協調 API | 中(1d) | P8.4, P8.5 | 背包↔裝備切換、卸裝回包、Shift+Left 行為落地 | ⬜ |
+| P8.7 `PickupItem` 保留 UID | 小(4-6h) | P8.1, P8.4 | 武器/裝備掉落與撿取不重建 instance | ⬜ |
+| P8.8 Hotbar 綁定規則定稿 | 小(2-4h) | P8.4 | 武器永遠可綁、一般 item 看 tag、gear 不可綁 | ⬜ |
+| P8.9 UI 擴充 | 中(1-2d) | P8.4, P8.5, P8.8 | `ItemSlotUI` 顯示 gear、Equipment UI、Chest UI、Shift+Click | ⬜ |
+
+**本輪核心決策**：
+- 一般 item 可堆疊，並以 `stack_key` 取代單純 `item_id` 判斷
+- `WeaponInstance` / `GearInstance` 都是唯一實例，不可堆疊，掉落與撿取保留 UID
+- `Inventory` 專注通用容器；`Equipment` 專注裝備欄；`Hotbar` 只綁定背包 slot
+- `Player` 作為協調者，處理 equip/unequip、快捷欄使用、Shift+Left 快速移動
+- `Inventory` 存檔升級為 `version + 明確 slot 內容`，並保留 v1 migration
+
+**實作分期**：
+- Phase 1：資料層 (`GearData`, `GearInstance`, `stack_key`, `InventorySlot`)
+- Phase 2：容器邏輯 (`Inventory` item/weapon/gear、多容器、save/load)
+- Phase 3：裝備邏輯 (`Equipment`, Player equip/unequip API、自動交換)
+- Phase 4：互動 (`PickupItem`, Shift+Left, Hotbar tag 規則)
+- Phase 5：UI（Equipment UI、Chest UI、gear tooltip）
 
 ---
 

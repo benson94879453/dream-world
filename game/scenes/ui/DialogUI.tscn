@@ -1,43 +1,66 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://game/scripts/ui/DialogUI.gd" id="1_dialog_ui_script"]
+
+[sub_resource type="StyleBoxFlat" id="1_dialog_panel_style"]
+bg_color = Color(0.09, 0.10, 0.12, 0.96)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.84, 0.71, 0.40, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
 
 [node name="DialogUI" type="CanvasLayer"]
 script = ExtResource("1_dialog_ui_script")
 
 [node name="Panel" type="Panel" parent="."]
 visible = false
-offset_left = 72.0
-offset_top = 392.0
-offset_right = 952.0
-offset_bottom = 616.0
+anchor_left = 0.07
+anchor_top = 0.62
+anchor_right = 0.70
+anchor_bottom = 0.90
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+theme_override_styles/panel = SubResource("1_dialog_panel_style")
 
 [node name="SpeakerLabel" type="Label" parent="Panel"]
 offset_left = 24.0
-offset_top = 20.0
-offset_right = 272.0
-offset_bottom = 48.0
+offset_top = 18.0
+offset_right = 300.0
+offset_bottom = 50.0
+theme_override_colors/font_color = Color(0.97, 0.92, 0.74, 1)
+theme_override_font_sizes/font_size = 20
 text = "Speaker"
 
 [node name="TextLabel" type="Label" parent="Panel"]
 offset_left = 24.0
-offset_top = 56.0
-offset_right = 856.0
-offset_bottom = 148.0
+offset_top = 60.0
+offset_right = 760.0
+offset_bottom = 164.0
+theme_override_colors/font_color = Color(0.92, 0.93, 0.95, 1)
+theme_override_font_sizes/font_size = 16
 autowrap_mode = 3
 text = "Dialog text."
 
 [node name="ContinueIndicator" type="Label" parent="Panel"]
-offset_left = 728.0
-offset_top = 164.0
-offset_right = 856.0
-offset_bottom = 192.0
+offset_left = 576.0
+offset_top = 180.0
+offset_right = 760.0
+offset_bottom = 208.0
+theme_override_colors/font_color = Color(0.94, 0.82, 0.49, 1)
+theme_override_font_sizes/font_size = 14
 text = "[F] 繼續"
 horizontal_alignment = 2
 
 [node name="ChoicesContainer" type="VBoxContainer" parent="Panel"]
 offset_left = 24.0
-offset_top = 160.0
+offset_top = 176.0
 offset_right = 520.0
-offset_bottom = 208.0
+offset_bottom = 236.0
 theme_override_constants/separation = 8

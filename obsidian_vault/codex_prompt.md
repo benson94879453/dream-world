@@ -1,337 +1,411 @@
-# Codex 開發任務 Prompt
+# Codex Task Prompt
 
-> 最後更新: 2026-03-28
-> 本文件由 Kimi 維護，每次新任務直接覆寫此檔案
-
----
-
-## 任務背景
+## 1. 任務背景
 
 ### 專案概覽
-- **專案名稱**: 異境 (Dream World)
-- **引擎**: Godot 4.x
-- **類型**: 2D 動作探索遊戲
-- **目前階段**: Bug 修復 - 背包 UI 調試
+- **專案名稱**：異境 (Dream World)
+- **引擎**：Godot 4.x
+- **當前階段**：NPC 任務系統 — 玩法循環完整
 
-### 問題回報 🐛
-#019 Minecraft 風格背包 UI 實作後發現以下問題：
+### 已完成基礎
+- ✅ NPC 對話系統（DialogManager、DialogUI）
+- ✅ 敵人 AI（Slime/Archer/Boar）
+- ✅ 背包系統（Inventory）
+- ✅ 裝備系統（Equipment）
+- ✅ 存檔系統（Save v6）
 
-| 問題 | 嚴重度 | 描述 |
-|------|:------:|------|
-| 格子點擊區域 | 🔴 高 | 僅能點擊邊框一圈，中心區塊無法點擊 |
-| 快捷鍵失效 | 🔴 高 | E/I 鍵無法開啟/關閉背包 |
-| 1-5 武器切換失效 | 🔴 高 | 數字鍵無法呼叫測試用武器 |
-| 預覽框過大 | 🟡 中 | 背包道具預覽框（Drag Preview）大小過大 |
+### 目標
+建立完整的任務系統，讓玩家可以：
+1. 從 NPC 接取任務
+2. 追蹤任務進度（擊殺敵人、收集物品、對話）
+3. 回報任務獲得獎勵
+4. 任務狀態正確存檔
 
 ---
 
-## 當前任務
+## 2. 當前任務
 
 ### 任務標題
-#019+ 背包 UI Bug 修復（點擊區域/快捷鍵/預覽框）
+NPC 任務系統
 
-### 任務描述
-調試並修復背包 UI 的操作問題，確保格子可正常點擊、快捷鍵正常運作。
+### 具體需求
 
----
+#### 2.1 建立 QuestData（任務模板）
 
-## 具體需求
+**檔案**：`game/scripts/data/QuestData.gd`
 
-### 1. 格子點擊區域修復 🔲
-
-**問題分析**：
-- 可能是 ItemSlotUI 的 TextureRect 或 Button 的 `mouse_filter` 設定錯誤
-- 可能是中心圖示遮擋了點擊事件
-- 可能是 Control 節點的 `mouse_default_cursor_shape` 或 `input_pass_on_modal_close_click` 問題
-
-**修復方案**：
-
-**ItemSlotUI.tscn 結構檢查**：
-```
-ItemSlotUI (Control)
-├── Background (Panel/TextureRect)  <- mouse_filter = IGNORE
-├── Icon (TextureRect)              <- mouse_filter = IGNORE
-├── AmountLabel (Label)             <- mouse_filter = IGNORE
-└── ClickArea (Button/Area2D)       <- mouse_filter = STOP，負責接收點擊
-```
-
-**正確設定**：
 ```gdscript
-# ItemSlotUI.gd
-func _ready() -> void:
-    # 確保所有子節點不攔截點擊
-    for child in get_children():
-        if child is Control:
-            child.mouse_filter = Control.MOUSE_FILTER_IGNORE
-    
-    # 確保 ClickArea 接收點擊
-    if click_area:
-        click_area.mouse_filter = Control.MOUSE_FILTER_STOP
-```
+class_name QuestData
+extends Resource
 
-**或者使用 Button 作為基底**：
-```
-ItemSlotUI (Button)                   <- 整個按鈕可點擊
-├── Background (TextureRect)          <- 視覺背景
-├── Icon (TextureRect)                <- 物品圖示
-└── AmountLabel (Label)               <- 堆疊數量
-```
-
----
-
-### 2. 快捷鍵 E/I 修復 ⌨️
-
-**問題分析**：
-- 可能是 `ui_inventory` input action 未正確綁定
-- 可能是 Player.gd 的 `_unhandled_input` 沒有處理
-- 可能是背包開啟時輸入被攔截
-
-**檢查項目**：
-
-**project.godot**：
-```ini
-[input]
-
-ui_inventory={
-"deadzone": 0.5,
-"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":69,"physical_keycode":0,"key_label":0,"unicode":101,"echo":false,"script":null)
-, Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":73,"physical_keycode":0,"key_label":0,"unicode":105,"echo":false,"script":null)
-]
+enum QuestType {
+    KILL,       # 擊殺敵人
+    COLLECT,    # 收集物品
+    TALK,       # 與 NPC 對話
+    DELIVER     # 交付物品
 }
+
+enum QuestStatus {
+    NOT_STARTED,
+    ACTIVE,
+    COMPLETED,      # 完成但未回報
+    TURNED_IN       # 已回報
+}
+
+@export var quest_id: StringName = &""
+@export var quest_name: String = ""
+@export_multiline var quest_description: String = ""
+@export var quest_type: QuestType = QuestType.KILL
+
+# 任務目標
+@export var target_enemy_id: StringName = &""        # KILL 類型
+@export var target_item_id: StringName = &""        # COLLECT/DELIVER 類型
+@export var target_npc_id: StringName = &""         # TALK/DELIVER 類型
+@export var target_amount: int = 1                  # 目標數量
+
+# 獎勵
+@export var reward_gold: int = 0
+@export var reward_item_id: StringName = &""
+@export var reward_item_amount: int = 0
+@export var reward_weapon_id: StringName = &""      # 可選：獎勵武器
+
+# 前置條件
+@export var prerequisite_quest_id: StringName = &"" # 需先完成哪個任務
+@export var minimum_level: int = 1                   # 最低等級要求
 ```
 
-**Player.gd**：
+#### 2.2 建立 QuestInstance（任務實例）
+
+**檔案**：`game/scripts/data/QuestInstance.gd`
+
 ```gdscript
-func _unhandled_input(event: InputEvent) -> void:
-    # 檢查 E/I 鍵
-    if event.is_action_pressed("ui_inventory"):
-        toggle_inventory()
-        get_viewport().set_input_as_handled()
+class_name QuestInstance
+extends RefCounted
 
-func toggle_inventory() -> void:
-    var inventory_ui := _get_inventory_ui()
-    if inventory_ui == null:
-        return
-    
-    inventory_ui.visible = not inventory_ui.visible
-    
-    # 暫停/恢復遊戲
-    get_tree().paused = inventory_ui.visible
+var quest_id: StringName = &""
+var quest_data: QuestData = null
+var status: QuestData.QuestStatus = QuestData.QuestStatus.NOT_STARTED
+
+# 進度追蹤
+var current_progress: int = 0      # 當前進度（擊殺數/收集數）
+var target_amount: int = 1         # 目標數量（從 quest_data 複製）
+
+# 元資料
+var accepted_at: String = ""       # ISO8601 時間戳
+var completed_at: String = ""      # 完成時間
+var turned_in_at: String = ""      # 回報時間
+
+static func create_from_data(quest_data_: QuestData) -> QuestInstance
+static func create_from_save_dict(quest_data_: QuestData, data_: Dictionary) -> QuestInstance
+func to_save_dict() -> Dictionary
+
+func is_completed() -> bool
+func get_progress_text() -> String  # 如 "3/5"
 ```
 
-**InventoryUI.tscn**：
-- 確保 `process_mode = WHEN_PAUSED`（才能在暫停時接收輸入）
-- 或者使用 `CanvasLayer` 並設定正確的 `layer`
+#### 2.3 建立 QuestManager
 
----
+**檔案**：`game/scripts/core/QuestManager.gd`
 
-### 3. 1-5 武器切換修復 🔢
-
-**問題分析**：
-- 可能是快捷欄輸入與武器切換輸入衝突
-- 可能是 HotbarManager 優先處理了 1-5，但沒有正確裝備武器
-- 可能是武器切換的 input action 被移除或覆蓋
-
-**檢查項目**：
-
-**project.godot**：
-```ini
-[input]
-
-ui_hotbar_1={...}
-ui_hotbar_2={...}
-ui_hotbar_3={...}
-ui_hotbar_4={...}
-ui_hotbar_5={...}
-
-# 原有武器切換（如果還需要）
-weapon_slot_1={...}
-weapon_slot_2={...}
-...
-```
-
-**Player.gd 輸入優先級**：
 ```gdscript
-func _unhandled_input(event: InputEvent) -> void:
-    # 背包開啟時不處理其他輸入
-    if _is_inventory_open():
-        return
-    
-    # 優先處理快捷欄
-    if event.is_action_pressed("ui_hotbar_1"):
-        _use_hotbar_slot(0)
-        return
-    # ... 2-5
-    
-    # 原有武器切換（如果與快捷欄分開）
-    if event.is_action_pressed("weapon_slot_1"):
-        switch_to_weapon_slot(0)
+class_name QuestManager
+extends Node
+
+signal quest_accepted(quest_id: StringName)
+signal quest_progress_updated(quest_id: StringName, current: int, target: int)
+signal quest_completed(quest_id: StringName)      # 目標達成
+signal quest_turned_in(quest_id: StringName)      # 已回報
+
+var active_quests: Dictionary = {}      # quest_id -> QuestInstance
+var completed_quests: Array[StringName] = []  # 已完成的任務 ID
+
+# 任務模板快取
+var quest_data_cache: Dictionary = {}   # quest_id -> QuestData
+
+func _ready():
+    _load_quest_data_from_files()
+
+# 任務生命週期
+func accept_quest(quest_id_: StringName) -> bool
+func abandon_quest(quest_id_: StringName) -> bool
+func turn_in_quest(quest_id_: StringName) -> bool  # 回報任務獲得獎勵
+
+# 進度更新（由其他系統呼叫）
+func report_enemy_killed(enemy_id_: StringName, count_: int = 1)
+func report_item_collected(item_id_: StringName, count_: int = 1)
+func report_npc_talked(npc_id_: StringName)
+
+# 查詢
+func get_active_quests() -> Array[QuestInstance]
+func get_quest_by_id(quest_id_: StringName) -> QuestInstance
+func has_active_quest(quest_id_: StringName) -> bool
+func has_completed_quest(quest_id_: StringName) -> bool
+func can_accept_quest(quest_data_: QuestData) -> bool
+
+# 存檔
+func to_save_dict() -> Dictionary
+func from_save_dict(data_: Dictionary) -> bool
 ```
 
-**HotbarManager 武器裝備**：
+#### 2.4 任務進度追蹤整合
+
+**A. 擊殺敵人追蹤**
+
+在 `EnemyAIController` 或 `HealthComponent` 死亡時：
 ```gdscript
-# HotbarManager.gd
-func use_hotbar_slot(index: int) -> void:
-    var item := hotbar_slots[index]
-    if item == null:
-        return
-    
-    match item.item_type:
-        ItemData.ItemType.WEAPON:
-            # 呼叫 Player 裝備武器
-            _get_player().equip_weapon_by_data(item)
-        ItemData.ItemType.CONSUMABLE:
-            use_consumable(item)
+# EnemyAIController.gd 或 DeathComponent.gd
+func _on_died() -> void:
+    var quest_manager_ = _get_quest_manager()
+    if quest_manager_ != null:
+        quest_manager_.report_enemy_killed(enemy_data.enemy_id, 1)
 ```
 
----
+**B. 收集物品追蹤**
 
-### 4. 預覽框大小修復 🖼️
-
-**問題分析**：
-- Drag Preview 使用了原始圖示大小，可能過大
-- 需要縮小到適合格子的大小（例如 32x32 或 40x40）
-
-**修復方案**：
-
-**ItemSlotUI.gd**：
+在 `PickupItem` 被撿取時：
 ```gdscript
-func _get_drag_data(at_position: Vector2) -> Variant:
-    if current_item == null:
-        return null
+# PickupItem.gd
+func _on_picked_up(player_: Player) -> void:
+    # 原有邏輯...
     
-    # 建立預覽
-    var preview := TextureRect.new()
-    preview.texture = current_item.icon
-    preview.custom_minimum_size = Vector2(32, 32)  # 固定大小
-    preview.size = Vector2(32, 32)
-    preview.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
-    preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-    preview.modulate = Color(1, 1, 1, 0.8)  # 80% 透明度
+    # 新增：回報任務
+    var quest_manager_ = _get_quest_manager()
+    if quest_manager_ != null and item_data != null:
+        quest_manager_.report_item_collected(item_data.item_id, amount)
+```
+
+**C. 對話追蹤**
+
+在 `DialogManager` 對話完成時：
+```gdscript
+# DialogManager.gd
+func finish_dialog() -> void:
+    # 原有邏輯...
     
-    # 加入背景框（可選）
-    var panel := Panel.new()
-    panel.custom_minimum_size = Vector2(36, 36)
-    panel.add_child(preview)
-    preview.position = Vector2(2, 2)
+    # 新增：回報任務
+    if current_npc_id != &"":
+        var quest_manager_ = _get_quest_manager()
+        if quest_manager_ != null:
+            quest_manager_.report_npc_talked(current_npc_id)
+```
+
+#### 2.5 NPC 對話整合任務
+
+**檔案**：`game/scripts/components/NPCQuestGiver.gd`（新增）
+
+```gdscript
+class_name NPCQuestGiver
+extends Node
+
+@export var npc_id: StringName = &""
+@export var available_quest_ids: Array[StringName] = []
+
+# 檢查此 NPC 是否有任務可給
+func get_available_quests() -> Array[QuestData]:
+    var quest_manager_ = _get_quest_manager()
+    var result_: Array[QuestData] = []
     
-    set_drag_preview(panel)
+    for quest_id_ in available_quest_ids:
+        var quest_data_ = quest_manager_.get_quest_data(quest_id_)
+        if quest_data_ == null:
+            continue
+        if quest_manager_.can_accept_quest(quest_data_):
+            result_.append(quest_data_)
     
-    return {
-        "slot_index": slot_index,
-        "item": current_item,
-        "amount": current_amount
-    }
+    return result_
+
+# 檢查此 NPC 是否有任務可回報
+func get_turn_in_quests() -> Array[QuestInstance]:
+    var quest_manager_ = _get_quest_manager()
+    var active_quests_ = quest_manager_.get_active_quests()
+    var result_: Array[QuestInstance] = []
+    
+    for quest_ in active_quests_:
+        # 任務已完成（目標達成）且未回報，且回報對象是此 NPC
+        if quest_.status == QuestData.QuestStatus.COMPLETED:
+            if quest_.quest_data.target_npc_id == npc_id:
+                result_.append(quest_)
+    
+    return result_
+```
+
+#### 2.6 任務獎勵發放
+
+在 `QuestManager.turn_in_quest()` 中：
+```gdscript
+func turn_in_quest(quest_id_: StringName) -> bool:
+    var quest_ = active_quests.get(quest_id_) as QuestInstance
+    if quest_ == null or quest_.status != QuestData.QuestStatus.COMPLETED:
+        return false
+    
+    var player_ = _get_player()
+    if player_ == null:
+        return false
+    
+    var quest_data_ = quest_.quest_data
+    
+    # 1. 發放金幣
+    if quest_data_.reward_gold > 0:
+        player_.add_gold(quest_data_.reward_gold)
+    
+    # 2. 發放物品
+    if quest_data_.reward_item_id != &"" and quest_data_.reward_item_amount > 0:
+        var item_data_ = _resolve_item_data(quest_data_.reward_item_id)
+        if item_data_ != null:
+            player_.inventory.add_item(item_data_, quest_data_.reward_item_amount)
+    
+    # 3. 發放武器（可選）
+    if quest_data_.reward_weapon_id != &"":
+        var weapon_data_ = _resolve_weapon_data(quest_data_.reward_weapon_id)
+        if weapon_data_ != null:
+            var weapon_instance_ = WeaponInstance.create_from_data(weapon_data_)
+            player_.inventory.add_weapon(weapon_instance_)
+    
+    # 標記為已回報
+    quest_.status = QuestData.QuestStatus.TURNED_IN
+    quest_.turned_in_at = _get_iso8601_now()
+    completed_quests.append(quest_id_)
+    active_quests.erase(quest_id_)
+    
+    quest_turned_in.emit(quest_id_)
+    return true
+```
+
+#### 2.7 存檔整合
+
+**SaveManager 更新**：
+```gdscript
+# SaveManager.gd save_game()
+var save_data_ = {
+    "save_version": SAVE_VERSION,
+    # ... 其他欄位 ...
+    "quest": quest_manager.to_save_dict() if quest_manager != null else {}
+}
+
+# SaveManager.gd load_game()
+var quest_manager_ = _get_quest_manager()
+if quest_manager_ != null:
+    quest_manager_.from_save_dict(migrated_data_.get("quest", {}))
+```
+
+#### 2.8 建立測試任務
+
+**檔案**：`game/data/quests/`
+
+建立 2-3 個測試任務：
+
+```gdscript
+# quest_kill_slime.tres
+[gd_resource type="Resource" script_class="QuestData"]
+script = ExtResource("quest_data_script")
+quest_id = &"quest_kill_slime"
+quest_name = "史萊姆清除計畫"
+quest_description = "幫我消滅 5 隻史萊姆，牠們太煩人了！"
+quest_type = 0  # KILL
+target_enemy_id = &"en_slime"
+target_amount = 5
+reward_gold = 100
+reward_item_id = &"consumable_potion"
+reward_item_amount = 3
+
+# quest_collect_herb.tres
+[gd_resource type="Resource" script_class="QuestData"]
+quest_id = &"quest_collect_herb"
+quest_name = "採集草藥"
+quest_description = "我需要 10 個草藥來製作藥水。"
+quest_type = 1  # COLLECT
+target_item_id = &"material_herb"
+target_amount = 10
+reward_gold = 50
+
+# quest_talk_blacksmith.tres
+quest_id = &"quest_talk_blacksmith"
+quest_name = "拜訪鐵匠"
+quest_description = "去和鐵匠打聲招呼，他可能有工作給你。"
+quest_type = 2  # TALK
+target_npc_id = &"npc_blacksmith"
+target_amount = 1
+reward_gold = 25
 ```
 
 ---
 
-## 驗收標準
+## 3. 技術約束
 
-- [ ] **格子全區域可點擊**：中心區塊也能正常點擊
-- [ ] **E/I 鍵開關背包**：按鍵正常開啟/關閉背包
-- [ ] **1-5 武器切換**：數字鍵能呼叫測試用武器
-- [ ] **預覽框大小適中**：拖曳時預覽框為 32x32 或類似大小
-- [ ] **Console 無錯誤**：無新的 warning/error
-- [ ] **原有功能保留**：拖曳、tooltip、分類過濾正常運作
-
----
-
-## 技術約束
-
-### 輸入處理
-- 使用 `_unhandled_input` 處理全局快捷鍵
-- 使用 `get_viewport().set_input_as_handled()` 防止重複觸發
-- 背包開啟時可選擇暫停遊戲或不暫停
-
-### UI 點擊
-- 使用 `mouse_filter = MOUSE_FILTER_IGNORE` 讓子節點不攔截點擊
-- 或使用 Button 作為 ItemSlotUI 基底
-
-### 快捷鍵衝突
-- 確保 `ui_inventory` 和 `ui_hotbar_*` 沒有重複綁定
-- 優先處理順序：背包開關 > 快捷欄 > 武器切換
-
----
-
-## 參考檔案
-
-### 需檢查/修復
+### 需要建立的檔案
 ```
-game/scenes/ui/ItemSlotUI.tscn          # 點擊區域結構
-game/scripts/ui/ItemSlotUI.gd           # 預覽框大小
-game/scripts/Player.gd                  # E/I 鍵處理
-game/scripts/core/HotbarManager.gd      # 1-5 快捷欄
-game/scenes/ui/InventoryUI.tscn         # process_mode 設定
-project.godot                           # input actions 檢查
+game/scripts/data/QuestData.gd           [新建]
+game/scripts/data/QuestInstance.gd       [新建]
+game/scripts/core/QuestManager.gd        [新建]
+game/scripts/components/NPCQuestGiver.gd [新建]
+game/data/quests/quest_*.tres            [新建 2-3 個測試任務]
 ```
 
-### 參考現有
+### 需要修改的檔案
 ```
-game/scripts/core/ArenaTest.gd          # 原有 1-5 武器切換邏輯
+game/scripts/core/SaveManager.gd         [修改 - 整合 quest 存檔]
+game/scripts/core/DialogManager.gd       [修改 - 回報對話]
+game/scripts/components/DropComponent.gd 或 EnemyAIController.gd [修改 - 擊殺回報]
+game/scripts/items/PickupItem.gd         [修改 - 收集回報]
+project.godot                            [修改 - QuestManager Autoload]
 ```
 
 ---
 
-## 架構說明
+## 4. UI（可選，最小版本）
 
-### 輸入流程
-```
-玩家按鍵
-    ↓
-Player._unhandled_input()
-    ├── E/I → toggle_inventory()
-    ├── 1-5 → HotbarManager.use_hotbar_slot()
-    └── （原有）數字鍵武器切換
-```
+**最小 UI**：只在對話中顯示任務選項，無需獨立任務面板
 
-### UI 點擊流程
-```
-滑鼠點擊
-    ↓
-ItemSlotUI._gui_input() 或 Button.pressed
-    ↓
-處理點擊/拖曳邏輯
-```
+**進階 UI**（未來擴充）：
+- QuestTrackerUI：畫面側邊顯示進行中任務
+- QuestLogUI：完整任務列表與詳情
+
+本任務先完成**最小版本**，UI 僅使用對話系統整合。
 
 ---
 
-## 輸出要求
+## 5. 輸出要求
 
-1. **完成後請更新此檔案底部「任務狀態」為已完成**
-2. **簡要說明實作內容** (2-3 行)
-3. **列出修改的檔案清單**
-4. **標註修復的 Bug 和原因**
-5. 滿足 `0324/04_Coding_Habits.md.md`
+### 完成後標記
+1. 更新下方「任務狀態」
+2. 填寫「實作摘要」
+3. 列出「修改檔案清單」
+4. 描述測試方式（如何測試接取、進度、回報任務）
 
 ---
 
-## 任務狀態
+## 6. 任務狀態
 
-- [ ] 進行中
-- [x] 已完成
+- [x] **進行中** → [x] **已完成**
 
 ### 實作摘要
-- `ItemSlotUI` 現在會把所有子 Control 設成 `MOUSE_FILTER_IGNORE`，由根節點統一吃滑鼠事件，拖曳與 hover 不再只剩邊框可用。
-- `InventoryUI` 改成自己在 `_input()` 處理 `E / I` 開關，避免 UI 開啟後 `_unhandled_input` 被 Control 節點截走導致無法關閉。
-- `Player` 的 `1-5` 先嘗試 hotbar，再 fallback 到 debug 武器切換；drag preview 也縮成 32x32 等級，操作手感恢復正常。
+- 已新增 `QuestData`、`QuestInstance`、`QuestManager`，支援任務模板、任務實例、進度更新、回報獎勵與存檔序列化。
+- 已整合敵人擊殺、物品撿取、NPC 對話結束等事件來源，讓 KILL / COLLECT / TALK 類型任務能自動推進。
+- 已新增 `NPCQuestGiver` 並接到 `NPCDialogTrigger`，黑鐵匠現在可透過對話接取任務、查看進度、回報任務，且保留原本聊天流程入口。
 
-### 修改檔案
-- `game/scripts/ui/ItemSlotUI.gd`
-- `game/scripts/ui/InventoryUI.gd`
-- `game/scripts/Player.gd`
+### 修改檔案清單
+- `game/scripts/data/QuestData.gd`
+- `game/scripts/data/QuestInstance.gd`
+- `game/scripts/core/QuestManager.gd`
+- `game/scripts/components/NPCQuestGiver.gd`
+- `game/scripts/core/DialogManager.gd`
+- `game/scripts/components/NPCDialogTrigger.gd`
+- `game/scripts/items/PickupItem.gd`
+- `game/scripts/enemies/EnemyAIController.gd`
+- `game/scripts/core/SaveManager.gd`
 - `game/scenes/Arena_Test.tscn`
-- `game/scenes/ui/InventoryUI.tscn`
-- `obsidian_vault/codex_prompt.md`
+- `project.godot`
+- `game/data/quests/quest_talk_blacksmith.tres`
+- `game/data/quests/quest_kill_slime.tres`
+- `game/data/quests/quest_collect_herb.tres`
 
-### 修復的 Bug
-| Bug | 原因 | 修復方式 |
-|-----|------|---------|
-| 格子中心無法點擊 | `Icon/Label/MarginContainer` 等子節點仍用預設滑鼠過濾，導致 root slot 收不到中心區域事件 | `ItemSlotUI` 在 `_ready()` 遞迴把子 Control 設為 `MOUSE_FILTER_IGNORE`，root 保持 `STOP` |
-| E/I 鍵失效 | 背包 UI 開啟後，`Player._unhandled_input()` 會被 UI Control 節點截斷，無法再收到同 action 關閉背包 | 改由 `InventoryUI._input()` 直接處理 `ui_inventory`，並呼叫 `set_input_as_handled()` |
-| 1-5 武器失效 | `Arena_Test` 關掉了 debug 武器切換，且 hotbar 空綁定時數字鍵沒有 fallback | 恢復 `enable_debug_weapon_switching`，並讓 `Player` 先嘗試 hotbar，失敗再 fallback 到 debug 裝備 |
-| 預覽框過大 | drag preview 外框與內容都用 56/40 尺寸，明顯超過格子視覺比例 | 調整為 36 外框 + 32 圖示的 preview 尺寸 |
+### 測試驗證
+- 已執行 Godot `--headless --path . --import`，確認 quest 相關腳本與資源能被掃描、註冊與載入。
+- 手動測試建議：
+  1. 進入 `Arena_Test`，與鐵匠對話接取 `初次拜訪鐵匠`，結束對話後再次交談確認可回報。
+  2. 回報後再次與鐵匠對話，接取 `史萊姆清除計畫`，擊殺場景中的史萊姆後回來確認進度與回報獎勵。
+  3. 回報後用既有 debug 補道具方式取得草藥，接取 `採集草藥`，確認收集進度與回報獎勵。
+  4. 使用既有存檔流程（F5/F9）確認任務狀態、進度與已回報任務能正確保存與讀回。
 
 ### 備註/問題
-- Godot headless 啟動驗證通過，這輪修復後只剩既有的 `game/scenes/Player.tscn` ext_resource UID warning。
-- `1-5` 目前行為為「有 hotbar 綁定就使用 hotbar，否則 fallback 到 debug 武器切換」，方便測 UI 同時保留測試武器流。
+- `--headless --path . --quit-after 60` 在這個環境仍會直接 crash，沒有額外輸出 quest 相關 script error；目前可確認 import/腳本註冊正常，但完整執行階段仍建議在本機 Godot 編輯器或非 sandbox 環境再驗一次。

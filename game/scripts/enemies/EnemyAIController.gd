@@ -214,6 +214,9 @@ func die() -> void:
 		dash_hitbox.deactivate()
 	hurtbox.monitoring = false
 	hurtbox.monitorable = false
+	var quest_manager_ = _get_quest_manager()
+	if quest_manager_ != null and enemy_data != null:
+		quest_manager_.report_enemy_killed(enemy_data.enemy_id, 1)
 	drop_component.on_death()
 	reset_charge_visual()
 	play_dead_animation()
@@ -425,6 +428,13 @@ func _supports_charge_dash_behavior() -> bool:
 	var charge_state_ := state_machine.get_node_or_null(NodePath("Charge")) as EnemyState
 	var dash_state_ := state_machine.get_node_or_null(NodePath("Dash")) as EnemyState
 	return charge_state_ != null and dash_state_ != null
+
+
+func _get_quest_manager() -> Node:
+	var tree_: SceneTree = get_tree()
+	if tree_ == null or tree_.root == null:
+		return null
+	return tree_.root.get_node_or_null("QuestManager")
 
 
 func _on_detection_body_entered(body_: Node) -> void:

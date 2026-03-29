@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/QuestData.gd" id="1_quest_data_script"]
+
+[resource]
+script = ExtResource("1_quest_data_script")
+quest_id = &"quest_collect_herb"
+quest_name = "採集草藥"
+quest_description = "替鐵匠收集 10 份草藥，讓他能補齊店裡的藥材。"
+quest_type = 1
+target_item_id = &"mat_herb"
+target_npc_id = &"npc_blacksmith"
+target_amount = 10
+reward_gold = 80
+reward_item_id = &"cns_potion"
+reward_item_amount = 3
+prerequisite_quest_id = &"quest_kill_slime"

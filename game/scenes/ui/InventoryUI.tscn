@@ -1,94 +1,194 @@
-[gd_scene format=3 uid="uid://1o2gt1dhpxip"]
+[gd_scene load_steps=2 format=3 uid="uid://1o2gt1dhpxip"]
 
 [ext_resource type="Script" path="res://game/scripts/ui/InventoryUI.gd" id="1_inventory_ui_script"]
+[ext_resource type="PackedScene" path="res://game/scenes/ui/EquipmentUI.tscn" id="2_equipment_ui_scene"]
 
 [node name="InventoryUI" type="CanvasLayer" unique_id=1630627325]
 script = ExtResource("1_inventory_ui_script")
 
+[node name="Backdrop" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.03, 0.03, 0.04, 0.64)
+
 [node name="MainPanel" type="PanelContainer" parent="." unique_id=1514926578]
-offset_left = 300.0
-offset_top = 88.0
-offset_right = 1320.0
-offset_bottom = 900.0
+anchor_left = 0.05
+anchor_top = 0.06
+anchor_right = 0.73
+anchor_bottom = 0.94
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
 
 [node name="PanelMargin" type="MarginContainer" parent="MainPanel" unique_id=410866318]
 layout_mode = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 20
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
 
 [node name="Root" type="VBoxContainer" parent="MainPanel/PanelMargin" unique_id=1055154176]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="TitleBar" type="HBoxContainer" parent="MainPanel/PanelMargin/Root" unique_id=1099056241]
+[node name="TopSection" type="VBoxContainer" parent="MainPanel/PanelMargin/Root"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TitleBar" type="HBoxContainer" parent="MainPanel/PanelMargin/Root/TopSection" unique_id=1099056241]
 layout_mode = 2
 
-[node name="TitleLabel" type="Label" parent="MainPanel/PanelMargin/Root/TitleBar" unique_id=851545538]
+[node name="TitleLabel" type="Label" parent="MainPanel/PanelMargin/Root/TopSection/TitleBar" unique_id=851545538]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 28
 text = "背包"
 
-[node name="CategoryTabs" type="HBoxContainer" parent="MainPanel/PanelMargin/Root" unique_id=1446630471]
+[node name="TitleHint" type="Label" parent="MainPanel/PanelMargin/Root/TopSection/TitleBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84, 0.84, 0.84, 0.9)
+theme_override_font_sizes/font_size = 13
+text = "經典 RPG 分欄檢視"
+
+[node name="SubtitleLabel" type="Label" parent="MainPanel/PanelMargin/Root/TopSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.74, 0.78, 0.9)
+theme_override_font_sizes/font_size = 13
+text = "整理背包、查看裝備、拖曳綁定快捷欄。"
+
+[node name="BodyRow" type="HBoxContainer" parent="MainPanel/PanelMargin/Root"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="InventoryPanel" type="PanelContainer" parent="MainPanel/PanelMargin/Root/BodyRow"]
+custom_minimum_size = Vector2(0, 420)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="InventoryMargin" type="MarginContainer" parent="MainPanel/PanelMargin/Root/BodyRow/InventoryPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="InventoryContent" type="VBoxContainer" parent="MainPanel/PanelMargin/Root/BodyRow/InventoryPanel/InventoryMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="InventoryHeader" type="HBoxContainer" parent="MainPanel/PanelMargin/Root/BodyRow/InventoryPanel/InventoryMargin/InventoryContent"]
+layout_mode = 2
+
+[node name="InventoryLabel" type="Label" parent="MainPanel/PanelMargin/Root/BodyRow/InventoryPanel/InventoryMargin/InventoryContent/InventoryHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "物品欄"
+
+[node name="InventoryHint" type="Label" parent="MainPanel/PanelMargin/Root/BodyRow/InventoryPanel/InventoryMargin/InventoryContent/InventoryHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.76, 0.78, 0.82, 0.88)
+theme_override_font_sizes/font_size = 12
+text = "5 x 4 格"
+
+[node name="ItemGrid" type="GridContainer" parent="MainPanel/PanelMargin/Root/BodyRow/InventoryPanel/InventoryMargin/InventoryContent" unique_id=420980347]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 5
+
+[node name="EquipmentUI" parent="MainPanel/PanelMargin/Root/BodyRow" instance=ExtResource("2_equipment_ui_scene")]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BottomSection" type="VBoxContainer" parent="MainPanel/PanelMargin/Root"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="CategoryPanel" type="PanelContainer" parent="MainPanel/PanelMargin/Root/BottomSection"]
+layout_mode = 2
+
+[node name="CategoryMargin" type="MarginContainer" parent="MainPanel/PanelMargin/Root/BottomSection/CategoryPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="CategoryTabs" type="HBoxContainer" parent="MainPanel/PanelMargin/Root/BottomSection/CategoryPanel/CategoryMargin"]
 layout_mode = 2
 theme_override_constants/separation = 8
+alignment = 1
 
-[node name="TabAll" type="Button" parent="MainPanel/PanelMargin/Root/CategoryTabs" unique_id=1658488863]
+[node name="TabAll" type="Button" parent="MainPanel/PanelMargin/Root/BottomSection/CategoryPanel/CategoryMargin/CategoryTabs" unique_id=1658488863]
 layout_mode = 2
 text = "全部"
 
-[node name="TabMaterial" type="Button" parent="MainPanel/PanelMargin/Root/CategoryTabs" unique_id=2146981673]
+[node name="TabMaterial" type="Button" parent="MainPanel/PanelMargin/Root/BottomSection/CategoryPanel/CategoryMargin/CategoryTabs" unique_id=2146981673]
 layout_mode = 2
 text = "素材"
 
-[node name="TabConsumable" type="Button" parent="MainPanel/PanelMargin/Root/CategoryTabs" unique_id=10798737]
+[node name="TabConsumable" type="Button" parent="MainPanel/PanelMargin/Root/BottomSection/CategoryPanel/CategoryMargin/CategoryTabs" unique_id=10798737]
 layout_mode = 2
 text = "消耗品"
 
-[node name="TabWeapon" type="Button" parent="MainPanel/PanelMargin/Root/CategoryTabs" unique_id=1300976968]
+[node name="TabWeapon" type="Button" parent="MainPanel/PanelMargin/Root/BottomSection/CategoryPanel/CategoryMargin/CategoryTabs" unique_id=1300976968]
 layout_mode = 2
 text = "武器"
 
-[node name="TabRune" type="Button" parent="MainPanel/PanelMargin/Root/CategoryTabs" unique_id=1557712560]
+[node name="TabRune" type="Button" parent="MainPanel/PanelMargin/Root/BottomSection/CategoryPanel/CategoryMargin/CategoryTabs" unique_id=1557712560]
 layout_mode = 2
 text = "符文"
 
-[node name="TabKey" type="Button" parent="MainPanel/PanelMargin/Root/CategoryTabs" unique_id=1995456401]
+[node name="TabKey" type="Button" parent="MainPanel/PanelMargin/Root/BottomSection/CategoryPanel/CategoryMargin/CategoryTabs" unique_id=1995456401]
 layout_mode = 2
 text = "鑰匙"
 
-[node name="ItemGrid" type="GridContainer" parent="MainPanel/PanelMargin/Root" unique_id=420980347]
+[node name="HotbarPanel" type="PanelContainer" parent="MainPanel/PanelMargin/Root/BottomSection"]
 layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/h_separation = 8
-theme_override_constants/v_separation = 8
-columns = 5
 
-[node name="HotbarSection" type="VBoxContainer" parent="MainPanel/PanelMargin/Root" unique_id=1789623210]
+[node name="HotbarMargin" type="MarginContainer" parent="MainPanel/PanelMargin/Root/BottomSection/HotbarPanel"]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
 
-[node name="HotbarLabel" type="Label" parent="MainPanel/PanelMargin/Root/HotbarSection" unique_id=1747881896]
+[node name="HotbarContent" type="VBoxContainer" parent="MainPanel/PanelMargin/Root/BottomSection/HotbarPanel/HotbarMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HotbarLabel" type="Label" parent="MainPanel/PanelMargin/Root/BottomSection/HotbarPanel/HotbarMargin/HotbarContent" unique_id=1747881896]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "快捷欄"
 
-[node name="HotbarSlots" type="HBoxContainer" parent="MainPanel/PanelMargin/Root/HotbarSection" unique_id=1871371782]
+[node name="HotbarSlots" type="HBoxContainer" parent="MainPanel/PanelMargin/Root/BottomSection/HotbarPanel/HotbarMargin/HotbarContent" unique_id=1871371782]
 layout_mode = 2
 theme_override_constants/separation = 10
+alignment = 1
 
-[node name="InfoLabel" type="Label" parent="MainPanel/PanelMargin/Root" unique_id=1941187223]
+[node name="InfoLabel" type="Label" parent="MainPanel/PanelMargin/Root/BottomSection" unique_id=1941187223]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.76, 0.78, 0.82, 0.9)
+theme_override_font_sizes/font_size = 12
 text = "[E / I] 開關背包"
 autowrap_mode = 3
 
 [node name="TooltipPanel" type="PanelContainer" parent="." unique_id=134206247]
 visible = false
-offset_left = 1350.0
-offset_top = 128.0
-offset_right = 1670.0
-offset_bottom = 360.0
+offset_left = 1320.0
+offset_top = 110.0
+offset_right = 1672.0
+offset_bottom = 390.0
 
 [node name="TooltipMargin" type="MarginContainer" parent="TooltipPanel" unique_id=452072441]
 layout_mode = 2
@@ -103,28 +203,34 @@ theme_override_constants/separation = 8
 
 [node name="ItemNameLabel" type="Label" parent="TooltipPanel/TooltipMargin/TooltipContent" unique_id=964964469]
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 20
 text = "Item"
 
 [node name="ItemTypeLabel" type="Label" parent="TooltipPanel/TooltipMargin/TooltipContent" unique_id=116623158]
 layout_mode = 2
+theme_override_font_sizes/font_size = 13
 text = "類型: -"
 
 [node name="ItemDescriptionLabel" type="Label" parent="TooltipPanel/TooltipMargin/TooltipContent" unique_id=1866814841]
+custom_minimum_size = Vector2(324, 0)
 layout_mode = 2
+theme_override_font_sizes/font_size = 13
 text = "-"
 autowrap_mode = 3
 
 [node name="ItemStatsLabel" type="Label" parent="TooltipPanel/TooltipMargin/TooltipContent" unique_id=1672288414]
+custom_minimum_size = Vector2(324, 0)
 layout_mode = 2
+theme_override_font_sizes/font_size = 13
 text = "-"
 autowrap_mode = 3
 
 [node name="ItemSlotLabel" type="Label" parent="TooltipPanel/TooltipMargin/TooltipContent" unique_id=335697632]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.75, 0.75, 1)
+theme_override_font_sizes/font_size = 12
 text = "背包格 1"
 
 [node name="TooltipDelayTimer" type="Timer" parent="." unique_id=946192860]
-wait_time = 0.5
+wait_time = 0.35
 one_shot = true

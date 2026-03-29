@@ -15,6 +15,7 @@
 [ext_resource type="Script" uid="uid://cqmxxwf5v8fg3" path="res://game/scripts/combat/DamageReceiver.gd" id="12_damage_receiver_script"]
 [ext_resource type="Resource" uid="uid://bcjtmix6guoj3" path="res://game/data/weapons/test_weapon.tres" id="13_unarmed_weapon"]
 [ext_resource type="Script" path="res://game/scripts/inventory/Inventory.gd" id="14_inventory_script"]
+[ext_resource type="Script" path="res://game/scripts/inventory/Equipment.gd" id="16_equipment_script"]
 
 [sub_resource type="CapsuleShape2D" id="1_player_body_shape"]
 radius = 8.0
@@ -83,6 +84,9 @@ script = ExtResource("11_feedback_receiver_script")
 
 [node name="Inventory" type="Node" parent="."]
 script = ExtResource("14_inventory_script")
+
+[node name="Equipment" type="Node" parent="."]
+script = ExtResource("16_equipment_script")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=292574213]
 position_smoothing_enabled = true

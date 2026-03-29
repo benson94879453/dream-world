@@ -1,6 +1,8 @@
 class_name PlayerController
 extends CharacterBody2D
 
+const EquipmentNode = preload("res://game/scripts/inventory/Equipment.gd")
+const GearInstanceResource = preload("res://game/scripts/data/GearInstance.gd")
 const InventoryNode = preload("res://game/scripts/inventory/Inventory.gd")
 const ItemDataResource = preload("res://game/scripts/data/ItemData.gd")
 const WeaponInstanceResource = preload("res://game/scripts/data/WeaponInstance.gd")
@@ -59,6 +61,7 @@ var hurtbox_monitorable_default: bool = true
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var inventory: InventoryNode = $Inventory
+@onready var equipment: EquipmentNode = $Equipment
 
 #region Core Lifecycle
 func _ready() -> void:
@@ -68,6 +71,7 @@ func _ready() -> void:
 	assert(hurtbox != null, "PlayerController requires Hurtbox")
 	assert(health_component != null, "PlayerController requires HealthComponent")
 	assert(inventory != null, "PlayerController requires Inventory")
+	assert(equipment != null, "PlayerController requires Equipment")
 	assert(equipped_weapon_data != null, "PlayerController requires equipped_weapon_data")
 	assert(dash_duration > 0.0, "PlayerController dash_duration must be greater than 0")
 	assert(dash_distance >= 0.0, "PlayerController dash_distance must be non-negative")
@@ -208,7 +212,15 @@ func get_inventory() -> InventoryNode:
 
 
 func get_equipped_weapon() -> WeaponInstance:
+	if equipment != null:
+		return equipment.equipped_weapon
 	return equipped_weapon
+
+
+func get_equipped_in_slot(slot_: EquipmentNode.EquipmentSlot) -> Variant:
+	if equipment == null:
+		return null
+	return equipment.get_equipped_in_slot(slot_)
 
 
 func get_equipped_weapon_controller() -> WeaponController:
@@ -333,23 +345,130 @@ func equip_weapon_instance(weapon_instance_: WeaponInstanceResource) -> void:
 	assert(weapon_instance_.weapon_data != null, "PlayerController requires WeaponInstance.weapon_data")
 	assert(weapon_instance_.weapon_data.weapon_scene != null, "PlayerController requires WeaponData.weapon_scene")
 
-	var interrupted_attack_ := get_current_state_name() == &"Attack"
-	_clear_equipped_weapon_controller()
+	if equipment != null and equipment.equipped_weapon != weapon_instance_:
+		equipment.equip_weapon(weapon_instance_)
 
-	equipped_weapon = weapon_instance_
-	equipped_weapon_data = weapon_instance_.weapon_data
-	equipped_weapon_controller = _instantiate_weapon_controller(weapon_instance_.weapon_data)
-	equipped_weapon_controller.setup(self, equipped_weapon)
-	equipped_weapon_controller.on_equipped()
+	_apply_equipped_weapon_instance(weapon_instance_)
 
-	if interrupted_attack_ and state_machine != null and get_current_state_name() == &"Attack":
-		state_machine.transition_to(resolve_locomotion_state_name())
+
+func try_equip_from_inventory(slot_index_: int) -> bool:
+	if inventory == null or equipment == null:
+		return false
+
+	var slot_: InventorySlot = inventory.get_slot(slot_index_)
+	if slot_ == null:
+		return false
+
+	match slot_.get_content_type():
+		&"weapon":
+			var weapon_instance_: WeaponInstanceResource = slot_.weapon_instance
+			if weapon_instance_ == null:
+				return false
+
+			var current_weapon_ := equipment.get_equipped_in_slot(EquipmentNode.EquipmentSlot.WEAPON_MAIN) as WeaponInstanceResource
+			if current_weapon_ == weapon_instance_:
+				if not inventory.remove_weapon(weapon_instance_):
+					return false
+				_apply_equipped_weapon_instance(weapon_instance_)
+				return true
+
+			if not inventory.remove_weapon(weapon_instance_):
+				return false
+
+			var old_weapon_ := equipment.equip_weapon(weapon_instance_)
+			if old_weapon_ != null and not inventory.add_weapon(old_weapon_):
+				_rollback_weapon_inventory_equip(weapon_instance_, old_weapon_)
+				return false
+
+			_apply_equipped_weapon_instance(weapon_instance_)
+			return true
+		&"gear":
+			var gear_instance_: GearInstanceResource = slot_.gear_instance
+			if gear_instance_ == null:
+				return false
+
+			var target_slot_ := _get_equipment_slot_for_gear(gear_instance_)
+			if target_slot_ == -1:
+				return false
+
+			var current_gear_ := equipment.get_equipped_in_slot(target_slot_) as GearInstanceResource
+			if current_gear_ == gear_instance_:
+				return inventory.remove_gear(gear_instance_)
+
+			if not inventory.remove_gear(gear_instance_):
+				return false
+
+			var old_gear_ := equipment.equip_gear(gear_instance_)
+			if old_gear_ != null and not inventory.add_gear(old_gear_):
+				_rollback_gear_inventory_equip(gear_instance_, old_gear_)
+				return false
+
+			return true
+		_:
+			return false
+
+
+func try_unequip_to_inventory(slot_: EquipmentNode.EquipmentSlot) -> bool:
+	if inventory == null or equipment == null:
+		return false
+
+	var equipped_instance_ = equipment.get_equipped_in_slot(slot_)
+	if equipped_instance_ == null:
+		return false
+
+	if slot_ == EquipmentNode.EquipmentSlot.WEAPON_MAIN:
+		var weapon_instance_ := equipped_instance_ as WeaponInstanceResource
+		if weapon_instance_ == null or not inventory.add_weapon(weapon_instance_):
+			return false
+
+		var unequipped_weapon_ := equipment.unequip_slot(slot_) as WeaponInstanceResource
+		if unequipped_weapon_ == null:
+			inventory.remove_weapon(weapon_instance_)
+			return false
+
+		_apply_equipped_weapon_instance(equipment.equipped_weapon)
+		return true
+
+	var gear_instance_ := equipped_instance_ as GearInstanceResource
+	if gear_instance_ == null or not inventory.add_gear(gear_instance_):
+		return false
+
+	var unequipped_gear_ := equipment.unequip_slot(slot_) as GearInstanceResource
+	if unequipped_gear_ == null:
+		inventory.remove_gear(gear_instance_)
+		return false
+
+	return true
+
+
+func quick_move_from_inventory(from_inventory_: InventoryNode, slot_index_: int, target_inventory_: InventoryNode = null) -> bool:
+	if from_inventory_ == null:
+		return false
+
+	if target_inventory_ == null:
+		if from_inventory_ != inventory:
+			return false
+
+		var slot_: InventorySlot = from_inventory_.get_slot(slot_index_)
+		if slot_ == null:
+			return false
+
+		match slot_.get_content_type():
+			&"weapon", &"gear":
+				return try_equip_from_inventory(slot_index_)
+			&"item":
+				return from_inventory_.split_stack(slot_index_) != -1
+			_:
+				return false
+
+	return from_inventory_.quick_move_slot_to_inventory(slot_index_, target_inventory_)
 
 
 func to_save_dict() -> Dictionary:
-	var equipped_weapon_uid_: String = inventory.get_equipped_weapon_uid() if inventory != null else ""
-	var equipped_weapon_id_: String = String(equipped_weapon.weapon_id) if equipped_weapon != null else ""
-	var equipped_weapon_enhance_: int = equipped_weapon.enhance_level if equipped_weapon != null else 0
+	var current_weapon_ := get_equipped_weapon()
+	var equipped_weapon_uid_: String = current_weapon_.instance_uid if current_weapon_ != null else ""
+	var equipped_weapon_id_: String = String(current_weapon_.weapon_id) if current_weapon_ != null else ""
+	var equipped_weapon_enhance_: int = current_weapon_.enhance_level if current_weapon_ != null else 0
 
 	return {
 		"current_hp": health_component.current_hp,
@@ -359,18 +478,25 @@ func to_save_dict() -> Dictionary:
 			"x": global_position.x,
 			"y": global_position.y
 		},
+		"_deprecated_equipped_weapon_fields": true,
 		"equipped_weapon_uid": equipped_weapon_uid_,
 		"equipped_weapon_id": equipped_weapon_id_,
 		"equipped_weapon_enhance_level": equipped_weapon_enhance_,
-		"equipped_weapon_star_level": equipped_weapon.star_level if equipped_weapon != null else 0,
-		"equipped_weapon_temporary_enchants": equipped_weapon.temporary_enchants.map(func(value_: StringName) -> String: return String(value_)) if equipped_weapon != null else [],
-		"equipped_weapon_socketed_gems": equipped_weapon.socketed_gems.map(func(value_: StringName) -> String: return String(value_)) if equipped_weapon != null else [],
-		"equipped_weapon_affixes": equipped_weapon.affixes.map(func(value_) -> Dictionary: return value_.to_save_dict()) if equipped_weapon != null else [],
-		"equipped_weapon_runes": equipped_weapon.get_equipped_rune_ids().map(func(value_: StringName) -> String: return String(value_)) if equipped_weapon != null else []
+		"equipped_weapon_star_level": current_weapon_.star_level if current_weapon_ != null else 0,
+		"equipped_weapon_temporary_enchants": current_weapon_.temporary_enchants.map(func(value_: StringName) -> String: return String(value_)) if current_weapon_ != null else [],
+		"equipped_weapon_socketed_gems": current_weapon_.socketed_gems.map(func(value_: StringName) -> String: return String(value_)) if current_weapon_ != null else [],
+		"equipped_weapon_affixes": current_weapon_.affixes.map(func(value_) -> Dictionary: return value_.to_save_dict()) if current_weapon_ != null else [],
+		"equipped_weapon_runes": current_weapon_.get_equipped_rune_ids().map(func(value_: StringName) -> String: return String(value_)) if current_weapon_ != null else [],
+		"equipment": equipment.to_save_dict() if equipment != null else {}
 	}
 
 
-func from_save_dict(data_: Dictionary) -> void:
+func from_save_dict(data_: Dictionary) -> Dictionary:
+	var load_report_ := {
+		"equipment_attempted": false,
+		"equipment_loaded": false
+	}
+
 	var current_hp_: float = float(data_.get("current_hp", health_component.max_hp))
 	health_component.current_hp = clampf(current_hp_, 0.0, health_component.max_hp)
 	health_component.set_temporary_hp(float(data_.get("temporary_hp", 0.0)))
@@ -383,6 +509,14 @@ func from_save_dict(data_: Dictionary) -> void:
 			float(position_data_.get("x", global_position.x)),
 			float(position_data_.get("y", global_position.y))
 		)
+
+	var equipment_data_ = data_.get("equipment", {})
+	if equipment != null and typeof(equipment_data_) == TYPE_DICTIONARY and not equipment_data_.is_empty():
+		load_report_["equipment_attempted"] = true
+		load_report_["equipment_loaded"] = equipment.from_save_dict(equipment_data_)
+		_apply_equipped_weapon_instance(equipment.equipped_weapon)
+
+	return load_report_
 
 
 func restore_equipped_weapon_from_save(data_: Dictionary) -> bool:
@@ -498,6 +632,59 @@ func _clear_equipped_weapon_controller() -> void:
 	equipped_weapon_controller.on_unequipped()
 	equipped_weapon_controller.queue_free()
 	equipped_weapon_controller = null
+
+
+func _apply_equipped_weapon_instance(weapon_instance_: WeaponInstanceResource) -> void:
+	var interrupted_attack_ := get_current_state_name() == &"Attack"
+	_clear_equipped_weapon_controller()
+
+	equipped_weapon = weapon_instance_
+	equipped_weapon_data = weapon_instance_.weapon_data if weapon_instance_ != null else null
+
+	if weapon_instance_ != null:
+		equipped_weapon_controller = _instantiate_weapon_controller(weapon_instance_.weapon_data)
+		equipped_weapon_controller.setup(self, equipped_weapon)
+		equipped_weapon_controller.on_equipped()
+
+	if interrupted_attack_ and state_machine != null and get_current_state_name() == &"Attack":
+		state_machine.transition_to(resolve_locomotion_state_name())
+
+
+func _rollback_weapon_inventory_equip(new_weapon_: WeaponInstanceResource, old_weapon_: WeaponInstanceResource) -> void:
+	var reverted_weapon_ := equipment.equip_weapon(old_weapon_) if equipment != null else null
+	if reverted_weapon_ != null and reverted_weapon_ != new_weapon_:
+		push_warning("[PlayerController] Unexpected weapon rollback state during equip")
+
+	if inventory != null and not inventory.add_weapon(new_weapon_):
+		push_warning("[PlayerController] Failed to restore weapon to inventory after rollback")
+
+	_apply_equipped_weapon_instance(old_weapon_)
+
+
+func _rollback_gear_inventory_equip(new_gear_: GearInstanceResource, old_gear_: GearInstanceResource) -> void:
+	var reverted_gear_ := equipment.equip_gear(old_gear_) if equipment != null else null
+	if reverted_gear_ != null and reverted_gear_ != new_gear_:
+		push_warning("[PlayerController] Unexpected gear rollback state during equip")
+
+	if inventory != null and not inventory.add_gear(new_gear_):
+		push_warning("[PlayerController] Failed to restore gear to inventory after rollback")
+
+
+func _get_equipment_slot_for_gear(gear_instance_: GearInstanceResource) -> int:
+	if gear_instance_ == null or gear_instance_.gear_data == null:
+		return -1
+
+	match gear_instance_.gear_data.get_equipment_slot_id():
+		&"helmet":
+			return EquipmentNode.EquipmentSlot.HELMET
+		&"chestplate":
+			return EquipmentNode.EquipmentSlot.CHESTPLATE
+		&"leggings":
+			return EquipmentNode.EquipmentSlot.LEGGINGS
+		&"boots":
+			return EquipmentNode.EquipmentSlot.BOOTS
+		_:
+			return -1
 
 
 func _try_handle_debug_weapon_switch(event_: InputEvent) -> bool:

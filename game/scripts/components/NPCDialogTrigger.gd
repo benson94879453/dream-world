@@ -3,8 +3,10 @@ extends Area2D
 
 const DIALOG_MANAGER_PATH: NodePath = NodePath("/root/DialogManager")
 const DialogDataResource = preload("res://game/scripts/data/DialogData.gd")
+const NPCQuestGiverResource = preload("res://game/scripts/components/NPCQuestGiver.gd")
 
 @export var npc_name: String = "NPC"
+@export var npc_id: StringName = &""
 @export var dialog_data: DialogDataResource
 @export var interaction_key: StringName = &"interact"
 
@@ -15,9 +17,9 @@ var player_in_range: bool = false
 
 #region Core Lifecycle
 func _ready() -> void:
-	assert(dialog_data != null, "NPCDialogTrigger requires dialog_data")
 	assert(interaction_prompt != null, "NPCDialogTrigger requires InteractionPrompt")
 	assert(interaction_prompt_label != null, "NPCDialogTrigger InteractionPrompt must be Label")
+	assert(dialog_data != null or _get_quest_giver() != null, "NPCDialogTrigger requires dialog_data or NPCQuestGiver")
 
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
@@ -71,7 +73,17 @@ func _start_dialog() -> void:
 	if dialog_manager_ == null or dialog_manager_.is_dialog_active:
 		return
 
-	dialog_manager_.start_dialog(dialog_data)
+	var dialog_to_open_ := dialog_data
+	var quest_giver_ := _get_quest_giver()
+	if quest_giver_ != null:
+		var quest_dialog_ := quest_giver_.build_runtime_dialog(dialog_data, npc_name)
+		if quest_dialog_ != null:
+			dialog_to_open_ = quest_dialog_
+
+	if dialog_to_open_ == null:
+		return
+
+	dialog_manager_.start_dialog(dialog_to_open_, _get_runtime_npc_id())
 
 
 func _on_dialog_started(_dialog_id_: StringName) -> void:
@@ -90,6 +102,20 @@ func _update_prompt_visibility() -> void:
 
 func _get_dialog_manager() -> Node:
 	return get_node_or_null(DIALOG_MANAGER_PATH)
+
+
+func _get_quest_giver() -> NPCQuestGiverResource:
+	for child_ in get_children():
+		var quest_giver_ := child_ as NPCQuestGiverResource
+		if quest_giver_ != null:
+			return quest_giver_
+	return null
+
+
+func _get_runtime_npc_id() -> StringName:
+	if not npc_id.is_empty():
+		return npc_id
+	return StringName(String(name).to_lower())
 
 
 func _is_modal_ui_active() -> bool:

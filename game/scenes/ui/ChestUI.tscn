@@ -1,0 +1,64 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/ui/ChestUI.gd" id="1_chest_ui_script"]
+
+[node name="ChestUI" type="CanvasLayer"]
+visible = false
+script = ExtResource("1_chest_ui_script")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.03, 0.03, 0.04, 0.18)
+
+[node name="MainPanel" type="PanelContainer" parent="."]
+anchor_left = 0.75
+anchor_top = 0.08
+anchor_right = 0.97
+anchor_bottom = 0.92
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+
+[node name="Margin" type="MarginContainer" parent="MainPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Root" type="VBoxContainer" parent="MainPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleBar" type="HBoxContainer" parent="MainPanel/Margin/Root"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="MainPanel/Margin/Root/TitleBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "箱子"
+
+[node name="CloseButton" type="Button" parent="MainPanel/Margin/Root/TitleBar"]
+layout_mode = 2
+text = "關閉"
+
+[node name="HintLabel" type="Label" parent="MainPanel/Margin/Root"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.80, 0.82, 0.86, 0.9)
+theme_override_font_sizes/font_size = 12
+text = "點擊或 Shift+左鍵可快速移至玩家背包"
+autowrap_mode = 3
+
+[node name="ChestGrid" type="GridContainer" parent="MainPanel/Margin/Root"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 5

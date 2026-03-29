@@ -7,6 +7,8 @@ extends SpellActor
 @export var audio_player_path: NodePath = NodePath("AudioPlayer")
 @export var explosion_radius: float = 28.0
 @export var explosion_damage: float = 18.0
+@export var hitstop_duration_ms: int = 110
+@export var hitstop_scale: float = 0.0
 
 var explosion_area: Area2D = null
 var explosion_shape: CollisionShape2D = null
@@ -76,6 +78,8 @@ func _build_attack_context() -> AttackContext:
 	attack_context_.attacker_faction = &"player" if owner_actor != null and owner_actor.is_in_group("player") else &"enemy"
 	attack_context_.base_damage = explosion_damage
 	attack_context_.damage_type = &"magic"
+	attack_context_.hitstop_duration_ms = hitstop_duration_ms
+	attack_context_.hitstop_scale = hitstop_scale
 	attack_context_.tags = _get_attack_tags([&"spell", &"explosion", weapon_data.weapon_type])
 	attack_context_.weapon_instance = weapon_instance
 

@@ -10,3 +10,4 @@ description = "Restores health when consumed."
 item_type = 1
 max_stack = 20
 is_consumable = true
+tags = Array[StringName]([&"hotbar_bindable"])

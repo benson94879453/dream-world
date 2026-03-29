@@ -63,13 +63,24 @@ text = ""
 [node name="RuneListPanel" type="ScrollContainer" parent="Root"]
 custom_minimum_size = Vector2(0, 176)
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="RuneGrid" type="GridContainer" parent="Root/RuneListPanel"]
+[node name="RuneListContent" type="VBoxContainer" parent="Root/RuneListPanel"]
 layout_mode = 2
 size_flags_horizontal = 3
-columns = 2
-theme_override_constants/h_separation = 8
+theme_override_constants/separation = 8
+
+[node name="EmptyStateLabel" type="Label" parent="Root/RuneListPanel/RuneListContent"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 0.92)
+autowrap_mode = 3
+text = "背包裡沒有符文。"
+
+[node name="RuneList" type="VBoxContainer" parent="Root/RuneListPanel/RuneListContent"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/v_separation = 8
 
 [node name="StatusLabel" type="Label" parent="Root"]

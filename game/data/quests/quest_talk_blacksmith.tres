@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/QuestData.gd" id="1_quest_data_script"]
+
+[resource]
+script = ExtResource("1_quest_data_script")
+quest_id = &"quest_talk_blacksmith"
+quest_name = "初次拜訪鐵匠"
+quest_description = "和鐵匠正式打個招呼，看看他有沒有工作。"
+quest_type = 2
+target_npc_id = &"npc_blacksmith"
+target_amount = 1
+reward_gold = 25
