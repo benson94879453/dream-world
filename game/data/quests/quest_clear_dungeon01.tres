@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/QuestData.gd" id="1_quest_data_script"]
+
+[resource]
+script = ExtResource("1_quest_data_script")
+quest_id = &"quest_clear_dungeon01"
+quest_name = "清除地城威脅"
+quest_description = "擊敗地城深處的野豬王，保護城鎮安全。"
+quest_type = 0
+target_enemy_id = &"en_boar"
+target_npc_id = &"npc_quest_board"
+target_amount = 1
+reward_gold = 500

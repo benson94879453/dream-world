@@ -1,0 +1,172 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="PackedScene" path="res://game/scenes/Player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://game/scenes/interactables/Portal.tscn" id="2_portal_scene"]
+[ext_resource type="Resource" path="res://game/data/dialogs/dlg_blacksmith_intro.tres" id="3_blacksmith_dialog"]
+[ext_resource type="Script" path="res://game/scripts/components/NPCDialogTrigger.gd" id="4_npc_trigger_script"]
+[ext_resource type="Script" path="res://game/scripts/components/NPCQuestGiver.gd" id="5_npc_quest_giver_script"]
+[ext_resource type="PackedScene" path="res://game/scenes/ui/DialogUI.tscn" id="6_dialog_ui"]
+[ext_resource type="PackedScene" path="res://game/scenes/ui/WeaponUpgradeUI.tscn" id="7_weapon_upgrade_ui"]
+[ext_resource type="PackedScene" path="res://game/scenes/ui/InventoryUI.tscn" id="8_inventory_ui"]
+[ext_resource type="PackedScene" path="res://game/scenes/ui/ChestUI.tscn" id="9_chest_ui"]
+[ext_resource type="PackedScene" path="res://game/scenes/npcs/InstructorNPC.tscn" id="10_instructor_scene"]
+
+[sub_resource type="CircleShape2D" id="1_blacksmith_trigger_shape"]
+radius = 30.0
+
+[sub_resource type="CircleShape2D" id="2_quest_board_trigger_shape"]
+radius = 34.0
+
+[node name="TownHub" type="Node2D"]
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="Ground" type="ColorRect" parent="World"]
+offset_left = -640.0
+offset_top = -360.0
+offset_right = 640.0
+offset_bottom = 360.0
+color = Color(0.19, 0.29, 0.20, 1)
+
+[node name="TownSquare" type="ColorRect" parent="World"]
+offset_left = -220.0
+offset_top = -120.0
+offset_right = 220.0
+offset_bottom = 120.0
+color = Color(0.48, 0.42, 0.33, 1)
+
+[node name="NorthFence" type="ColorRect" parent="World"]
+offset_left = -640.0
+offset_top = -300.0
+offset_right = 640.0
+offset_bottom = -260.0
+color = Color(0.34, 0.22, 0.12, 1)
+
+[node name="SouthFence" type="ColorRect" parent="World"]
+offset_left = -640.0
+offset_top = 260.0
+offset_right = 640.0
+offset_bottom = 300.0
+color = Color(0.34, 0.22, 0.12, 1)
+
+[node name="Player" parent="World" instance=ExtResource("1_player")]
+position = Vector2(-120, 24)
+enable_debug_weapon_switching = true
+
+[node name="Blacksmith" type="Area2D" parent="World"]
+position = Vector2(72, 24)
+script = ExtResource("4_npc_trigger_script")
+npc_name = "鐵匠"
+npc_id = &"npc_blacksmith"
+dialog_data = ExtResource("3_blacksmith_dialog")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Blacksmith"]
+shape = SubResource("1_blacksmith_trigger_shape")
+
+[node name="Body" type="Polygon2D" parent="World/Blacksmith"]
+polygon = PackedVector2Array(-16, -28, 16, -28, 16, 4, -16, 4)
+color = Color(0.85098, 0.541176, 0.243137, 1)
+
+[node name="Anvil" type="Polygon2D" parent="World/Blacksmith"]
+position = Vector2(-28, -4)
+polygon = PackedVector2Array(-12, -8, 12, -8, 18, 4, -16, 4)
+color = Color(0.38, 0.42, 0.49, 1)
+
+[node name="NameLabel" type="Label" parent="World/Blacksmith"]
+offset_left = -22.0
+offset_top = -50.0
+offset_right = 42.0
+offset_bottom = -26.0
+text = "鐵匠"
+horizontal_alignment = 1
+
+[node name="InteractionPrompt" type="Label" parent="World/Blacksmith"]
+visible = false
+offset_left = -62.0
+offset_top = -70.0
+offset_right = 96.0
+offset_bottom = -46.0
+modulate = Color(1, 0.92549, 0.592157, 1)
+text = "[F] 與鐵匠交談"
+horizontal_alignment = 1
+
+[node name="NPCQuestGiver" type="Node" parent="World/Blacksmith"]
+script = ExtResource("5_npc_quest_giver_script")
+npc_id = &"npc_blacksmith"
+available_quest_ids = Array[StringName]([&"quest_talk_blacksmith", &"quest_kill_slime", &"quest_collect_herb"])
+
+[node name="Instructor" parent="World" instance=ExtResource("10_instructor_scene")]
+position = Vector2(-320, 24)
+
+[node name="QuestBoard" type="Area2D" parent="World"]
+position = Vector2(184, -40)
+script = ExtResource("4_npc_trigger_script")
+npc_name = "任務板"
+npc_id = &"npc_quest_board"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/QuestBoard"]
+shape = SubResource("2_quest_board_trigger_shape")
+
+[node name="Board" type="Polygon2D" parent="World/QuestBoard"]
+polygon = PackedVector2Array(-18, -32, 18, -32, 18, 20, -18, 20)
+color = Color(0.423529, 0.282353, 0.164706, 1)
+
+[node name="Notice" type="Polygon2D" parent="World/QuestBoard"]
+position = Vector2(0, -6)
+polygon = PackedVector2Array(-12, -16, 12, -16, 12, 12, -12, 12)
+color = Color(0.890196, 0.85098, 0.670588, 1)
+
+[node name="NameLabel" type="Label" parent="World/QuestBoard"]
+offset_left = -34.0
+offset_top = -62.0
+offset_right = 34.0
+offset_bottom = -38.0
+text = "任務板"
+horizontal_alignment = 1
+
+[node name="InteractionPrompt" type="Label" parent="World/QuestBoard"]
+visible = false
+offset_left = -92.0
+offset_top = -86.0
+offset_right = 92.0
+offset_bottom = -62.0
+modulate = Color(1, 0.92549, 0.592157, 1)
+text = "[F] 查看委託"
+horizontal_alignment = 1
+
+[node name="NPCQuestGiver" type="Node" parent="World/QuestBoard"]
+script = ExtResource("5_npc_quest_giver_script")
+npc_id = &"npc_quest_board"
+available_quest_ids = Array[StringName]([&"quest_clear_dungeon01"])
+
+[node name="PortalToDungeon" parent="World" instance=ExtResource("2_portal_scene")]
+position = Vector2(280, 24)
+target_scene = "res://game/scenes/levels/Dungeon01.tscn"
+target_spawn_point = &"Spawn_default"
+interaction_prompt = "[F] 前往地城"
+
+[node name="PortalSign" type="Label" parent="World/PortalToDungeon"]
+offset_left = -42.0
+offset_top = 34.0
+offset_right = 56.0
+offset_bottom = 58.0
+text = "Dungeon 01"
+horizontal_alignment = 1
+
+[node name="Markers" type="Node2D" parent="."]
+
+[node name="Spawn_default" type="Marker2D" parent="Markers"]
+position = Vector2(-120, 24)
+
+[node name="Spawn_from_dungeon" type="Marker2D" parent="Markers"]
+position = Vector2(208, 24)
+
+[node name="UI" type="Node" parent="."]
+
+[node name="DialogUI" parent="UI" instance=ExtResource("6_dialog_ui")]
+
+[node name="WeaponUpgradeUI" parent="UI" instance=ExtResource("7_weapon_upgrade_ui")]
+
+[node name="InventoryUI" parent="UI" instance=ExtResource("8_inventory_ui")]
+
+[node name="ChestUI" parent="UI" instance=ExtResource("9_chest_ui")]

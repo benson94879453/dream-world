@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="DialogData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/DialogData.gd" id="1_dialog_data_script"]
+[ext_resource type="Script" path="res://game/scripts/data/DialogNodeData.gd" id="2_dialog_node_data_script"]
+
+[sub_resource type="Resource" id="1_node_intro"]
+script = ExtResource("2_dialog_node_data_script")
+node_id = &"intro"
+speaker_name = "教官"
+text = "很好，你已經擊退了地城深處的威脅。這證明你不只會揮劍，也懂得在壓力下活下來。"
+next_node_id = &"follow_up"
+
+[sub_resource type="Resource" id="2_node_follow_up"]
+script = ExtResource("2_dialog_node_data_script")
+node_id = &"follow_up"
+speaker_name = "教官"
+text = "接下來我會替你準備更進一步的訓練內容。現在先回去領取任務報酬吧。"
+next_node_id = &"end"
+
+[sub_resource type="Resource" id="3_node_end"]
+script = ExtResource("2_dialog_node_data_script")
+node_id = &"end"
+node_type = 2
+
+[resource]
+script = ExtResource("1_dialog_data_script")
+dialog_id = &"dlg_instructor_post_boss"
+nodes = Array[ExtResource("2_dialog_node_data_script")]([SubResource("1_node_intro"), SubResource("2_node_follow_up"), SubResource("3_node_end")])
+start_node_id = &"intro"

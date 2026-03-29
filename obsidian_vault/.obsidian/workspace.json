@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "0324/04_Coding_Habits.md",
+                "file": "reviews/review_019_inventory_ui.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "04_Coding_Habits"
+              "title": "review_019_inventory_ui"
             }
           }
         ]
@@ -183,15 +183,16 @@
       "bases:建立新的 base": false
     }
   },
-  "active": "fe9c764075f51b47",
+  "active": "81b34e2c537eab82",
   "lastOpenFiles": [
-    "0324/PROJECT_BRIEF_FOR_PLANNER.md",
-    "0324/05_weapon_strengthen.md",
-    "0324/04_Coding_Habits.md",
-    "0324/03_Implementation_Order.md",
+    "reviews/review_020_hub_vertical_slice_complete.md",
     "codex_prompt.md",
-    "0324/02_Tech_Spec_Notes.md",
     "Kimi_Codex_Workflow.md",
+    "0324/PROJECT_BRIEF_FOR_PLANNER.md",
+    "0324/04_Coding_Habits.md",
+    "0324/05_weapon_strengthen.md",
+    "0324/03_Implementation_Order.md",
+    "0324/02_Tech_Spec_Notes.md",
     "review_template.md",
     "SYNC_SUMMARY.md",
     "WORKFLOW_TEMPLATE.md",
@@ -210,7 +211,6 @@
     "reviews/review_015_rune_socket.md",
     "0324/04_Coding_Habits.md.md",
     "0324/05_weapon_strengthen.md.md",
-    "reviews/review_014_weapon_upgrade.md",
     "reviews"
   ]
 }

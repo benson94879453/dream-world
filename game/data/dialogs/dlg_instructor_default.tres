@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="DialogData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/data/DialogData.gd" id="1_dialog_data_script"]
+[ext_resource type="Script" path="res://game/scripts/data/DialogNodeData.gd" id="2_dialog_node_data_script"]
+
+[sub_resource type="Resource" id="1_node_intro"]
+script = ExtResource("2_dialog_node_data_script")
+node_id = &"intro"
+speaker_name = "教官"
+text = "城鎮外的地城已經不太平靜了。先去點亮營火，萬一倒下也能立刻重整再戰。"
+next_node_id = &"follow_up"
+
+[sub_resource type="Resource" id="2_node_follow_up"]
+script = ExtResource("2_dialog_node_data_script")
+node_id = &"follow_up"
+speaker_name = "教官"
+text = "準備好了就去討伐地城深處的野豬王。活著回來，再讓我看看你的成長。"
+next_node_id = &"end"
+
+[sub_resource type="Resource" id="3_node_end"]
+script = ExtResource("2_dialog_node_data_script")
+node_id = &"end"
+node_type = 2
+
+[resource]
+script = ExtResource("1_dialog_data_script")
+dialog_id = &"dlg_instructor_default"
+nodes = Array[ExtResource("2_dialog_node_data_script")]([SubResource("1_node_intro"), SubResource("2_node_follow_up"), SubResource("3_node_end")])
+start_node_id = &"intro"

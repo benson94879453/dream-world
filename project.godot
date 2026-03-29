@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="DreamWorld"
-run/main_scene="res://game/scenes/Arena_Test.tscn"
+run/main_scene="res://game/scenes/levels/TownHub.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -26,6 +26,9 @@ DecomposeManager="*res://game/scripts/core/DecomposeManager.gd"
 RuneTestManager="*res://game/scripts/debug/RuneTestManager.gd"
 HotbarRuntime="*res://game/scripts/core/HotbarManager.gd"
 HitStopManager="*res://game/scripts/core/HitStopManager.gd"
+SceneTransitionManager="*res://game/scripts/core/SceneTransitionManager.gd"
+SceneStateManager="*res://game/scripts/core/SceneStateManager.gd"
+ZoneResetManager="*res://game/scripts/core/ZoneResetManager.gd"
 
 [display]
 

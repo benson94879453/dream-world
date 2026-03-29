@@ -54,6 +54,7 @@ var ghost_timer: float = 0.0
 var ghost_sprites: Array[Sprite2D] = []
 var hurtbox_monitoring_default: bool = true
 var hurtbox_monitorable_default: bool = true
+var is_respawning: bool = false
 
 @onready var sprite: Sprite2D = $Visual/Sprite2D
 @onready var state_machine: PlayerStateMachine = $StateMachine
@@ -81,6 +82,8 @@ func _ready() -> void:
 
 	hurtbox_monitoring_default = hurtbox.monitoring
 	hurtbox_monitorable_default = hurtbox.monitorable
+	if not health_component.died.is_connected(_on_health_depleted):
+		health_component.died.connect(_on_health_depleted)
 	equip_weapon_data(equipped_weapon_data)
 	add_to_group("player")
 	state_machine.start()
@@ -1007,4 +1010,55 @@ func _get_inventory_ui() -> Node:
 		return null
 
 	return inventory_ui_nodes_[0]
+
+
+func _on_health_depleted() -> void:
+	if is_respawning:
+		return
+
+	is_respawning = true
+	set_controls_locked(true)
+	velocity = Vector2.ZERO
+	sprite.modulate = Color(1.0, 0.72, 0.72, 0.8)
+
+	await get_tree().create_timer(0.35).timeout
+
+	_respawn_at_checkpoint()
+	sprite.modulate = Color.WHITE
+	set_controls_locked(false)
+	is_respawning = false
+
+	if state_machine != null and state_machine.has_method("transition_to"):
+		state_machine.transition_to(&"Idle")
+
+
+func _respawn_at_checkpoint() -> void:
+	var scene_transition_manager_ := _get_scene_transition_manager()
+	var respawn_point_: Dictionary = {}
+	var has_respawn_position_: bool = false
+	if scene_transition_manager_ != null and scene_transition_manager_.has_method("get_respawn_point"):
+		respawn_point_ = scene_transition_manager_.get_respawn_point()
+
+	var respawn_position_ := Vector2.ZERO
+	if not respawn_point_.is_empty():
+		respawn_position_ = respawn_point_.get("position", Vector2.ZERO)
+		has_respawn_position_ = respawn_point_.has("position")
+	elif scene_transition_manager_ != null and scene_transition_manager_.has_method("get_spawn_position"):
+		respawn_position_ = scene_transition_manager_.get_spawn_position(&"Spawn_default")
+		has_respawn_position_ = true
+
+	health_component.current_hp = health_component.max_hp
+	health_component.set_temporary_hp(0.0)
+
+	if has_respawn_position_:
+		global_position = respawn_position_
+
+	velocity = Vector2.ZERO
+
+
+func _get_scene_transition_manager() -> Node:
+	var tree_: SceneTree = get_tree()
+	if tree_ == null or tree_.root == null:
+		return null
+	return tree_.root.get_node_or_null("SceneTransitionManager")
 #endregion

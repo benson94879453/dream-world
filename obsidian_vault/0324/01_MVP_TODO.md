@@ -288,10 +288,20 @@
 - [ ] Slime 群體協作（包圍、支援）
 - [ ] 敵人之間的簡單通訊
 
-### F. Hub / Zone 系統（低優先）
-- [ ] 場景轉場機制
-- [ ] 存檔點設置
-- [ ] Zone 切換邏輯
+### ✅ F. Hub / Zone 系統（已完成）
+- [x] 場景轉場機制（SceneTransitionManager）
+- [x] Portal 傳送門系統
+- [x] Town Hub 場景
+- [x] Dungeon 01 場景
+- [x] 場景狀態持久化（Batch 2 - SceneStateManager、ZoneResetManager、PersistentObject）
+- [x] 存檔點設置（Checkpoint）
+- [x] 教官 NPC 與動態對話
+- [x] 地城清除任務
+
+**Hub-based Vertical Slice 已完成！**
+```
+Town Hub → Portal → Dungeon 01 → Checkpoint → Boss → 返回 Hub → 教官對話/任務回報
+```
 
 ### G. Boss 戰鬥（長期）
 - [ ] 多階段戰鬥設計

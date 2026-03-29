@@ -1,0 +1,121 @@
+[gd_scene load_steps=19 format=3]
+
+[ext_resource type="PackedScene" path="res://game/scenes/Player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://game/scenes/enemies/Enemy_Slime.tscn" id="2_enemy_slime_scene"]
+[ext_resource type="Resource" path="res://game/data/enemies/en_slime_basic.tres" id="3_enemy_slime_data"]
+[ext_resource type="PackedScene" path="res://game/scenes/enemies/Enemy_GoblinArcher.tscn" id="4_enemy_archer_scene"]
+[ext_resource type="Resource" path="res://game/data/enemies/en_goblin_archer.tres" id="5_enemy_archer_data"]
+[ext_resource type="PackedScene" path="res://game/scenes/enemies/Enemy_Boar.tscn" id="6_enemy_boar_scene"]
+[ext_resource type="Resource" path="res://game/data/enemies/en_boar.tres" id="7_enemy_boar_data"]
+[ext_resource type="PackedScene" path="res://game/scenes/interactables/Portal.tscn" id="8_portal_scene"]
+[ext_resource type="PackedScene" path="res://game/scenes/ui/DialogUI.tscn" id="9_dialog_ui"]
+[ext_resource type="PackedScene" path="res://game/scenes/ui/WeaponUpgradeUI.tscn" id="10_weapon_upgrade_ui"]
+[ext_resource type="PackedScene" path="res://game/scenes/ui/InventoryUI.tscn" id="11_inventory_ui"]
+[ext_resource type="PackedScene" path="res://game/scenes/ui/ChestUI.tscn" id="12_chest_ui"]
+[ext_resource type="Script" path="res://game/scripts/components/PersistentObject.gd" id="13_persistent_object_script"]
+[ext_resource type="PackedScene" path="res://game/scenes/interactables/Checkpoint.tscn" id="14_checkpoint_scene"]
+
+[node name="Dungeon01" type="Node2D"]
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="Ground" type="ColorRect" parent="World"]
+offset_left = -720.0
+offset_top = -420.0
+offset_right = 720.0
+offset_bottom = 420.0
+color = Color(0.11, 0.12, 0.15, 1)
+
+[node name="EntranceLane" type="ColorRect" parent="World"]
+offset_left = -520.0
+offset_top = -84.0
+offset_right = -120.0
+offset_bottom = 84.0
+color = Color(0.24, 0.25, 0.29, 1)
+
+[node name="CombatLane" type="ColorRect" parent="World"]
+offset_left = -80.0
+offset_top = -180.0
+offset_right = 360.0
+offset_bottom = 180.0
+color = Color(0.18, 0.19, 0.24, 1)
+
+[node name="BossLane" type="ColorRect" parent="World"]
+offset_left = 420.0
+offset_top = -220.0
+offset_right = 720.0
+offset_bottom = 220.0
+color = Color(0.26, 0.16, 0.16, 1)
+
+[node name="Player" parent="World" instance=ExtResource("1_player")]
+position = Vector2(-420, 0)
+enable_debug_weapon_switching = true
+
+[node name="Enemies" type="Node2D" parent="World"]
+
+[node name="Enemy_Slime_A" parent="World/Enemies" instance=ExtResource("2_enemy_slime_scene")]
+position = Vector2(24, -80)
+enemy_data = ExtResource("3_enemy_slime_data")
+
+[node name="Enemy_Slime_B" parent="World/Enemies" instance=ExtResource("2_enemy_slime_scene")]
+position = Vector2(140, 88)
+enemy_data = ExtResource("3_enemy_slime_data")
+
+[node name="Enemy_GoblinArcher_A" parent="World/Enemies" instance=ExtResource("4_enemy_archer_scene")]
+position = Vector2(272, -12)
+enemy_data = ExtResource("5_enemy_archer_data")
+
+[node name="Enemy_Boar_A" parent="World/Enemies" instance=ExtResource("6_enemy_boar_scene")]
+position = Vector2(560, 0)
+enemy_data = ExtResource("7_enemy_boar_data")
+
+[node name="PersistentObject" type="Node" parent="World/Enemies/Enemy_Boar_A"]
+script = ExtResource("13_persistent_object_script")
+state_id = "dungeon01_boss_boar"
+persistent_type = "boss"
+
+[node name="PortalToHub" parent="World" instance=ExtResource("8_portal_scene")]
+position = Vector2(-560, 0)
+target_scene = "res://game/scenes/levels/TownHub.tscn"
+target_spawn_point = &"Spawn_from_dungeon"
+interaction_prompt = "[F] 返回城鎮"
+
+[node name="PortalSign" type="Label" parent="World/PortalToHub"]
+offset_left = -44.0
+offset_top = 34.0
+offset_right = 58.0
+offset_bottom = 58.0
+text = "Town Hub"
+horizontal_alignment = 1
+
+[node name="CheckpointEntrance" parent="World" instance=ExtResource("14_checkpoint_scene")]
+position = Vector2(-360, 0)
+checkpoint_id = &"checkpoint_entrance"
+
+[node name="CheckpointPreBoss" parent="World" instance=ExtResource("14_checkpoint_scene")]
+position = Vector2(424, 0)
+checkpoint_id = &"checkpoint_pre_boss"
+
+[node name="Markers" type="Node2D" parent="."]
+
+[node name="Spawn_default" type="Marker2D" parent="Markers"]
+position = Vector2(-420, 0)
+
+[node name="Spawn_checkpoint_entrance" type="Marker2D" parent="Markers"]
+position = Vector2(-360, 0)
+
+[node name="Spawn_boss" type="Marker2D" parent="Markers"]
+position = Vector2(500, 0)
+
+[node name="Spawn_checkpoint_pre_boss" type="Marker2D" parent="Markers"]
+position = Vector2(424, 0)
+
+[node name="UI" type="Node" parent="."]
+
+[node name="DialogUI" parent="UI" instance=ExtResource("9_dialog_ui")]
+
+[node name="WeaponUpgradeUI" parent="UI" instance=ExtResource("10_weapon_upgrade_ui")]
+
+[node name="InventoryUI" parent="UI" instance=ExtResource("11_inventory_ui")]
+
+[node name="ChestUI" parent="UI" instance=ExtResource("12_chest_ui")]

@@ -1,0 +1,42 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/interactables/Checkpoint.gd" id="1_checkpoint_script"]
+
+[sub_resource type="CircleShape2D" id="1_checkpoint_shape"]
+radius = 34.0
+
+[node name="Checkpoint" type="Area2D"]
+script = ExtResource("1_checkpoint_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("1_checkpoint_shape")
+
+[node name="Base" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-22, 16, 22, 16, 30, 28, -30, 28)
+color = Color(0.33, 0.28, 0.24, 1)
+
+[node name="FlameOuter" type="Polygon2D" parent="."]
+position = Vector2(0, -2)
+polygon = PackedVector2Array(0, -30, 14, -10, 8, 10, -8, 10, -14, -10)
+color = Color(0.46, 0.3, 0.2, 1)
+
+[node name="FlameInner" type="Polygon2D" parent="."]
+position = Vector2(0, -4)
+polygon = PackedVector2Array(0, -20, 8, -6, 4, 6, -4, 6, -8, -6)
+color = Color(0.68, 0.58, 0.32, 0.9)
+
+[node name="Glow" type="Polygon2D" parent="."]
+visible = false
+position = Vector2(0, 2)
+polygon = PackedVector2Array(-28, -18, 28, -18, 40, 0, 28, 18, -28, 18, -40, 0)
+color = Color(1, 0.835294, 0.419608, 0.45)
+
+[node name="InteractionPrompt" type="Label" parent="."]
+visible = false
+offset_left = -92.0
+offset_top = -66.0
+offset_right = 92.0
+offset_bottom = -42.0
+modulate = Color(1, 0.92549, 0.592157, 1)
+text = "[F] 在營火休息"
+horizontal_alignment = 1

@@ -43,6 +43,8 @@ func save_game() -> bool:
 	var created_at_ = existing_data_.get("created_at", _get_iso8601_utc_now()) if not existing_data_.is_empty() else _get_iso8601_utc_now()
 	var dialog_manager_ = _get_dialog_manager()
 	var quest_manager_ = _get_quest_manager()
+	var scene_state_manager_ = _get_scene_state_manager()
+	var zone_reset_manager_ = _get_zone_reset_manager()
 	var player_data_: Dictionary = player_.to_save_dict()
 	var inventory_data_: Dictionary = inventory_.to_save_dict()
 	var save_data_ = {
@@ -56,7 +58,9 @@ func save_game() -> bool:
 			"flags": {}
 		},
 		"dialog": dialog_manager_.to_save_dict() if dialog_manager_ != null else {},
-		"quest": quest_manager_.to_save_dict() if quest_manager_ != null else {}
+		"quest": quest_manager_.to_save_dict() if quest_manager_ != null else {},
+		"scene_state": scene_state_manager_.to_save_dict() if scene_state_manager_ != null else {},
+		"zone_reset": zone_reset_manager_.to_save_dict() if zone_reset_manager_ != null else {}
 	}
 	save_data_["checksum"] = _calculate_checksum(player_data_, inventory_data_)
 
@@ -148,6 +152,19 @@ func load_game() -> bool:
 	if quest_manager_ != null:
 		var quest_data_ = migrated_data_.get("quest", {})
 		quest_manager_.from_save_dict(quest_data_ if typeof(quest_data_) == TYPE_DICTIONARY else {})
+
+	var scene_state_manager_ = _get_scene_state_manager()
+	if scene_state_manager_ != null:
+		var scene_state_data_ = migrated_data_.get("scene_state", {})
+		scene_state_manager_.from_save_dict(scene_state_data_ if typeof(scene_state_data_) == TYPE_DICTIONARY else {})
+
+	var zone_reset_manager_ = _get_zone_reset_manager()
+	if zone_reset_manager_ != null:
+		var zone_reset_data_ = migrated_data_.get("zone_reset", {})
+		zone_reset_manager_.from_save_dict(zone_reset_data_ if typeof(zone_reset_data_) == TYPE_DICTIONARY else {})
+
+	if scene_state_manager_ != null and scene_state_manager_.has_method("reapply_current_scene_state"):
+		scene_state_manager_.reapply_current_scene_state()
 
 	print("[SaveManager] Load completed from: %s" % ProjectSettings.globalize_path(SAVE_FILE_PATH))
 	load_completed.emit(true)
@@ -261,6 +278,20 @@ func _get_quest_manager() -> Node:
 	if tree_ == null or tree_.root == null:
 		return null
 	return tree_.root.get_node_or_null("QuestManager")
+
+
+func _get_scene_state_manager() -> Node:
+	var tree_: SceneTree = get_tree()
+	if tree_ == null or tree_.root == null:
+		return null
+	return tree_.root.get_node_or_null("SceneStateManager")
+
+
+func _get_zone_reset_manager() -> Node:
+	var tree_: SceneTree = get_tree()
+	if tree_ == null or tree_.root == null:
+		return null
+	return tree_.root.get_node_or_null("ZoneResetManager")
 
 
 func _refresh_resource_caches() -> void:
@@ -494,6 +525,10 @@ func _migrate_save_data(data_: Dictionary, from_version_: int) -> Dictionary:
 			migrated_data_["quest"] = {}
 		migrated_data_["save_version"] = 7
 		migrated_data_.erase("checksum")
+	if not migrated_data_.has("scene_state") or typeof(migrated_data_.get("scene_state", {})) != TYPE_DICTIONARY:
+		migrated_data_["scene_state"] = {}
+	if not migrated_data_.has("zone_reset") or typeof(migrated_data_.get("zone_reset", {})) != TYPE_DICTIONARY:
+		migrated_data_["zone_reset"] = {}
 	return migrated_data_
 
 
