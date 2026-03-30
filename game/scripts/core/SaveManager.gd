@@ -19,6 +19,7 @@ var gear_data_by_id: Dictionary = {}
 var item_data_by_id: Dictionary = {}
 var rune_data_by_id: Dictionary = {}
 var weapon_data_by_id: Dictionary = {}
+var _is_loading: bool = false
 
 #region Core Lifecycle
 func _ready() -> void:
@@ -82,45 +83,69 @@ func save_game() -> bool:
 
 
 func load_game() -> bool:
-	if not has_save_file():
-		push_warning("[SaveManager] No save file found")
+	if _is_loading:
+		push_warning("[SaveManager] load_game already in progress")
 		load_completed.emit(false)
 		return false
+
+	_is_loading = true
+	_debug_log_load_step("Starting load_game")
+
+	if not has_save_file():
+		push_warning("[SaveManager] No save file found")
+		return _complete_load(false)
 
 	var data_ = _read_save_file()
 	if data_.is_empty():
 		push_warning("[SaveManager] Save file is empty or invalid")
-		load_completed.emit(false)
-		return false
+		return _complete_load(false)
 
 	if not _validate_save_data(data_, true):
 		push_warning("[SaveManager] Save file failed validation")
-		load_completed.emit(false)
-		return false
+		return _complete_load(false)
 
 	var save_version_ := int(data_.get("save_version", 0))
 	var migrated_data_ = _migrate_save_data(data_, save_version_)
 	if not _validate_save_data(migrated_data_, false):
 		push_warning("[SaveManager] Migrated save data failed validation")
-		load_completed.emit(false)
-		return false
+		return _complete_load(false)
+
+	var scene_transition_manager_ = _get_scene_transition_manager()
+	if scene_transition_manager_ != null and scene_transition_manager_.has_method("is_transitioning") and bool(scene_transition_manager_.call("is_transitioning")):
+		push_warning("[SaveManager] Cannot load while a scene transition is in progress")
+		return _complete_load(false)
+
 	var player_ = _get_player()
 	if player_ == null:
 		push_warning("[SaveManager] Cannot load without Player")
-		load_completed.emit(false)
-		return false
+		return _complete_load(false)
 
 	var inventory_ = player_.get_inventory()
 	if inventory_ == null:
 		push_warning("[SaveManager] Cannot load without Inventory")
-		load_completed.emit(false)
-		return false
+		return _complete_load(false)
+
+	var dialog_manager_ = _get_dialog_manager()
+	var quest_manager_ = _get_quest_manager()
+	var hotbar_manager_ = _get_hotbar_manager()
+	var scene_state_manager_ = _get_scene_state_manager()
+	var zone_reset_manager_ = _get_zone_reset_manager()
+
+	_debug_log_player_runtime_state(player_, "before_reset")
+	_debug_log_modal_ui_state("before_reset")
+	_cancel_active_interactions_for_load(dialog_manager_)
+	if player_.has_method("reset_runtime_state_for_load"):
+		player_.reset_runtime_state_for_load()
+	_debug_log_player_runtime_state(player_, "after_reset")
+	_debug_log_modal_ui_state("after_reset")
 
 	var inventory_data_ = migrated_data_.get("inventory", {})
 	var player_data_ = migrated_data_.get("player", {})
 
-	inventory_.from_save_dict(inventory_data_)
+	var inventory_loaded_: bool = inventory_.from_save_dict(inventory_data_)
+	_debug_log_load_step("inventory.from_save_dict -> %s" % str(inventory_loaded_))
 	var player_load_report_: Dictionary = player_.from_save_dict(player_data_)
+	_debug_log_load_step("player.from_save_dict -> %s" % JSON.stringify(player_load_report_))
 
 	var equipped_restored_ := true
 	var equipment_data_ = player_data_.get("equipment", {})
@@ -145,38 +170,45 @@ func load_game() -> bool:
 
 	if not equipped_restored_:
 		push_warning("[SaveManager] Equipped weapon could not be fully restored")
+	_debug_log_load_step("equipped weapon restored -> %s" % str(equipped_restored_))
 
-	var dialog_manager_ = _get_dialog_manager()
 	if dialog_manager_ != null:
 		var dialog_data_ = migrated_data_.get("dialog", {})
 		dialog_manager_.from_save_dict(dialog_data_ if typeof(dialog_data_) == TYPE_DICTIONARY else {})
+		_debug_log_load_step("dialog.from_save_dict -> done")
 
-	var quest_manager_ = _get_quest_manager()
 	if quest_manager_ != null:
 		var quest_data_ = migrated_data_.get("quest", {})
-		quest_manager_.from_save_dict(quest_data_ if typeof(quest_data_) == TYPE_DICTIONARY else {})
+		var quest_loaded_: bool = quest_manager_.from_save_dict(quest_data_ if typeof(quest_data_) == TYPE_DICTIONARY else {})
+		_debug_log_load_step("quest.from_save_dict -> %s" % str(quest_loaded_))
 
-	var hotbar_manager_ = _get_hotbar_manager()
 	if hotbar_manager_ != null and hotbar_manager_.has_method("from_save_dict"):
 		var hotbar_data_ = migrated_data_.get("hotbar", {})
-		hotbar_manager_.from_save_dict(hotbar_data_ if typeof(hotbar_data_) == TYPE_DICTIONARY else {})
+		var hotbar_loaded_: bool = hotbar_manager_.from_save_dict(hotbar_data_ if typeof(hotbar_data_) == TYPE_DICTIONARY else {})
+		_debug_log_load_step("hotbar.from_save_dict -> %s" % str(hotbar_loaded_))
 
-	var scene_state_manager_ = _get_scene_state_manager()
 	if scene_state_manager_ != null:
 		var scene_state_data_ = migrated_data_.get("scene_state", {})
 		scene_state_manager_.from_save_dict(scene_state_data_ if typeof(scene_state_data_) == TYPE_DICTIONARY else {})
+		_debug_log_load_step("scene_state.from_save_dict -> done")
 
-	var zone_reset_manager_ = _get_zone_reset_manager()
 	if zone_reset_manager_ != null:
 		var zone_reset_data_ = migrated_data_.get("zone_reset", {})
 		zone_reset_manager_.from_save_dict(zone_reset_data_ if typeof(zone_reset_data_) == TYPE_DICTIONARY else {})
+		_debug_log_load_step("zone_reset.from_save_dict -> done")
 
-	if scene_state_manager_ != null and scene_state_manager_.has_method("reapply_current_scene_state"):
-		scene_state_manager_.reapply_current_scene_state()
+	if scene_state_manager_ != null:
+		if scene_state_manager_.has_method("request_reapply_current_scene_state"):
+			scene_state_manager_.request_reapply_current_scene_state()
+			_debug_log_load_step("scene_state.request_reapply_current_scene_state -> scheduled")
+		elif scene_state_manager_.has_method("reapply_current_scene_state"):
+			scene_state_manager_.reapply_current_scene_state()
+			_debug_log_load_step("scene_state.reapply_current_scene_state -> immediate")
 
+	_debug_log_player_runtime_state(player_, "after_restore")
+	_debug_log_modal_ui_state("after_restore")
 	print("[SaveManager] Load completed from: %s" % ProjectSettings.globalize_path(SAVE_FILE_PATH))
-	load_completed.emit(true)
-	return true
+	return _complete_load(true)
 
 
 func has_save_file() -> bool:
@@ -295,6 +327,13 @@ func _get_hotbar_manager() -> Node:
 	return tree_.root.get_node_or_null("HotbarRuntime")
 
 
+func _get_scene_transition_manager() -> Node:
+	var tree_: SceneTree = get_tree()
+	if tree_ == null or tree_.root == null:
+		return null
+	return tree_.root.get_node_or_null("SceneTransitionManager")
+
+
 func _get_scene_state_manager() -> Node:
 	var tree_: SceneTree = get_tree()
 	if tree_ == null or tree_.root == null:
@@ -307,6 +346,85 @@ func _get_zone_reset_manager() -> Node:
 	if tree_ == null or tree_.root == null:
 		return null
 	return tree_.root.get_node_or_null("ZoneResetManager")
+
+
+func _complete_load(success_: bool) -> bool:
+	_is_loading = false
+	_debug_log_load_step("load_completed.emit(%s)" % str(success_))
+	load_completed.emit(success_)
+	return success_
+
+
+func _cancel_active_interactions_for_load(dialog_manager_: Node) -> void:
+	if dialog_manager_ != null and dialog_manager_.has_method("end_dialog"):
+		if _has_property(dialog_manager_, "is_dialog_active") and bool(dialog_manager_.get("is_dialog_active")):
+			_debug_log_load_step("Ending active dialog before load")
+		dialog_manager_.end_dialog()
+
+	for modal_ui_ in get_tree().get_nodes_in_group("modal_ui"):
+		_close_modal_ui(modal_ui_)
+
+
+func _close_modal_ui(modal_ui_: Node) -> void:
+	if modal_ui_ == null:
+		return
+
+	var was_visible_: bool = _has_property(modal_ui_, "visible") and bool(modal_ui_.get("visible"))
+	if modal_ui_.has_method("set_inventory_open"):
+		modal_ui_.call("set_inventory_open", false)
+	elif modal_ui_.has_method("set_journal_open"):
+		modal_ui_.call("set_journal_open", false)
+	elif modal_ui_.has_method("hide_upgrade_ui"):
+		modal_ui_.call("hide_upgrade_ui")
+	elif modal_ui_.has_method("hide_dialog"):
+		modal_ui_.call("hide_dialog")
+	elif _has_property(modal_ui_, "visible"):
+		modal_ui_.set("visible", false)
+
+	if was_visible_:
+		_debug_log_load_step("Closed modal UI: %s" % String(modal_ui_.get_path()))
+
+
+func _debug_log_load_step(message_: String) -> void:
+	print("[SaveManager][Load] %s" % message_)
+
+
+func _debug_log_player_runtime_state(player_: Node, label_: String) -> void:
+	if player_ == null:
+		_debug_log_load_step("Player snapshot (%s): <missing player>" % label_)
+		return
+
+	var snapshot_: Dictionary = {}
+	if player_.has_method("get_debug_runtime_snapshot"):
+		snapshot_ = player_.call("get_debug_runtime_snapshot")
+
+	_debug_log_load_step("Player snapshot (%s): %s" % [label_, JSON.stringify(snapshot_)])
+
+
+func _debug_log_modal_ui_state(label_: String) -> void:
+	var visible_modal_paths_: PackedStringArray = PackedStringArray()
+	for modal_ui_ in get_tree().get_nodes_in_group("modal_ui"):
+		if modal_ui_ == null:
+			continue
+		if not _has_property(modal_ui_, "visible") or not bool(modal_ui_.get("visible")):
+			continue
+		visible_modal_paths_.append(String(modal_ui_.get_path()))
+
+	var summary_: String = "none"
+	if not visible_modal_paths_.is_empty():
+		summary_ = ", ".join(visible_modal_paths_)
+
+	_debug_log_load_step("Visible modal UI (%s): %s" % [label_, summary_])
+
+
+func _has_property(object_: Object, property_name_: String) -> bool:
+	if object_ == null:
+		return false
+
+	for property_ in object_.get_property_list():
+		if String(property_.get("name", "")) == property_name_:
+			return true
+	return false
 
 
 func _refresh_resource_caches() -> void:

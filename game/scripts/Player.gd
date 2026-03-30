@@ -292,6 +292,50 @@ func is_inventory_ui_open() -> bool:
 	return inventory_ui_open
 
 
+func get_debug_runtime_snapshot() -> Dictionary:
+	return {
+		"controls_locked": controls_locked,
+		"transient_lock_time_remaining": transient_lock_time_remaining,
+		"inventory_ui_open": inventory_ui_open,
+		"is_dashing": is_dashing,
+		"is_respawning": is_respawning,
+		"state": String(get_current_state_name()),
+		"velocity": {
+			"x": snappedf(velocity.x, 0.001),
+			"y": snappedf(velocity.y, 0.001)
+		},
+		"global_position": {
+			"x": snappedf(global_position.x, 0.001),
+			"y": snappedf(global_position.y, 0.001)
+		}
+	}
+
+
+func reset_runtime_state_for_load() -> void:
+	if equipped_weapon_controller != null and equipped_weapon_controller.has_method("cancel_attack"):
+		equipped_weapon_controller.cancel_attack()
+
+	if state_machine != null and state_machine.current_state != null and state_machine.current_state.name != &"Idle":
+		state_machine.transition_to(&"Idle")
+
+	transient_lock_time_remaining = 0.0
+	inventory_ui_open = false
+	is_respawning = false
+	set_controls_locked(false)
+
+	is_dashing = false
+	dash_timer = 0.0
+	dash_direction = Vector2.ZERO
+	dash_cooldown_timer = 0.0
+	can_dash = true
+	velocity = Vector2.ZERO
+
+	enable_dash_ghost(false)
+	set_invincible(false)
+	sprite.modulate = Color.WHITE
+	play_idle_animation()
+
+
 func can_current_weapon_combo() -> bool:
 	if equipped_weapon_controller == null:
 		return false
@@ -730,7 +774,7 @@ func _try_handle_debug_save_load(event_: InputEvent) -> bool:
 		save_manager_.save_game()
 		return true
 
-	if key_event_.physical_keycode == KEY_F9:
+	if key_event_.physical_keycode == KEY_F10:
 		save_manager_.load_game()
 		return true
 

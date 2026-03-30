@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "codex_prompt.md",
+                "file": "specs/INPUT_KEYMAP.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "codex_prompt"
+              "title": "INPUT_KEYMAP"
             }
           }
         ]
@@ -185,8 +185,9 @@
   },
   "active": "fe9c764075f51b47",
   "lastOpenFiles": [
-    "reviews/review_025_hotbar_save_v8.md",
     "codex_prompt.md",
+    "specs/INPUT_KEYMAP.md",
+    "reviews/review_025_hotbar_save_v8.md",
     "reviews/review_024_quest_journal_ui.md",
     "reviews/review_023_quest_ui_input_recovery.md",
     "Codex_Task_Prompt.md",
@@ -210,7 +211,6 @@
     "reviews/review_018_mouse_attack.md",
     "reviews/review_018_plus_projectile_direction.md",
     "0324/01_MVP_TODO.md.md",
-    "0324/00_Project_Goals.md.md",
     "reviews"
   ]
 }

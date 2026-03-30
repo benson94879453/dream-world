@@ -1,6 +1,7 @@
 extends Node
 
 var scene_states: Dictionary = {}
+var _reapply_requested: bool = false
 
 
 func generate_state_id(scene_path: String, object_name: String, index: int = 0) -> String:
@@ -93,16 +94,38 @@ func from_save_dict(data: Dictionary) -> void:
 		scene_states[String(scene_path_)] = raw_scene_bucket_.duplicate(true)
 
 
-func reapply_current_scene_state() -> void:
-	var current_scene_ := get_tree().current_scene
-	if current_scene_ == null:
+func request_reapply_current_scene_state() -> void:
+	if _reapply_requested:
 		return
 
+	_reapply_requested = true
+	call_deferred("_flush_reapply_current_scene_state")
+
+
+func reapply_current_scene_state() -> void:
+	_reapply_requested = false
+	var current_scene_ := get_tree().current_scene
+	if current_scene_ == null:
+		print("[SceneStateManager] Skipped reapply because no current scene is active")
+		return
+
+	var persistent_objects_: Array = []
 	for node_ in get_tree().get_nodes_in_group("persistent_object"):
 		var persistent_object_ := node_ as PersistentObject
 		if persistent_object_ == null:
 			continue
 		if not current_scene_.is_ancestor_of(persistent_object_):
+			continue
+
+		persistent_objects_.append(persistent_object_)
+
+	print("[SceneStateManager] Reapplying persistent state for %d object(s) in %s" % [
+		persistent_objects_.size(),
+		current_scene_.scene_file_path
+	])
+
+	for persistent_object_ in persistent_objects_:
+		if not is_instance_valid(persistent_object_):
 			continue
 		persistent_object_.reload_persistent_state()
 
@@ -117,3 +140,7 @@ func _extract_scene_path_from_state_id(state_id: String) -> String:
 		scene_parts_.append(parts_[part_index_])
 
 	return ":".join(scene_parts_)
+
+
+func _flush_reapply_current_scene_state() -> void:
+	reapply_current_scene_state()
