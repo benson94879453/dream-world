@@ -1,8 +1,11 @@
 # 協作工作流程
 
+> 舊版流程說明。正式三角色版本請優先閱讀 `README.md` 與 `WORKFLOW_TEMPLATE.md`。
+> 本文件保留舊命名，僅作參考。
+
 ## 角色分工
 
- Kimi規劃與驗收)
+### Kimi (規劃與驗收)
 - ✅ 分析專案現狀與技術架構
 - ✅ 撰寫/改進 Spec 草稿
 - ✅ 將任務轉譯為 Codex Prompt
@@ -70,7 +73,8 @@
 ```
 obsidian_vault/
 ├── codex_prompt.md          # 🔥 給 Codex 的當前任務 (每次覆寫)
-├── Kimi_Codex_Workflow.md   # 本文件 - 協作流程說明
+├── README.md                # 入口索引
+├── WORKFLOW_TEMPLATE.md     # 正式協作模板
 ├── 00_Project_Goals.md      # 專案目標 (長期)
 ├── 01_MVP_TODO.md           # MVP 任務清單
 ├── 02_Tech_Spec_Notes.md    # 技術規範
@@ -155,4 +159,4 @@ obsidian_vault/
 
 ---
 
-*最後更新: 2026-03-27*
+*最後更新: 2026-03-30*

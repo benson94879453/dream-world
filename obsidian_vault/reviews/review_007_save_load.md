@@ -16,7 +16,7 @@
 |--------|------|------|
 | SaveManager Autoload 存在 | ✅ 通過 | save_game() / load_game() |
 | F5 存檔 | ✅ 通過 | Console 顯示結果 |
-| F9 讀檔 | ✅ 通過 | Console 顯示結果 |
+| F10 讀檔 | ✅ 通過 | Console 顯示結果 |
 | 存檔後重開讀檔，位置正確 | ✅ 通過 | global_position 保存 |
 | 存檔後背包內容正確 | ✅ 通過 | stackables + weapons |
 | 存檔後裝備武器正確 | ✅ 通過 | UID 保存與還原 |
@@ -102,12 +102,12 @@ Player 接觸 PickupItem → Inventory.add_item() → 背包
 F5 存檔 → SaveManager → user://savegame.json
  │
  ▼
-重開遊戲 → F9 讀檔 → 還原狀態
+重開遊戲 → F10 讀檔 → 還原狀態
 ```
 
 ---
 
 ## 相關連結
 
-- Phase 3 規劃: `PHASE3_PLAN.md`
-- 完整同步摘要: `SYNC_SUMMARY.md`
+- Phase 3 規劃: `archive/plans/phase_3_plan.md`
+- 完整同步摘要: `sync_summary.md`

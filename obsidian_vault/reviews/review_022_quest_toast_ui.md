@@ -4,7 +4,7 @@
 
 - **任務名稱**: 9A-2 任務通知 Toast
 - **Codex 完成時間**: 2026-03-30
-- **Kimi 驗收時間**: 2026-03-30
+- **驗收者驗收時間**: 2026-03-30
 
 ---
 
@@ -78,7 +78,7 @@
 
 ## 相關連結
 
-- Codex Prompt: `obsidian_vault/codex_prompt.md`
+- Task Prompt: `obsidian_vault/task_prompt.md`
 - 實作檔案:
   - `game/scenes/ui/QuestToastUI.tscn`
   - `game/scripts/ui/QuestToastUI.gd`

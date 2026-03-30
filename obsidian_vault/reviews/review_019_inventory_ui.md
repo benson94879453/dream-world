@@ -3,7 +3,7 @@
 ## 驗收結果: ✅ 通過
 
 **日期**: 2026-03-28  
-**Codex**: 已完成並回填 codex_prompt.md
+**實作者**: 已完成並回填 task_prompt.md
 
 ---
 
@@ -50,7 +50,7 @@ game/scripts/ui/DebugOverlay.gd           # 顯示 hotbar 綁定
 game/scenes/DebugOverlay.tscn
 game/scenes/Arena_Test.tscn               # 掛載 InventoryUI
 project.godot                             # HotbarRuntime autoload, input actions
-obsidian_vault/codex_prompt.md
+obsidian_vault/task_prompt.md
 ```
 
 ---

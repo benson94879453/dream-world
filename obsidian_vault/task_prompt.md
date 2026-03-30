@@ -1,10 +1,10 @@
-# Codex Prompt — 排查讀檔後流程卡住問題
+# Task Prompt — 排查讀檔後流程卡住問題
 
 ---
 
 ## 1. 問題背景
 
-目前專案在觸發讀檔（F9 -> `SaveManager.load_game()`）後會出現「流程卡住」現象。
+目前專案在觸發讀檔（F10 -> `SaveManager.load_game()`）後會出現「流程卡住」現象。
 
 已知狀況：
 - `SaveManager.load_game()` 已串接：
@@ -186,7 +186,7 @@
 ## 6. 驗收標準
 
 ### 功能驗收
-- [ ] F9 後流程不再卡住
+- [ ] F10 後流程不再卡住
 - [ ] 讀檔後玩家可移動 / 攻擊 / 互動
 - [ ] 讀檔後 UI 不會殘留在錯誤狀態
 - [ ] 讀檔後 Hotbar / Quest / SceneState 仍正常恢復

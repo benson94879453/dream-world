@@ -51,7 +51,7 @@
 無重大問題。
 
 ### 架構觀察 🏗️
-- 發現 Prompt 中的 API 名稱錯誤，已記錄在 `codex_prompt.md` 備註中
+- 發現 Prompt 中的 API 名稱錯誤，已記錄在 `task_prompt.md` 備註中
 - 未來 Prompt 應更仔細核對實際 API 名稱
 
 ---
@@ -69,5 +69,5 @@
 
 ## 相關連結
 
-- Codex Prompt: `codex_prompt.md` (已更新為任務 #002)
-- Implementation Order: `03_Implementation_Order.md` (已更新)
+- Task Prompt: `task_prompt.md` (已更新為任務 #002)
+- Implementation Order: `planning/implementation_order.md` (已更新)

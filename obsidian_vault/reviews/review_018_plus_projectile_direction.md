@@ -3,7 +3,7 @@
 ## 驗收結果: ✅ 通過
 
 **日期**: 2026-03-28  
-**Codex**: 已完成並回填 codex_prompt.md
+**實作者**: 已完成並回填 task_prompt.md
 
 ---
 
@@ -46,7 +46,7 @@
 
 ```
 game/scripts/weapons/StaffWeapon.gd
-obsidian_vault/codex_prompt.md
+obsidian_vault/task_prompt.md
 ```
 
 ---

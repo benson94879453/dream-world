@@ -4,7 +4,7 @@
 
 - **任務名稱**: 9B-1 Hotbar 綁定進存檔（Save v8）
 - **Codex 完成時間**: 2026-03-30
-- **Kimi 驗收時間**: 2026-03-30
+- **驗收者驗收時間**: 2026-03-30
 
 ---
 
@@ -49,7 +49,7 @@
 - `binding_changed` 全量發出後，UI 自動刷新流程清楚。
 
 ### 問題/建議 🔧
-- 目前只做了專案載入驗證，尚未完成實機 F5/F9 存讀檔流程驗收。
+- 目前只做了專案載入驗證，尚未完成實機 F5/F10 存讀檔流程驗收。
 
 ### 架構觀察 🏗️
 - 這次升版把 hotbar 納入 Save v8 是合理的，和 Quest / Respawn 後續欄位擴充方式一致。
@@ -59,7 +59,7 @@
 
 ## 驗收結果
 
-- [x] **有條件通過** - 可進入下一任務，但仍建議補做 F5/F9 實機驗收
+- [x] **有條件通過** - 可進入下一任務，但仍建議補做 F5/F10 實機驗收
 
 ### 下一步行動
 
@@ -69,7 +69,7 @@
 
 ## 相關連結
 
-- Codex Prompt: `obsidian_vault/codex_prompt.md`
+- Task Prompt: `obsidian_vault/task_prompt.md`
 - 實作檔案:
   - `game/scripts/core/HotbarManager.gd`
   - `game/scripts/core/SaveManager.gd`

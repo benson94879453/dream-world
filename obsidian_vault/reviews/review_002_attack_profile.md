@@ -90,7 +90,7 @@
 
 進入任務 #003: **非投射物法術支援 (Non-Projectile Spell Actors)**
 
-根據 `03_Implementation_Order.md` 的 Next Tasks：
+根據 `planning/implementation_order.md` 的 Next Tasks：
 - [x] Add a debug-visible way to equip and swap between sword and staff in `Arena_Test`
 - [x] Define weapon attack presentation ownership
 - [ ] **Define how non-projectile spell actors plug into the same `StaffWeapon -> SpellActor` chain**
@@ -99,6 +99,6 @@
 
 ## 相關連結
 
-- Codex Prompt: `codex_prompt.md` (將更新為任務 #003)
-- 修改檔案: 14 個 (見 codex_prompt.md 實作摘要)
+- Task Prompt: `task_prompt.md` (將更新為任務 #003)
+- 修改檔案: 14 個 (見 task_prompt.md 實作摘要)
 - Retrospective: `review_001_retrospective.md`

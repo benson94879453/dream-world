@@ -142,7 +142,7 @@ UpgradeManager
 
 ## 相關連結
 
-- Prompt: `obsidian_vault/codex_prompt.md`
-- 同步摘要: `obsidian_vault/SYNC_SUMMARY.md`
-- 企劃文件: `obsidian_vault/0324/00_Project_Goals.md`
-- 任務清單: `obsidian_vault/0324/01_MVP_TODO.md`
+- Prompt: `obsidian_vault/task_prompt.md`
+- 同步摘要: `obsidian_vault/sync_summary.md`
+- 企劃文件: `obsidian_vault/planning/project_goals.md`
+- 任務清單: `obsidian_vault/planning/mvp_todo.md`

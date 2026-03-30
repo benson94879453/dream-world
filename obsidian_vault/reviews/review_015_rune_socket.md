@@ -119,6 +119,6 @@
 
 ## 相關連結
 
-- Prompt: `obsidian_vault/codex_prompt.md`
-- 企劃文件: `obsidian_vault/0324/05_weapon_strengthen.md.md`
-- 同步摘要: `obsidian_vault/SYNC_SUMMARY.md`
+- Prompt: `obsidian_vault/task_prompt.md`
+- 企劃文件: `obsidian_vault/archive/specs/weapon_strengthening_spec.md`
+- 同步摘要: `obsidian_vault/sync_summary.md`

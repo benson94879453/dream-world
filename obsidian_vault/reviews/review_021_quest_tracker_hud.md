@@ -4,7 +4,7 @@
 
 - **任務名稱**: 9A-1 任務追蹤 HUD（螢幕右側）
 - **Codex 完成時間**: 2026-03-30
-- **Kimi 驗收時間**: 2026-03-30
+- **驗收者驗收時間**: 2026-03-30
 
 ---
 
@@ -71,7 +71,7 @@
 
 ## 相關連結
 
-- Codex Prompt: `obsidian_vault/codex_prompt.md`
+- Task Prompt: `obsidian_vault/task_prompt.md`
 - 實作檔案:
   - `game/scenes/ui/QuestTrackerUI.tscn`
   - `game/scripts/ui/QuestTrackerUI.gd`

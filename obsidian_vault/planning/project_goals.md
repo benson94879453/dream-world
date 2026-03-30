@@ -76,7 +76,7 @@ Godot 4.x / 初版企劃 2026-03
   - 資源（Resource .tres）作為 Sources of Truth
   - Runtime 使用 Instance/DTO
   - Save 儲存最小可重建資料
-  - 參考 `02_Tech_Spec_Notes.md` 規範
+  - 參考 `planning/tech_spec_notes.md` 規範
 
 ---
 

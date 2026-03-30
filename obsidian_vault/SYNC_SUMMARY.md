@@ -2,6 +2,8 @@
 
 > 最後更新: 2026-03-30
 
+> 入口請先看 `README.md`
+
 ---
 
 ## 目前完成狀態
@@ -67,7 +69,7 @@
 | P3 | 10B  | 群體 AI | ⬜ |
 | P3 | 10C  | 多階段 Boss | ⬜ |
 
-詳細任務規格見 `0324/01_MVP_TODO.md`
+詳細任務規格見 `planning/mvp_todo.md`
 
 ---
 
@@ -90,12 +92,20 @@
 
 | 檔案 | 更新日期 | 狀態 |
 |------|---------|:----:|
-| 00_Project_Goals.md | 2026-03-29 | ✅ |
-| 01_MVP_TODO.md | 2026-03-30 | ✅ 最新 |
-| 02_Tech_Spec_Notes.md | 2026-03-29 | ✅ |
-| 03_Implementation_Order.md | 2026-03-29 | ✅ |
-| 04_Coding_Habits.md | 2026-03-27 | ✅ |
+| README.md | 2026-03-30 | ✅ 入口 |
+| workflow_template.md | 2026-03-30 | ✅ 三角色流程 |
+| task_prompt.md | 2026-03-30 | ✅ 當前任務 |
+| task_backlog.md | 2026-03-30 | ✅ 任務池 |
+| code_review_template.md | 2026-03-30 | ✅ 驗收模板 |
+| specs/input_keymap.md | 2026-03-30 | ✅ 操作總表 |
+| planning/project_goals.md | 2026-03-29 | ✅ |
+| planning/mvp_todo.md | 2026-03-30 | ✅ 最新 |
+| planning/tech_spec_notes.md | 2026-03-29 | ✅ |
+| planning/implementation_order.md | 2026-03-29 | ✅ |
+| planning/coding_habits.md | 2026-03-27 | ✅ |
 
 ---
+
+歷史文件已歸檔至 `archive/`，詳見 `README.md`。
 
 *文件已同步 - 2026-03-30*

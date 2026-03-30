@@ -113,5 +113,5 @@ if enemy_.should_start_charge(distance_to_player_):
 
 ## 相關連結
 
-- Prompt: `obsidian_vault/codex_prompt.md`
-- 同步摘要: `obsidian_vault/SYNC_SUMMARY.md`
+- Prompt: `obsidian_vault/task_prompt.md`
+- 同步摘要: `obsidian_vault/sync_summary.md`

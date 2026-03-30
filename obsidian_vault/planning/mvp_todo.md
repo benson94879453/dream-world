@@ -39,7 +39,7 @@
 ### 存檔系統
 - [x] `SaveManager` - Autoload 存檔管理
 - [x] Save v7 + SHA256 checksum + 版本遷移（v1→v7）
-- [x] F5存檔 / F9讀檔
+- [x] F5存檔 / F10讀檔
 
 ### 敵人 AI 系統
 - [x] `EnemyAIController` - 敵人 AI 控制器
@@ -258,7 +258,7 @@ Town Hub
 | 讀檔後套用綁定 | 小(1h) | 上 | `from_save_dict` 呼叫時更新 HotbarRuntime，UI 自動重繪 |
 
 **驗收**：
-- [ ] F5 存檔後 F9 讀檔，快捷欄綁定完全還原
+- [ ] F5 存檔後 F10 讀檔，快捷欄綁定完全還原
 - [ ] 舊存檔（v7）正常讀入，快捷欄為空（不報錯）
 
 ---
@@ -468,6 +468,6 @@ P3    10C      多階段 Boss                   10A-2
 
 - 每個 Resource 以 `.tres` 儲存並放在 `res://game/data/` 對應資料夾
 - Save schema 請包含 `save_version`，升版時在 `_migrate_save_data` 補對應 migration
-- 參考 `02_Tech_Spec_Notes.md` 的架構規範（Resource vs Instance vs DTO）
+- 參考 `planning/tech_spec_notes.md` 的架構規範（Resource vs Instance vs DTO）
 - UI 場景需加入 `modal_ui` 群組，確保開啟時 Portal / NPC Trigger 不誤觸
 - 新 Autoload 請同步更新 `project.godot`

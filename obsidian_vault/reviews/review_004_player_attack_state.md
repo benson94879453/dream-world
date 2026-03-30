@@ -124,6 +124,6 @@
 
 ## 相關連結
 
-- Codex Prompt: `codex_prompt.md`
+- Task Prompt: `task_prompt.md`
 - 修改檔案: 15 個
 - SYNC_SUMMARY: 待更新

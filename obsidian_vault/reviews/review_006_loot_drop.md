@@ -107,5 +107,5 @@ Inventory.add_item() → 加入背包
 
 ## 相關連結
 
-- Codex Prompt: `codex_prompt.md` (將更新為 #007)
-- Phase 3 規劃: `PHASE3_PLAN.md`
+- Task Prompt: `task_prompt.md` (將更新為 #007)
+- Phase 3 規劃: `archive/plans/phase_3_plan.md`

@@ -1,27 +1,60 @@
-# Kimi × Codex 協作工作流模板
+# Task 指派者 × 實作者 × 驗收者 協作工作流模板
 
-> 本文件記錄異境專案的協作模式，供未來專案沿用
-> 建立日期: 2026-03-27
+> 正式工作流模板。入口請先看 `README.md`。
+> 本文件記錄現行協作模式，供未來專案沿用。
+> 建立日期: 2026-03-30
 
 ---
 
 ## 一、角色分工
 
-### Kimi (規劃與驗收)
+### 1. Task 指派者
 - ✅ 分析專案現狀與技術架構
 - ✅ 決定任務順序與優先級
 - ✅ 撰寫/改進 Spec 草稿
-- ✅ 將任務轉譯為 Codex Prompt
-- ✅ 驗收實作結果（功能/架構/風格）
-- ✅ 更新進度追蹤文件
-- ❌ **不直接寫實作程式碼**
+- ✅ 將任務轉譯為 `task_prompt.md`
+- ✅ 維護總覽與排程文件
+- ❌ 不直接寫實作程式碼
 
-### Codex (實作)
-- 🔧 讀取 `codex_prompt.md` 獲取當前任務
-- 🔧 執行具體程式碼實作
+### Task 指派者應閱讀
+- `README.md`
+- `sync_summary.md`
+- `planning/project_goals.md`
+- `planning/mvp_todo.md`
+- `planning/tech_spec_notes.md`
+- `planning/implementation_order.md`
+- `planning/coding_habits.md`
+- `specs/input_keymap.md`
+- `task_backlog.md`
+- 對應任務的 `reviews/*.md`
+
+### 2. 實作者
+- 🔧 讀取 `task_prompt.md` 獲取當前任務
+- 🔧 依任務內列出的參考檔案實作
 - 🔧 完成後更新 Prompt 底部「任務狀態」
 - 🔧 回報實作摘要與遇到的問題
-- ❌ **不修改 Prompt 的任務內容**
+- ❌ 不修改 Prompt 的任務內容
+
+### 實作者應閱讀
+- `README.md`
+- `task_prompt.md`
+- `specs/input_keymap.md`
+- `task_prompt.md` 內列出的參考檔案
+
+### 3. 驗收者
+- ✅ 檢查實作結果（功能/架構/風格）
+- ✅ 對照 acceptance criteria
+- ✅ 建立 `reviews/*.md`
+- ✅ 決定通過、條件通過或退回
+- ✅ 更新進度追蹤文件
+
+### 驗收者應閱讀
+- `README.md`
+- `task_prompt.md`
+- 實作者修改的檔案
+- `code_review_template.md`
+- 對應任務的歷史 `reviews/*.md`
+- `sync_summary.md`
 
 ---
 
@@ -29,19 +62,30 @@
 
 ```
 obsidian_vault/
-├── codex_prompt.md              # 🔥 當前任務 Prompt（每次覆寫）
-├── WORKFLOW_TEMPLATE.md         # 本文件 - 工作流說明
-├── PHASEX_PLAN.md               # 階段規劃（如 PHASE3_PLAN.md）
-├── SYNC_SUMMARY.md              # 同步摘要 - 最新進度總覽
+├── README.md                    # 入口索引
+├── task_prompt.md               # 當前任務 Prompt（每次覆寫）
+├── task_backlog.md              # 待指派任務池
+├── workflow_template.md         # 本文件 - 工作流說明
+├── code_review_template.md      # 驗收模板
+├── sync_summary.md              # 同步摘要 - 最新進度總覽
 ├── reviews/                     # 驗收記錄
 │   ├── review_001_xxx.md
 │   ├── review_002_xxx.md
 │   └── ...
-└── 0324/                        # 設計文件
-    ├── 00_Project_Goals.md      # 專案目標
-    ├── 01_MVP_TODO.md           # MVP 任務清單
-    ├── 02_Tech_Spec_Notes.md    # 技術規範
-    └── 03_Implementation_Order.md # 實作順序
+├── specs/                       # 操作與快捷鍵
+│   └── input_keymap.md          # 按鍵與快捷鍵總表
+├── planning/                    # 現行規劃文件
+│   ├── project_goals.md
+│   ├── mvp_todo.md
+│   ├── tech_spec_notes.md
+│   ├── implementation_order.md
+│   └── coding_habits.md
+└── archive/                     # 歷史文件
+    ├── README.md
+    ├── workflow/
+    ├── plans/
+    ├── reports/
+    └── specs/
 ```
 
 ---
@@ -50,28 +94,28 @@ obsidian_vault/
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Step 1: Kimi 分析現狀                                       │
+│  Step 1: Task 指派者 分析現狀                                 │
 │  - 檢查專案結構                                              │
 │  - 確認當前進度                                              │
 │  - 識別下一步目標                                            │
 └──────────────────────────┬──────────────────────────────────┘
                            ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Step 2: Kimi 撰寫 Spec                                      │
+│  Step 2: Task 指派者 撰寫 Spec                               │
 │  - 定義任務目標（Why）                                       │
 │  - 明確驗收標準（Acceptance Criteria）                       │
 │  - 提供技術約束與參考檔案                                    │
 └──────────────────────────┬──────────────────────────────────┘
                            ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Step 3: Kimi 產出 Prompt                                    │
-│  - 覆寫 `codex_prompt.md`                                    │
+│  Step 3: Task 指派者 產出 Prompt                             │
+│  - 覆寫 `task_prompt.md`                                      │
 │  - 包含完整背景與任務描述                                    │
 │  - 任務狀態設為「進行中」                                    │
 └──────────────────────────┬──────────────────────────────────┘
                            ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Step 4: Codex 執行任務                                      │
+│  Step 4: 實作者 執行任務                                      │
 │  - 讀取 Prompt 檔案                                          │
 │  - 實作程式碼                                                │
 │  - 完成後更新任務狀態為「已完成」                            │
@@ -79,7 +123,7 @@ obsidian_vault/
 └──────────────────────────┬──────────────────────────────────┘
                            ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Step 5: Kimi 驗收                                           │
+│  Step 5: 驗收者 驗收                                          │
 │  - 檢查修改的檔案                                            │
 │  - 對照驗收標準                                              │
 │  - Code Review（架構/風格/邊界）                             │
@@ -89,7 +133,7 @@ obsidian_vault/
         ▼                                     ▼
 ┌───────────────┐                   ┌─────────────────┐
 │  驗收通過      │                   │  需要修正        │
-│  → 進入下一任務 │                   │  → 回饋給 Codex  │
+│  → 進入下一任務 │                   │  → 回饋給實作者  │
 │  → 建立 review  │                   │  → 更新 Prompt   │
 │  → 更新進度    │                   │  → 重新實作      │
 └───────────────┘                   └─────────────────┘
@@ -99,85 +143,36 @@ obsidian_vault/
 
 ## 四、Prompt 模板結構
 
-每個 `codex_prompt.md` 必須包含以下章節：
+每個 `task_prompt.md` 必須包含以下章節：
 
 ### 1. 任務背景
-```markdown
-### 專案概覽
-- 專案名稱、引擎、類型、目前階段
-
-### Phase X 已完成
-- 列出已完成的核心功能
-
-### 當前目標
-- 本任務要解決的問題
-```
+- 專案概覽
+- 已完成基礎
+- 當前目標
 
 ### 2. 當前任務
-```markdown
-### 任務標題
-#XXX 任務名稱
+- 任務標題
+- 任務描述（Why + What）
+- 具體需求（How）
+- 驗收標準（Checklist）
 
-### 任務描述
-- 簡述任務目的與範圍
-
-### 具體需求
-- 步驟 1
-- 步驟 2
-- ...
-```
-
-### 3. 驗收標準 (Acceptance Criteria)
-```markdown
-- [ ] 功能 A 正常運作
-- [ ] 功能 B 處理邊界情況
-- [ ] Console 無錯誤
-```
-
-### 4. 技術約束
-```markdown
-- 必須使用的 API
+### 3. 技術約束
+- 必須使用的現有 API
 - 禁止做的事
 - 命名/風格規範
-- 特殊注意事項
-```
 
-### 5. 參考檔案
-```markdown
-game/scripts/xxx.gd    # 需修改
-game/scripts/xxx.gd    # 需新增
-game/scripts/xxx.gd    # 參考
-```
+### 4. 參考檔案
+- 需要讀取的關鍵檔案路徑
 
-### 6. 架構說明（可選）
-```markdown
-**為什麼需要這個？**
-目前問題：...
-解決方案：...
-```
+### 5. 輸出要求
+- 完成後如何標記
+- 需要回報的資訊
 
-### 7. 輸出要求
-```markdown
-1. 完成後更新任務狀態為「已完成」
-2. 簡要說明實作內容（2-3 行）
-3. 列出修改的檔案清單
-4. 標註任何問題或設計決策
-```
-
-### 8. 任務狀態（Codex 填寫）
-```markdown
-- [ ] 進行中
-- [x] 已完成
-
-### 實作摘要
-<!-- 2-3 行簡述 -->
-
-### 修改檔案
-<!-- 清單 -->
-
-### 備註/問題
-<!-- 遇到的問題或建議 -->
-```
+### 6. 任務狀態
+- 進行中 / 已完成 Checkbox
+- 實作摘要
+- 修改檔案清單
+- 備註/問題
 
 ---
 
@@ -213,9 +208,9 @@ game/scripts/xxx.gd    # 參考
 ## 六、溝通原則
 
 1. **單一任務原則** - 一個 Prompt 只包含一個可完成的任務
-2. **快速迭代** - 小步快跑，及時驗收
+2. **角色邊界清楚** - 指派者不寫實作，實作者不改規格，驗收者不補寫功能
 3. **文件即契約** - Prompt 即規格，驗收即標準
-4. **自我記錄** - Codex 完成後更新任務狀態，Kimi 驗收後建立 review
+4. **自我記錄** - 實作者更新任務狀態，驗收者建立 review，指派者更新總覽
 
 ---
 
@@ -224,11 +219,11 @@ game/scripts/xxx.gd    # 參考
 開始新專案時：
 
 - [ ] 建立 `obsidian_vault/` 目錄
-- [ ] 複製本 `WORKFLOW_TEMPLATE.md`
-- [ ] 建立 `codex_prompt.md`（空白模板）
+- [ ] 複製本 `workflow_template.md`
+- [ ] 建立 `task_prompt.md`（空白模板）
 - [ ] 建立 `reviews/` 目錄
-- [ ] 決定專案目標，建立 `00_Project_Goals.md`
-- [ ] Kimi 撰寫第一個任務 Prompt
+- [ ] 決定專案目標，建立 `planning/project_goals.md`
+- [ ] Task 指派者 撰寫第一個任務 Prompt
 - [ ] 開始協作！
 
 ---
@@ -239,11 +234,11 @@ game/scripts/xxx.gd    # 參考
 
 | 文件 | 用途 |
 |------|------|
-| `codex_prompt.md` | 查看 Prompt 結構 |
+| `task_prompt.md` | 查看 Prompt 結構 |
 | `reviews/review_001_*.md` | 查看驗收格式 |
-| `PHASE3_PLAN.md` | 查看階段規劃 |
-| `SYNC_SUMMARY.md` | 查看進度總覽 |
+| `archive/README.md` | 查看歷史文件索引 |
+| `sync_summary.md` | 查看進度總覽 |
 
 ---
 
-*工作流模板由 Kimi 維護，根據實際協作經驗持續優化*
+*工作流模板由 Task 指派者 維護，根據實際協作經驗持續優化*

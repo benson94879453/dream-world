@@ -4,7 +4,7 @@
 
 - **任務名稱**: 9A-2.5 任務 UI 輸入恢復整合修復
 - **Codex 完成時間**: 2026-03-30
-- **Kimi 驗收時間**: 2026-03-30
+- **驗收者驗收時間**: 2026-03-30
 
 ---
 
@@ -128,7 +128,7 @@
 
 ## 相關連結
 
-- Codex Prompt: `obsidian_vault/codex_prompt.md`
+- Task Prompt: `obsidian_vault/task_prompt.md`
 - 既有 review:
   - `obsidian_vault/reviews/review_021_quest_tracker_hud.md`
   - `obsidian_vault/reviews/review_022_quest_toast_ui.md`

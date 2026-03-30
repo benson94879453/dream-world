@@ -84,12 +84,12 @@
 
 進入 **Phase 3** 或決定 Player Attack State。
 
-根據 `03_Implementation_Order.md`，Next Tasks 剩下：
+根據 `planning/implementation_order.md`，Next Tasks 剩下：
 - [ ] Decide when attack timing pressure is high enough to promote attack into a dedicated player state
 
 ---
 
 ## 相關連結
 
-- Codex Prompt: `codex_prompt.md`
-- 修改檔案: 12 個 (見 codex_prompt.md 實作摘要)
+- Task Prompt: `task_prompt.md`
+- 修改檔案: 12 個 (見 task_prompt.md 實作摘要)

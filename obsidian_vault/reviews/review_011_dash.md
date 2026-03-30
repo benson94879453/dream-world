@@ -128,5 +128,5 @@ hurtbox.monitorable = false if invincible_ else default
 
 ## 相關連結
 
-- Prompt: `obsidian_vault/codex_prompt.md`
-- 同步摘要: `obsidian_vault/SYNC_SUMMARY.md`
+- Prompt: `obsidian_vault/task_prompt.md`
+- 同步摘要: `obsidian_vault/sync_summary.md`
