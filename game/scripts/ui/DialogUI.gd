@@ -3,6 +3,7 @@ extends CanvasLayer
 
 const DIALOG_MANAGER_PATH: NodePath = NodePath("/root/DialogManager")
 const DialogChoiceDataResource = preload("res://game/scripts/data/DialogChoiceData.gd")
+const UIColorsResource = preload("res://game/scripts/ui/UIColors.gd")
 const CHOICE_BUTTON_MIN_WIDTH: float = 420.0
 
 @export var text_speed: float = 50.0
@@ -30,6 +31,7 @@ func _ready() -> void:
 
 	add_to_group("modal_ui")
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_apply_style()
 	hide_dialog()
 
 	var dialog_manager_ = _get_dialog_manager()
@@ -179,4 +181,12 @@ func _clear_choices() -> void:
 
 func _get_dialog_manager() -> Node:
 	return get_node_or_null(DIALOG_MANAGER_PATH)
+
+
+func _apply_style() -> void:
+	var stylebox_ := UIColorsResource.build_panel_style(UIColorsResource.PANEL_BG, UIColorsResource.PANEL_BORDER, UIColorsResource.MODAL_BORDER_WIDTH, UIColorsResource.MODAL_CORNER_RADIUS)
+	panel.add_theme_stylebox_override("panel", stylebox_)
+	speaker_label.add_theme_color_override("font_color", UIColorsResource.TITLE_COLOR)
+	text_label.add_theme_color_override("font_color", UIColorsResource.BODY_TEXT)
+	continue_indicator.add_theme_color_override("font_color", UIColorsResource.ACCENT)
 #endregion

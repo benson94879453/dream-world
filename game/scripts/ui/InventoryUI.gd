@@ -8,6 +8,7 @@ const ItemSlotUIScene = preload("res://game/scenes/ui/ItemSlotUI.tscn")
 const EquipmentUIScript = preload("res://game/scripts/ui/EquipmentUI.gd")
 const RuneDataResource = preload("res://game/scripts/data/RuneData.gd")
 const HotbarManagerNode = preload("res://game/scripts/core/HotbarManager.gd")
+const UIColorsResource = preload("res://game/scripts/ui/UIColors.gd")
 
 const FILTER_ALL: StringName = &"all"
 const FILTER_MATERIAL: StringName = &"material"
@@ -205,12 +206,12 @@ func _connect_category_tabs() -> void:
 
 func _style_ui() -> void:
 	title_label.text = "背包"
-	info_label.text = "[E / I] 開關背包   [1-5] 使用快捷欄   拖曳整理/綁定   Shift+左鍵 快速裝備或分堆"
-	backdrop.color = Color(0.03, 0.03, 0.04, 0.64)
-	_apply_panel_style(main_panel, Color(0.09, 0.10, 0.12, 0.97), Color(0.84, 0.71, 0.40, 1.0), 3)
-	_apply_panel_style(inventory_panel, Color(0.14, 0.15, 0.18, 0.98), Color(0.42, 0.46, 0.52, 1.0), 2)
-	_apply_panel_style(hotbar_panel, Color(0.13, 0.11, 0.09, 0.98), Color(0.69, 0.56, 0.33, 1.0), 2)
-	_apply_panel_style(tooltip_panel, Color(0.12, 0.12, 0.12, 0.97), Color(0.95, 0.85, 0.42, 1.0), 3)
+	info_label.text = "[E / I] 背包   [1-5] 快捷欄   Shift+左鍵 快裝"
+	backdrop.color = UIColorsResource.BACKDROP
+	_apply_panel_style(main_panel, UIColorsResource.PANEL_BG, UIColorsResource.PANEL_BORDER, UIColorsResource.MODAL_BORDER_WIDTH)
+	_apply_panel_style(inventory_panel, UIColorsResource.INVENTORY_PANEL_BG, UIColorsResource.PANEL_BORDER_SUBTLE, UIColorsResource.SUBPANEL_BORDER_WIDTH)
+	_apply_panel_style(hotbar_panel, UIColorsResource.HOTBAR_PANEL_BG, UIColorsResource.HOTBAR_PANEL_BORDER, UIColorsResource.SUBPANEL_BORDER_WIDTH)
+	_apply_panel_style(tooltip_panel, UIColorsResource.TOOLTIP_BG, UIColorsResource.TOOLTIP_BORDER, UIColorsResource.MODAL_BORDER_WIDTH)
 
 	var tab_buttons_: Array[Button] = [
 		tab_all_button,
@@ -225,38 +226,21 @@ func _style_ui() -> void:
 
 
 func _apply_panel_style(panel_: Control, bg_color_: Color, border_color_: Color, border_width_: int) -> void:
-	var stylebox_: StyleBoxFlat = StyleBoxFlat.new()
-	stylebox_.bg_color = bg_color_
-	stylebox_.border_color = border_color_
-	stylebox_.border_width_left = border_width_
-	stylebox_.border_width_top = border_width_
-	stylebox_.border_width_right = border_width_
-	stylebox_.border_width_bottom = border_width_
-	stylebox_.corner_radius_top_left = 4
-	stylebox_.corner_radius_top_right = 4
-	stylebox_.corner_radius_bottom_left = 4
-	stylebox_.corner_radius_bottom_right = 4
+	var stylebox_: StyleBoxFlat = UIColorsResource.build_panel_style(bg_color_, border_color_, border_width_, UIColorsResource.MODAL_CORNER_RADIUS)
 	panel_.add_theme_stylebox_override("panel", stylebox_)
 
 
 func _apply_tab_button_style(button_: Button, active_: bool) -> void:
-	var normal_style_: StyleBoxFlat = StyleBoxFlat.new()
-	normal_style_.bg_color = Color(0.46, 0.32, 0.17, 1.0) if active_ else Color(0.18, 0.19, 0.22, 1.0)
-	normal_style_.border_color = Color(0.94, 0.82, 0.49, 1.0) if active_ else Color(0.39, 0.43, 0.50, 1.0)
-	normal_style_.border_width_left = 2
-	normal_style_.border_width_top = 2
-	normal_style_.border_width_right = 2
-	normal_style_.border_width_bottom = 2
-	normal_style_.corner_radius_top_left = 2
-	normal_style_.corner_radius_top_right = 2
-	normal_style_.corner_radius_bottom_left = 2
-	normal_style_.corner_radius_bottom_right = 2
+	var bg_color_: Color = UIColorsResource.TAB_ACTIVE_BG if active_ else UIColorsResource.TAB_INACTIVE_BG
+	var border_color_: Color = UIColorsResource.TAB_ACTIVE_BORDER if active_ else UIColorsResource.TAB_INACTIVE_BORDER
+	var normal_style_: StyleBoxFlat = UIColorsResource.build_panel_style(bg_color_, border_color_, 2, 2)
 
 	button_.add_theme_stylebox_override("normal", normal_style_)
 	button_.add_theme_stylebox_override("hover", normal_style_)
 	button_.add_theme_stylebox_override("pressed", normal_style_)
 	button_.add_theme_stylebox_override("focus", normal_style_)
-	button_.add_theme_color_override("font_color", Color(1.0, 0.96, 0.82, 1.0) if active_ else Color(0.88, 0.88, 0.88, 1.0))
+	var text_color_: Color = UIColorsResource.TAB_ACTIVE_TEXT if active_ else UIColorsResource.TAB_INACTIVE_TEXT
+	button_.add_theme_color_override("font_color", text_color_)
 	button_.add_theme_font_size_override("font_size", 13)
 
 

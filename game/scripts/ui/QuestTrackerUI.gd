@@ -3,19 +3,20 @@ extends Control
 
 const QUEST_MANAGER_PATH: NodePath = NodePath("/root/QuestManager")
 const QuestInstanceResource = preload("res://game/scripts/data/QuestInstance.gd")
+const UIColorsResource = preload("res://game/scripts/ui/UIColors.gd")
 
 const MAX_VISIBLE_QUESTS: int = 3
 const SCREEN_MARGIN: float = 28.0
 const PANEL_MIN_WIDTH: float = 352.0
-const QUEST_TITLE_COLOR: Color = Color(0.97, 0.92, 0.75, 1.0)
-const QUEST_NAME_COLOR: Color = Color(0.93, 0.94, 0.97, 1.0)
-const QUEST_PROGRESS_COLOR: Color = Color(0.79, 0.82, 0.88, 0.96)
-const QUEST_COMPLETED_NAME_COLOR: Color = Color(1.0, 0.84, 0.0, 1.0)
-const QUEST_COMPLETED_PROGRESS_COLOR: Color = Color(1.0, 0.91, 0.42, 1.0)
-const PANEL_BACKGROUND_COLOR: Color = Color(0.08, 0.09, 0.11, 0.82)
-const PANEL_BORDER_COLOR: Color = Color(0.82, 0.69, 0.42, 0.94)
-const ENTRY_BACKGROUND_COLOR: Color = Color(0.12, 0.13, 0.17, 0.92)
-const ENTRY_BORDER_COLOR: Color = Color(0.28, 0.30, 0.35, 0.95)
+const QUEST_TITLE_COLOR: Color = UIColorsResource.QUEST_TITLE_COLOR
+const QUEST_NAME_COLOR: Color = UIColorsResource.QUEST_NAME_COLOR
+const QUEST_PROGRESS_COLOR: Color = UIColorsResource.QUEST_PROGRESS_COLOR
+const QUEST_COMPLETED_NAME_COLOR: Color = UIColorsResource.QUEST_COMPLETED_NAME_COLOR
+const QUEST_COMPLETED_PROGRESS_COLOR: Color = UIColorsResource.QUEST_COMPLETED_PROGRESS_COLOR
+const PANEL_BACKGROUND_COLOR: Color = UIColorsResource.HUD_PANEL_BG
+const PANEL_BORDER_COLOR: Color = UIColorsResource.HUD_PANEL_BORDER
+const ENTRY_BACKGROUND_COLOR: Color = UIColorsResource.HUD_ENTRY_BG
+const ENTRY_BORDER_COLOR: Color = UIColorsResource.HUD_ENTRY_BORDER
 const ENTRY_COLOR_TWEEN_SECONDS: float = 0.18
 const ENTRY_COMPLETED_HOLD_SECONDS: float = 2.0
 

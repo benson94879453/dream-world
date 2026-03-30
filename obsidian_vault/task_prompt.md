@@ -1,212 +1,279 @@
-# Task Prompt — 排查讀檔後流程卡住問題
+# Task Prompt — 前端 UI 視覺重構與文案清理
 
 ---
 
-## 1. 問題背景
+## 1. 任務背景
 
-目前專案在觸發讀檔（F10 -> `SaveManager.load_game()`）後會出現「流程卡住」現象。
-
-已知狀況：
-- `SaveManager.load_game()` 已串接：
-  - `inventory_.from_save_dict(...)`
-  - `player_.from_save_dict(...)`
-  - `dialog_manager_.from_save_dict(...)`
-  - `quest_manager_.from_save_dict(...)`
-  - `hotbar_manager_.from_save_dict(...)`
-  - `scene_state_manager_.from_save_dict(...)`
-  - `zone_reset_manager_.from_save_dict(...)`
-  - `scene_state_manager_.reapply_current_scene_state()`
-- `load_completed` signal 目前看不到外部訂閱者
-- `Player.gd` 是直接在 `_try_handle_debug_save_load()` 裡呼叫 `save_manager_.load_game()`
-- 目前症狀不是 parse error，而是「讀檔後遊戲流程停住 / 卡住」
-
-本任務目標是：
-1. 釐清卡住點發生在 `load_game()` 的哪一段
-2. 找出是資料恢復、場景狀態重套、玩家狀態、UI / modal 狀態，還是輸入鎖定造成
-3. 做最小修復，讓讀檔後能正常回到可操作狀態
-
----
-
-## 2. 需要優先檢查的懷疑點
-
-### A. Player / UI 狀態沒有在讀檔後恢復
-重點檢查：
-- `Player.gd`
-  - `controls_locked`
-  - `transient_lock_time_remaining`
-  - `inventory_ui_open`
-  - `is_dashing`
-  - `is_respawning`
-- 讀檔後是否還停留在不可操作狀態
-- 讀檔時如果某個 UI 正開著，是否把玩家鎖住但沒有清掉
-
-### B. SceneStateManager.reapply_current_scene_state() 卡住或造成異常狀態
-重點檢查：
-- `SceneStateManager.gd: reapply_current_scene_state()`
-- `PersistentObject.reload_persistent_state()`
-- 是否有節點在 reload 過程中：
-  - queue_free 自己
-  - 觸發新的場景邏輯
-  - 進入等待 / 不完整狀態
-- 是否在 current scene 的 persistent object 重新套用時導致流程停住
-
-### C. SaveManager.load_game() 呼叫順序造成不一致
-目前順序是：
-1. inventory
-2. player
-3. dialog
-4. quest
-5. hotbar
-6. scene_state
-7. zone_reset
-8. reapply_current_scene_state
-
-需要檢查：
-- `player_.from_save_dict()` 是否依賴 inventory 已完成
-- `hotbar_manager_.from_save_dict()` 是否依賴 inventory / UI 當前狀態
-- `scene_state_manager_.reapply_current_scene_state()` 是否應該晚一點，或需要 deferred
-- 是否有任一 `from_save_dict()` 在 emit signal 時觸發額外流程，導致卡住
-
-### D. 讀檔後其實不是「程式卡住」，而是輸入 / modal 被鎖住
-重點檢查：
+目前專案的主要前端 UI 已經具備可用功能，至少包含：
 - `InventoryUI`
-- `QuestJournalUI`
+- `EquipmentUI`
 - `DialogUI`
 - `WeaponUpgradeUI`
-- `modal_ui` 群組內是否有 visible 節點殘留
-- NPC / Portal / Checkpoint 是否因 modal 判定導致看起來像卡住
-- Player 是否還能 `_physics_process`，只是 `_input` 或 `_unhandled_input` 被阻斷
+- `RuneSocketUI`
+- `QuestTrackerUI`
+- `QuestToastUI`
+- `QuestJournalUI`
+- `ChestUI`
 
-### E. SceneTransitionManager 與 SaveManager 的責任邊界不一致
-目前 `SaveManager.load_game()` 沒有處理跨場景讀檔，只是把資料套到當前場景。
-若存檔內容與當前場景不一致，可能導致：
-- player 位置 / scene state / respawn state 不一致
-- 某些 persistent object 狀態重套到錯場景
-- 看起來像讀檔後壞掉或卡住
+目前問題不是功能缺失，而是「視覺語言與文案品質不一致」：
+- 不同介面的面板底色、邊框、留白、標題層級不一致
+- 部分預設文字仍帶有 placeholder / 開發說明感，例如：
+  - `game/scenes/ui/DialogUI.tscn`：`Speaker`、`Dialog text.`
+  - `game/scenes/ui/InventoryUI.tscn`：`經典 RPG 分欄檢視`
+  - `game/scenes/ui/QuestJournalUI.tscn`：過長的操作說明句
+- 有些畫面上的輔助文字像註解，而不是玩家真正需要閱讀的 UI 文案
+- 現有 Quest / Inventory / Upgrade UI 各自可用，但整體觀看時仍缺少統一的 ARPG 視覺風格
 
-請確認目前卡住是否發生在：
-- TownHub 存檔 -> TownHub 讀檔
-- Dungeon01 存檔 -> Dungeon01 讀檔
-- 或跨重啟 / 跨場景情境
-
----
-
-## 3. 排查步驟
-
-### Step 1: 在 SaveManager.load_game() 各階段加入精準 log
-請在以下節點前後加入 log，確認卡在哪一步：
-- 開始 load_game
-- inventory.from_save_dict 前後
-- player.from_save_dict 前後
-- dialog.from_save_dict 前後
-- quest.from_save_dict 前後
-- hotbar.from_save_dict 前後
-- scene_state.from_save_dict 前後
-- zone_reset.from_save_dict 前後
-- reapply_current_scene_state 前後
-- load_completed.emit(true) 前
-
-目標：
-- 明確知道是否真的卡在某個函式內
-- 還是 load_game 已完成，但讀檔後場景/輸入卡住
-
-### Step 2: 針對 Player 狀態做讀檔後檢查
-請在讀檔完成後印出：
-- `controls_locked`
-- `transient_lock_time_remaining`
-- `inventory_ui_open`
-- `is_dashing`
-- `get_current_state_name()`
-- `velocity`
-- `global_position`
-
-目標：
-- 確認玩家是否其實仍在鎖定態或異常 state
-
-### Step 3: 檢查 modal UI 殘留
-讀檔完成後列出：
-- `get_tree().get_nodes_in_group("modal_ui")`
-- 哪些節點 `visible == true`
-
-目標：
-- 確認是否 UI 殘留導致玩家無法互動
-
-### Step 4: 檢查 PersistentObject 重套流程
-請找出：
-- `PersistentObject.gd`
-- `reload_persistent_state()` 實作
-- 所有使用 `persistent_object` 群組的場景物件
-
-目標：
-- 確認 `reapply_current_scene_state()` 是否會觸發卡住、錯誤隱藏、或物件狀態不一致
-
-### Step 5: 確認 load_game 是否完成但沒有恢復到 Idle / 可操作狀態
-如果 `load_game()` 本體已成功跑完，請檢查是否需要在結尾補做最小恢復，例如：
-- 將玩家 state reset 到 `Idle`
-- 清理 UI / modal
-- 重設 velocity
-- 清掉暫時控制鎖
-- deferred reapply scene state
-
-但在確認根因前不要先大改。
+本任務目標是：
+1. 重構 / 優化現有 UI 視覺效果，提升整體一致性與閱讀性
+2. 去除或改寫意義不明、placeholder、開發感過重的文字註解
+3. 在不破壞既有操作流程的前提下，完成最小且可驗收的 UI polish
 
 ---
 
-## 4. 需要重點閱讀的檔案
+## 2. 當前任務
+
+### 任務標題
+前端 UI 視覺重構與文案清理
+
+### 任務描述
+請針對目前已落地的主要 UI 介面做一輪集中整理，目標不是新增功能，而是把「看得出來是不同時期做出來的 UI」整理成同一套視覺語言，並清掉不像正式遊戲介面文案的文字。
+
+### 具體需求
+
+### A. 盤點並整理核心 UI 範圍
+本次至少要涵蓋：
+- `game/scenes/ui/InventoryUI.tscn`
+- `game/scenes/ui/EquipmentUI.tscn`
+- `game/scenes/ui/DialogUI.tscn`
+- `game/scenes/ui/WeaponUpgradeUI.tscn`
+- `game/scenes/ui/RuneSocketUI.tscn`
+- `game/scenes/ui/QuestTrackerUI.tscn`
+- `game/scenes/ui/QuestToastUI.tscn`
+- `game/scenes/ui/QuestJournalUI.tscn`
+
+若共用樣式或文字邏輯有關聯，可一併處理：
+- `game/scenes/ui/ChestUI.tscn`
+- 對應的 `game/scripts/ui/*.gd`
+
+### B. 統一視覺語言
+請整理以下項目，使各 UI 看起來屬於同一個遊戲：
+- 面板底色、邊框色、強調色的使用規則
+- 標題 / 次標 / 內文 / 狀態 / 提示 的字級與對比層級
+- 面板圓角、留白、區塊間距、按鈕尺寸與排列
+- Modal 視窗與 HUD 類 UI 的視覺權重區分
+- 資訊密度：移除多餘裝飾與重複資訊，讓主要互動更醒目
+
+建議方向：
+- 維持目前偏深色、金色 accent 的 ARPG 風格
+- 優先加強可讀性與層級，不要為了「更花」而犧牲辨識度
+- `QuestTrackerUI` / `QuestToastUI` 應比 `InventoryUI` / `QuestJournalUI` 更輕量
+- 保持 `Backdrop`、`layer`、`mouse_filter`、modal 開關行為不變
+
+### C. 清理意義不明的文字註解
+請移除、縮短或改寫以下類型文字：
+- placeholder 英文預設文案
+- 開發時期的說明句
+- 玩家不需要看的介面註解式文字
+- 重複描述同一件事的提示文字
+
+優先處理示例：
+- `game/scenes/ui/DialogUI.tscn`
+  - `Speaker`
+  - `Dialog text.`
+- `game/scenes/ui/InventoryUI.tscn`
+  - `經典 RPG 分欄檢視`
+- `game/scenes/ui/QuestJournalUI.tscn`
+  - `按 J 開啟或關閉，查看目前進度與已回報紀錄。`
+
+清理原則：
+- 保留真正幫助玩家操作的資訊，例如快捷鍵、進度、消耗、確認警告
+- 若文字只是「像註解」，但不提升決策或操作效率，就應刪除或改寫
+- 若保留操作提示，請使用一致、精簡的格式，不要每個畫面都寫成長句說明
+
+### D. 最小重構原則
+- 優先調整既有 scene 文字、theme override、樣式 helper、節點排版
+- 優先重用現有 `_style_ui()` / `_apply_theme()` / `_apply_style()` 之類的整理點
+- 不要為了這次 polish 新建大型 UI framework / global theme system，除非現況真的無法維護
+- 不要順手改 Quest / Inventory / Upgrade / Save 的核心邏輯
+- 不要更動輸入綁定與互動規則，只能在必要時修正與視覺整理直接相關的 UI 行為
+
+### E. 自我驗證
+請至少手動確認以下情境：
+- `TownHub.tscn` 內開啟 `DialogUI`
+- `TownHub.tscn` 內開啟 `InventoryUI`
+- `TownHub.tscn` 內開啟 `WeaponUpgradeUI`
+- `TownHub.tscn` / `Dungeon01.tscn` 中顯示 `QuestTrackerUI` / `QuestToastUI`
+- `QuestJournalUI` 的列表與右側詳情在 1920x1080 下無文字裁切、重疊、超出版面
+- modal 開關後，玩家輸入與 UI 關閉流程維持原本行為
+
+---
+
+## 3. 技術約束
+
+- 維持現有場景與 script 的責任邊界
+- 維持既有輸入動作與快捷鍵顯示語意：
+  - `ui_inventory`
+  - `ui_quest_journal`
+  - `ui_cancel`
+  - 互動鍵與數字鍵 hotbar
+- 可調整文案、配色、間距、樣式、節點布局
+- 可移除無意義的畫面文字與無價值的 UI placeholder
+- 若要改 script，請以 UI 呈現相關程式為限
+- 保留有結構價值的 `#region`；若 UI script 內有明顯占位、無幫助的註解，可一併清理
+- 遵守 `planning/coding_habits.md` 的 GDScript 風格
+
+### 禁止事項
+- 不要新增 Autoload
+- 不要改 Save schema
+- 不要更動 QuestManager / Inventory / UpgradeManager 的資料模型
+- 不要把這次任務擴張成整體設計系統重寫
+
+---
+
+## 4. 參考檔案
 
 ### 必讀
-- `game/scripts/core/SaveManager.gd`
-- `game/scripts/Player.gd`
-- `game/scripts/core/SceneStateManager.gd`
-- `game/scripts/core/SceneTransitionManager.gd`
+- `game/scenes/ui/InventoryUI.tscn`
+- `game/scenes/ui/EquipmentUI.tscn`
+- `game/scenes/ui/DialogUI.tscn`
+- `game/scenes/ui/WeaponUpgradeUI.tscn`
+- `game/scenes/ui/RuneSocketUI.tscn`
+- `game/scenes/ui/QuestTrackerUI.tscn`
+- `game/scenes/ui/QuestToastUI.tscn`
+- `game/scenes/ui/QuestJournalUI.tscn`
 
 ### 高關聯
 - `game/scripts/ui/InventoryUI.gd`
+- `game/scripts/ui/EquipmentUI.gd`
 - `game/scripts/ui/DialogUI.gd`
-- `game/scripts/ui/QuestJournalUI.gd`
 - `game/scripts/ui/WeaponUpgradeUI.gd`
+- `game/scripts/ui/RuneSocketUI.gd`
+- `game/scripts/ui/QuestTrackerUI.gd`
+- `game/scripts/ui/QuestToastUI.gd`
+- `game/scripts/ui/QuestJournalUI.gd`
+- `game/scenes/ui/ChestUI.tscn`
+- `game/scripts/ui/ChestUI.gd`
 
-### 若有使用 persistent state
-- `game/scripts/**/PersistentObject.gd`
-- 任何 `reload_persistent_state()` 的實作位置
-
----
-
-## 5. 修復要求
-
-- 先定位，再修
-- 優先做最小修復
-- 不要順手重構整個 Save / SceneTransition 架構
-- 若根因是呼叫順序問題，只調整必要順序
-- 若根因是 UI / Player 鎖定狀態殘留，只清理必要狀態
-- 若根因是 `reapply_current_scene_state()`，優先考慮 deferred 或保護條件，而不是大改場景系統
+### 驗證相關
+- `game/scenes/levels/TownHub.tscn`
+- `game/scenes/levels/Dungeon01.tscn`
+- `project.godot`
+- `obsidian_vault/specs/input_keymap.md`
 
 ---
 
-## 6. 驗收標準
+## 5. 驗收標準
+
+### 視覺驗收
+- [ ] 上述核心 UI 的配色、面板樣式、字級層級明顯更一致
+- [ ] 主要互動區塊比次要說明更醒目，版面不顯得雜亂
+- [ ] `HUD` 與 `Modal` 的視覺重量區分清楚
+
+### 文案驗收
+- [ ] 不再保留 `Speaker`、`Dialog text.` 這類 placeholder 文案
+- [ ] 不再保留「像開發備註」或「意義不明」的畫面文字
+- [ ] 保留的操作提示更精簡且格式一致
+- [ ] 沒有誤刪重要資訊（例如快捷鍵、進度、金額、確認提示）
 
 ### 功能驗收
-- [ ] F10 後流程不再卡住
-- [ ] 讀檔後玩家可移動 / 攻擊 / 互動
-- [ ] 讀檔後 UI 不會殘留在錯誤狀態
-- [ ] 讀檔後 Hotbar / Quest / SceneState 仍正常恢復
+- [ ] `InventoryUI` / `QuestJournalUI` / `WeaponUpgradeUI` / `DialogUI` 仍可正常開關
+- [ ] `QuestTrackerUI` / `QuestToastUI` 正常顯示，不影響滑鼠與攻擊輸入
+- [ ] 1920x1080 下關鍵畫面無明顯裁切、重疊、溢出
 - [ ] 無新增 parse error / warning
 
-### 排查輸出
-- [ ] 明確指出卡住點
-- [ ] 說明根因
-- [ ] 說明為何該修復是最小正確修復
+### 回報驗收
+- [ ] 列出清掉或改寫了哪些「意義不明文字」
+- [ ] 說明這輪 UI 整理的主要視覺規則
 - [ ] 列出修改檔案
+- [ ] 說明是否有尚未納入本輪的 UI 債務
 
 ---
 
-## 7. 補充觀察
+## 6. 輸出要求
 
-目前從程式結構看，優先懷疑：
-1. `reapply_current_scene_state()` 相關物件重套
-2. 玩家 / UI 鎖定狀態未恢復
-3. `from_save_dict()` 某個 signal/回調在讀檔中途觸發額外流程
+完成後請在本檔底部更新：
+- 任務狀態
+- 實作摘要
+- 修改檔案清單
+- 手動驗證結果
+- 若有無法在本輪處理的 UI 問題，請列在備註
 
-請先用 log 把卡點抓出來，再決定修法。
+另外請在回報中明確說明：
+1. 哪些畫面文字被刪除
+2. 哪些畫面文字被改寫
+3. 哪些 UI 只做視覺統一、沒有改動文案
+
+---
+
+## 7. 任務狀態
+
+- [x] 進行中
+- [x] 已完成
+
+### 實作摘要
+
+#### 新增檔案
+- `game/scripts/ui/UIColors.gd` — 統一色彩常數與 `build_panel_style()` helper
+
+#### 刪除的畫面文字
+- `DialogUI.tscn`: `Speaker` → `""`
+- `DialogUI.tscn`: `Dialog text.` → `""`
+- `InventoryUI.tscn`: `經典 RPG 分欄檢視` → `""` (節點隱藏)
+- `InventoryUI.tscn`: `整理背包、查看裝備、拖曳綁定快捷欄。` → `""` (節點隱藏)
+- `QuestJournalUI.tscn` + `.gd`: `按 J 開啟或關閉，查看目前進度與已回報紀錄。` → `""` (節點隱藏)
+- `RuneSocketUI.gd`: `背包裡沒有符文，按 K 可給予測試符文。` → `背包裡沒有符文。`
+
+#### 改寫的畫面文字
+- `InventoryUI.gd`: info_label `[E / I] 開關背包 [1-5] 使用快捷欄 拖曳整理/綁定 Shift+左鍵 快速裝備或分堆` → `[E / I] 背包 [1-5] 快捷欄 Shift+左鍵 快裝`
+
+#### 只做視覺統一、沒有改動文案的 UI
+- `EquipmentUI` — panel style 改用 UIColors
+- `QuestTrackerUI` — 色彩常數改用 UIColors
+- `QuestToastUI` — 色彩常數改用 UIColors
+- `ChestUI` — panel style 改用 UIColors
+
+#### 主要視覺規則
+| 元素 | 規則 |
+|---|---|
+| Modal panel | `PANEL_BG`, `PANEL_BORDER` 金色, 3px, 8px 圓角 |
+| Sub-panel | `PANEL_BG_LIGHT`, `PANEL_BORDER_SUBTLE`, 2px, 6px 圓角 |
+| HUD element | 更透明 bg (α 0.82), 2px, 6px 圓角 |
+| Backdrop | `BACKDROP` `Color(0.03, 0.03, 0.04, 0.64)` |
+| Title | 24-30px, `TITLE_COLOR` |
+| Body | 14-16px, `BODY_TEXT` |
+| Muted | 12-13px, `MUTED_TEXT` |
+| Accent | `ACCENT` 金色 |
+
+### 修改檔案
+- `game/scripts/ui/UIColors.gd` [NEW]
+- `game/scenes/ui/DialogUI.tscn`
+- `game/scripts/ui/DialogUI.gd`
+- `game/scenes/ui/InventoryUI.tscn`
+- `game/scripts/ui/InventoryUI.gd`
+- `game/scripts/ui/EquipmentUI.gd`
+- `game/scenes/ui/WeaponUpgradeUI.tscn`
+- `game/scripts/ui/WeaponUpgradeUI.gd`
+- `game/scripts/ui/RuneSocketUI.gd`
+- `game/scenes/ui/QuestJournalUI.tscn`
+- `game/scripts/ui/QuestJournalUI.gd`
+- `game/scripts/ui/QuestTrackerUI.gd`
+- `game/scripts/ui/QuestToastUI.gd`
+- `game/scripts/ui/ChestUI.gd`
+
+### 手動驗證
+- Godot MCP 未連接，validate_script 返回 mock 結果
+- 需用戶在 Godot 編輯器中執行以下驗證：
+  1. TownHub 場景開啟 DialogUI / InventoryUI / WeaponUpgradeUI
+  2. QuestTrackerUI / QuestToastUI 正常顯示
+  3. QuestJournalUI 1920×1080 無裁切
+  4. 所有 modal 開關正常
+
+### 備註 / 問題
+- 本任務以「視覺重構 + 文案清理」為主，不含新功能需求
+- `EquipmentUI.tscn` 的 HintLabel `Shift+左鍵可快速卸下` 保留（有操作指引價值）
+- `ChestUI.tscn` 的 HintLabel `點擊或 Shift+左鍵可快速移至玩家背包` 保留
+- `RuneSocketUI.tscn` 的 `請先選擇槽位` 保留（是有意義的操作指示）
+- 尚未納入本輪的 UI 債務：`EquipmentSlotUI.tscn`、`ItemSlotUI.tscn` 的細部樣式可在後續統一
 
 ---

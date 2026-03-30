@@ -3,6 +3,7 @@ extends CanvasLayer
 
 const InventoryResource = preload("res://game/scripts/inventory/Inventory.gd")
 const ItemSlotUIScene = preload("res://game/scenes/ui/ItemSlotUI.tscn")
+const UIColorsResource = preload("res://game/scripts/ui/UIColors.gd")
 
 @export var slot_count: int = 20
 
@@ -112,18 +113,8 @@ func _disconnect_chest_inventory() -> void:
 
 
 func _apply_style() -> void:
-	backdrop.color = Color(0.03, 0.03, 0.04, 0.18)
-	var stylebox_ := StyleBoxFlat.new()
-	stylebox_.bg_color = Color(0.10, 0.11, 0.13, 0.98)
-	stylebox_.border_color = Color(0.82, 0.69, 0.42, 1.0)
-	stylebox_.border_width_left = 3
-	stylebox_.border_width_top = 3
-	stylebox_.border_width_right = 3
-	stylebox_.border_width_bottom = 3
-	stylebox_.corner_radius_top_left = 4
-	stylebox_.corner_radius_top_right = 4
-	stylebox_.corner_radius_bottom_left = 4
-	stylebox_.corner_radius_bottom_right = 4
+	backdrop.color = UIColorsResource.BACKDROP_LIGHT
+	var stylebox_ := UIColorsResource.build_panel_style(UIColorsResource.PANEL_BG, UIColorsResource.PANEL_BORDER, UIColorsResource.MODAL_BORDER_WIDTH, UIColorsResource.MODAL_CORNER_RADIUS)
 	main_panel.add_theme_stylebox_override("panel", stylebox_)
 
 

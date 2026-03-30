@@ -8,10 +8,12 @@ const InventoryResource = preload("res://game/scripts/inventory/Inventory.gd")
 const ItemDataResource = preload("res://game/scripts/data/ItemData.gd")
 const RuneSocketUIResource = preload("res://game/scripts/ui/RuneSocketUI.gd")
 const WeaponInstanceResource = preload("res://game/scripts/data/WeaponInstance.gd")
+const UIColorsResource = preload("res://game/scripts/ui/UIColors.gd")
 
 @export var open_action_id: StringName = &"open_weapon_upgrade"
 @export var close_action: StringName = &"ui_cancel"
 
+@onready var backdrop: ColorRect = $Backdrop
 @onready var panel: Panel = $Panel
 @onready var title_label: Label = $Panel/TitleLabel
 @onready var gold_label: Label = $Panel/GoldLabel
@@ -64,6 +66,7 @@ func _ready() -> void:
 	add_to_group("modal_ui")
 	visible = false
 	panel.visible = false
+	backdrop.visible = false
 	tab_container.tab_changed.connect(_on_tab_changed)
 	upgrade_button.pressed.connect(_on_upgrade_pressed)
 	decompose_button.pressed.connect(_on_decompose_pressed)
@@ -81,6 +84,7 @@ func _ready() -> void:
 
 	_connect_inventory_signals()
 	_connect_player_signals()
+	_apply_style()
 #endregion
 
 #region Core Lifecycle (Input)
@@ -109,6 +113,7 @@ func open_for_current_weapon() -> void:
 	_connect_player_signals()
 	visible = true
 	panel.visible = true
+	backdrop.visible = true
 	title_label.text = "鐵匠武器升級"
 	tab_container.current_tab = 0
 	_set_player_locked(true)
@@ -118,6 +123,7 @@ func open_for_current_weapon() -> void:
 func hide_upgrade_ui() -> void:
 	visible = false
 	panel.visible = false
+	backdrop.visible = false
 	status_label.text = ""
 	decompose_status_label.text = ""
 	_set_player_locked(false)
@@ -452,4 +458,14 @@ func _get_save_manager() -> Node:
 	if tree_ == null or tree_.root == null:
 		return null
 	return tree_.root.get_node_or_null("SaveManager")
+
+
+func _apply_style() -> void:
+	backdrop.color = UIColorsResource.BACKDROP
+	var stylebox_ := UIColorsResource.build_panel_style(UIColorsResource.PANEL_BG, UIColorsResource.PANEL_BORDER, UIColorsResource.MODAL_BORDER_WIDTH, UIColorsResource.MODAL_CORNER_RADIUS)
+	panel.add_theme_stylebox_override("panel", stylebox_)
+	title_label.add_theme_color_override("font_color", UIColorsResource.TITLE_COLOR)
+	title_label.add_theme_font_size_override("font_size", 24)
+	gold_label.add_theme_color_override("font_color", UIColorsResource.ACCENT)
+	gold_label.add_theme_font_size_override("font_size", 16)
 #endregion

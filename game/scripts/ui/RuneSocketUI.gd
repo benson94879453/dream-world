@@ -137,7 +137,7 @@ func _update_rune_list() -> void:
 
 	var rune_entries_: Array[Dictionary] = rune_manager_.get_available_runes_from_inventory(current_inventory)
 	if rune_entries_.is_empty():
-		_set_empty_state("背包裡沒有符文，按 K 可給予測試符文。")
+		_set_empty_state("背包裡沒有符文。")
 		return
 
 	var selected_slot_ := _get_slot(selected_slot_index)

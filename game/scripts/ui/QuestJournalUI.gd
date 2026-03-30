@@ -8,27 +8,28 @@ const QuestDataResource = preload("res://game/scripts/data/QuestData.gd")
 const ItemDataResource = preload("res://game/scripts/data/ItemData.gd")
 const WeaponDataResource = preload("res://game/scripts/data/WeaponData.gd")
 const EnemyDataResource = preload("res://game/scripts/data/EnemyData.gd")
+const UIColorsResource = preload("res://game/scripts/ui/UIColors.gd")
 
 const ENEMY_DATA_ROOT: String = "res://game/data/enemies"
 
-const PANEL_BACKGROUND_COLOR: Color = Color(0.09, 0.10, 0.12, 0.97)
-const PANEL_BORDER_COLOR: Color = Color(0.84, 0.71, 0.40, 1.0)
-const SECTION_PANEL_COLOR: Color = Color(0.13, 0.14, 0.18, 0.98)
-const DETAIL_PANEL_COLOR: Color = Color(0.11, 0.12, 0.16, 0.98)
-const ENTRY_BACKGROUND_COLOR: Color = Color(0.15, 0.16, 0.20, 0.96)
-const ENTRY_SELECTED_BACKGROUND_COLOR: Color = Color(0.23, 0.19, 0.12, 0.98)
-const ENTRY_SELECTED_BORDER_COLOR: Color = Color(0.97, 0.84, 0.43, 1.0)
-const ENTRY_BORDER_COLOR: Color = Color(0.31, 0.34, 0.40, 0.96)
-const ENTRY_COMPLETED_BACKGROUND_COLOR: Color = Color(0.12, 0.12, 0.14, 0.95)
-const ENTRY_COMPLETED_BORDER_COLOR: Color = Color(0.34, 0.34, 0.36, 0.92)
-const TITLE_COLOR: Color = Color(0.98, 0.94, 0.82, 1.0)
-const BODY_TEXT_COLOR: Color = Color(0.92, 0.93, 0.96, 1.0)
-const MUTED_TEXT_COLOR: Color = Color(0.72, 0.75, 0.80, 0.96)
-const COMPLETED_TEXT_COLOR: Color = Color(0.58, 0.60, 0.64, 0.98)
-const ACCENT_TEXT_COLOR: Color = Color(0.98, 0.84, 0.38, 1.0)
-const SUCCESS_TEXT_COLOR: Color = Color(0.62, 0.92, 0.67, 1.0)
-const PROGRESS_BAR_FILL_COLOR: Color = Color(0.93, 0.77, 0.31, 1.0)
-const PROGRESS_BAR_BG_COLOR: Color = Color(0.19, 0.21, 0.26, 1.0)
+const PANEL_BACKGROUND_COLOR: Color = UIColorsResource.PANEL_BG
+const PANEL_BORDER_COLOR: Color = UIColorsResource.PANEL_BORDER
+const SECTION_PANEL_COLOR: Color = UIColorsResource.PANEL_BG_LIGHT
+const DETAIL_PANEL_COLOR: Color = UIColorsResource.PANEL_BG_DARK
+const ENTRY_BACKGROUND_COLOR: Color = UIColorsResource.ENTRY_BG
+const ENTRY_SELECTED_BACKGROUND_COLOR: Color = UIColorsResource.ENTRY_SELECTED_BG
+const ENTRY_SELECTED_BORDER_COLOR: Color = UIColorsResource.ENTRY_SELECTED_BORDER
+const ENTRY_BORDER_COLOR: Color = UIColorsResource.PANEL_BORDER_DIM
+const ENTRY_COMPLETED_BACKGROUND_COLOR: Color = UIColorsResource.ENTRY_COMPLETED_BG
+const ENTRY_COMPLETED_BORDER_COLOR: Color = UIColorsResource.ENTRY_COMPLETED_BORDER
+const TITLE_COLOR: Color = UIColorsResource.TITLE_COLOR
+const BODY_TEXT_COLOR: Color = UIColorsResource.BODY_TEXT
+const MUTED_TEXT_COLOR: Color = UIColorsResource.MUTED_TEXT
+const COMPLETED_TEXT_COLOR: Color = UIColorsResource.COMPLETED_TEXT
+const ACCENT_TEXT_COLOR: Color = UIColorsResource.ACCENT
+const SUCCESS_TEXT_COLOR: Color = UIColorsResource.SUCCESS
+const PROGRESS_BAR_FILL_COLOR: Color = UIColorsResource.PROGRESS_FILL
+const PROGRESS_BAR_BG_COLOR: Color = UIColorsResource.PROGRESS_BG
 
 const NPC_NAME_OVERRIDES: Dictionary = {
 	&"npc_blacksmith": "鐵匠",
@@ -172,8 +173,8 @@ func _bind_managers() -> void:
 func _apply_theme() -> void:
 	title_label.text = "任務日誌"
 	title_label.add_theme_color_override("font_color", TITLE_COLOR)
-	subtitle_label.text = "按 J 開啟或關閉，查看目前進度與已回報紀錄。"
-	subtitle_label.add_theme_color_override("font_color", MUTED_TEXT_COLOR)
+	subtitle_label.text = ""
+	subtitle_label.visible = false
 	close_hint_label.text = "[J] 關閉"
 	close_hint_label.add_theme_color_override("font_color", ACCENT_TEXT_COLOR)
 
@@ -186,13 +187,13 @@ func _apply_theme() -> void:
 	progress_status_label.add_theme_color_override("font_color", ACCENT_TEXT_COLOR)
 	progress_label.add_theme_color_override("font_color", BODY_TEXT_COLOR)
 
-	backdrop.color = Color(0.02, 0.03, 0.04, 0.66)
-	main_panel.add_theme_stylebox_override("panel", _build_panel_style(PANEL_BACKGROUND_COLOR, PANEL_BORDER_COLOR, 3, 8))
-	left_panel.add_theme_stylebox_override("panel", _build_panel_style(SECTION_PANEL_COLOR, ENTRY_BORDER_COLOR, 2, 6))
-	right_panel.add_theme_stylebox_override("panel", _build_panel_style(DETAIL_PANEL_COLOR, ENTRY_BORDER_COLOR, 2, 6))
-	progress_panel.add_theme_stylebox_override("panel", _build_panel_style(SECTION_PANEL_COLOR, ENTRY_BORDER_COLOR, 2, 6))
-	quest_objectives_panel.add_theme_stylebox_override("panel", _build_panel_style(SECTION_PANEL_COLOR, ENTRY_BORDER_COLOR, 2, 6))
-	quest_rewards_panel.add_theme_stylebox_override("panel", _build_panel_style(SECTION_PANEL_COLOR, ENTRY_BORDER_COLOR, 2, 6))
+	backdrop.color = UIColorsResource.BACKDROP
+	main_panel.add_theme_stylebox_override("panel", _build_panel_style(PANEL_BACKGROUND_COLOR, PANEL_BORDER_COLOR, UIColorsResource.MODAL_BORDER_WIDTH, UIColorsResource.MODAL_CORNER_RADIUS))
+	left_panel.add_theme_stylebox_override("panel", _build_panel_style(SECTION_PANEL_COLOR, ENTRY_BORDER_COLOR, UIColorsResource.SUBPANEL_BORDER_WIDTH, UIColorsResource.SUBPANEL_CORNER_RADIUS))
+	right_panel.add_theme_stylebox_override("panel", _build_panel_style(DETAIL_PANEL_COLOR, ENTRY_BORDER_COLOR, UIColorsResource.SUBPANEL_BORDER_WIDTH, UIColorsResource.SUBPANEL_CORNER_RADIUS))
+	progress_panel.add_theme_stylebox_override("panel", _build_panel_style(SECTION_PANEL_COLOR, ENTRY_BORDER_COLOR, UIColorsResource.SUBPANEL_BORDER_WIDTH, UIColorsResource.SUBPANEL_CORNER_RADIUS))
+	quest_objectives_panel.add_theme_stylebox_override("panel", _build_panel_style(SECTION_PANEL_COLOR, ENTRY_BORDER_COLOR, UIColorsResource.SUBPANEL_BORDER_WIDTH, UIColorsResource.SUBPANEL_CORNER_RADIUS))
+	quest_rewards_panel.add_theme_stylebox_override("panel", _build_panel_style(SECTION_PANEL_COLOR, ENTRY_BORDER_COLOR, UIColorsResource.SUBPANEL_BORDER_WIDTH, UIColorsResource.SUBPANEL_CORNER_RADIUS))
 
 	var progress_style_ := StyleBoxFlat.new()
 	progress_style_.bg_color = PROGRESS_BAR_BG_COLOR

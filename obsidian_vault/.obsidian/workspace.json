@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "planning/implementation_order.md",
+                "file": "task_prompt.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "implementation_order"
+              "title": "task_prompt"
             }
           }
         ]
@@ -185,8 +185,10 @@
   },
   "active": "fe9c764075f51b47",
   "lastOpenFiles": [
-    "planning/coding_habits.md",
+    "README.md",
+    "task_prompt.md",
     "planning/implementation_order.md",
+    "planning/coding_habits.md",
     "planning/mvp_todo.md",
     "archive/reports/project_analysis_report.md",
     "archive/plans/phase_3_plan.md",
@@ -194,14 +196,12 @@
     "specs/input_keymap.md",
     "sync_summary.md",
     "workflow_template.md",
-    "README.md",
     "codex_prompt.md",
     "archive/specs/weapon_strengthening_spec.md",
     "archive/workflow/workflow_legacy.md",
     "planning/tech_spec_notes.md",
     "planning/project_goals.md",
     "code_review_template.md",
-    "task_prompt.md",
     "task_backlog.md",
     "planning",
     "archive/specs/05_weapon_strengthen.md",

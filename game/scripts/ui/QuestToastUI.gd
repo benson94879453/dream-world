@@ -4,16 +4,17 @@ extends Control
 const QUEST_MANAGER_PATH: NodePath = NodePath("/root/QuestManager")
 const QuestDataResource = preload("res://game/scripts/data/QuestData.gd")
 const QuestInstanceResource = preload("res://game/scripts/data/QuestInstance.gd")
+const UIColorsResource = preload("res://game/scripts/ui/UIColors.gd")
 
 const MAX_QUEUE_LENGTH: int = 5
 const TOAST_FADE_SECONDS: float = 0.3
 const TOAST_HOLD_SECONDS: float = 2.0
-const TOAST_ACCEPTED_COLOR: Color = Color(1.0, 1.0, 1.0, 1.0)
-const TOAST_COMPLETED_COLOR: Color = Color(1.0, 0.84, 0.0, 1.0)
-const TOAST_TURNED_IN_COLOR: Color = Color(0.56, 0.93, 0.56, 1.0)
-const PANEL_BACKGROUND_COLOR: Color = Color(0.08, 0.09, 0.11, 0.9)
-const PANEL_BORDER_COLOR: Color = Color(0.84, 0.71, 0.40, 0.96)
-const SHADOW_COLOR: Color = Color(0.0, 0.0, 0.0, 0.24)
+const TOAST_ACCEPTED_COLOR: Color = UIColorsResource.TOAST_ACCEPTED_COLOR
+const TOAST_COMPLETED_COLOR: Color = UIColorsResource.TOAST_COMPLETED_COLOR
+const TOAST_TURNED_IN_COLOR: Color = UIColorsResource.TOAST_TURNED_IN_COLOR
+const PANEL_BACKGROUND_COLOR: Color = UIColorsResource.TOAST_BG
+const PANEL_BORDER_COLOR: Color = UIColorsResource.TOAST_BORDER
+const SHADOW_COLOR: Color = UIColorsResource.TOAST_SHADOW
 
 @onready var top_bar: HBoxContainer = $TopBar
 @onready var toast_panel: PanelContainer = $TopBar/ToastPanel

@@ -46,20 +46,23 @@ layout_mode = 2
 [node name="TitleLabel" type="Label" parent="MainPanel/PanelMargin/Root/TopSection/TitleBar" unique_id=851545538]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.98, 0.94, 0.82, 1)
 theme_override_font_sizes/font_size = 28
 text = "背包"
 
 [node name="TitleHint" type="Label" parent="MainPanel/PanelMargin/Root/TopSection/TitleBar"]
+visible = false
 layout_mode = 2
-theme_override_colors/font_color = Color(0.84, 0.84, 0.84, 0.9)
+theme_override_colors/font_color = Color(0.72, 0.75, 0.80, 0.96)
 theme_override_font_sizes/font_size = 13
-text = "經典 RPG 分欄檢視"
+text = ""
 
 [node name="SubtitleLabel" type="Label" parent="MainPanel/PanelMargin/Root/TopSection"]
+visible = false
 layout_mode = 2
-theme_override_colors/font_color = Color(0.72, 0.74, 0.78, 0.9)
+theme_override_colors/font_color = Color(0.72, 0.75, 0.80, 0.96)
 theme_override_font_sizes/font_size = 13
-text = "整理背包、查看裝備、拖曳綁定快捷欄。"
+text = ""
 
 [node name="BodyRow" type="HBoxContainer" parent="MainPanel/PanelMargin/Root"]
 layout_mode = 2
@@ -178,9 +181,9 @@ alignment = 1
 
 [node name="InfoLabel" type="Label" parent="MainPanel/PanelMargin/Root/BottomSection" unique_id=1941187223]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.76, 0.78, 0.82, 0.9)
+theme_override_colors/font_color = Color(0.72, 0.75, 0.80, 0.96)
 theme_override_font_sizes/font_size = 12
-text = "[E / I] 開關背包"
+text = "[E / I] 背包"
 autowrap_mode = 3
 
 [node name="TooltipPanel" type="PanelContainer" parent="." unique_id=134206247]

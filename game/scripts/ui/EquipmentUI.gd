@@ -3,6 +3,7 @@ extends PanelContainer
 
 const EquipmentNode = preload("res://game/scripts/inventory/Equipment.gd")
 const EquipmentSlotUIResource = preload("res://game/scripts/ui/EquipmentSlotUI.gd")
+const UIColorsResource = preload("res://game/scripts/ui/UIColors.gd")
 
 var player: PlayerController = null
 var inventory_ui = null
@@ -150,17 +151,7 @@ func _on_equipment_changed() -> void:
 
 
 func _apply_style() -> void:
-	var stylebox_ := StyleBoxFlat.new()
-	stylebox_.bg_color = Color(0.12, 0.13, 0.16, 0.98)
-	stylebox_.border_color = Color(0.82, 0.69, 0.42, 1.0)
-	stylebox_.border_width_left = 3
-	stylebox_.border_width_top = 3
-	stylebox_.border_width_right = 3
-	stylebox_.border_width_bottom = 3
-	stylebox_.corner_radius_top_left = 4
-	stylebox_.corner_radius_top_right = 4
-	stylebox_.corner_radius_bottom_left = 4
-	stylebox_.corner_radius_bottom_right = 4
+	var stylebox_ := UIColorsResource.build_panel_style(UIColorsResource.PANEL_BG_DARK, UIColorsResource.PANEL_BORDER, UIColorsResource.MODAL_BORDER_WIDTH, UIColorsResource.MODAL_CORNER_RADIUS)
 	add_theme_stylebox_override("panel", stylebox_)
 
 
