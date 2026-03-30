@@ -5,7 +5,7 @@ const ItemDataResource = preload("res://game/scripts/data/ItemData.gd")
 const RuneDataResource = preload("res://game/scripts/data/RuneData.gd")
 const WeaponDataResource = preload("res://game/scripts/data/WeaponData.gd")
 
-const SAVE_VERSION: int = 7
+const SAVE_VERSION: int = 8
 const SAVE_FILE_PATH: String = "user://savegame.json"
 const GEAR_DATA_ROOT: String = "res://game/data/gears"
 const ITEM_DATA_ROOT: String = "res://game/data/items"
@@ -43,6 +43,7 @@ func save_game() -> bool:
 	var created_at_ = existing_data_.get("created_at", _get_iso8601_utc_now()) if not existing_data_.is_empty() else _get_iso8601_utc_now()
 	var dialog_manager_ = _get_dialog_manager()
 	var quest_manager_ = _get_quest_manager()
+	var hotbar_manager_ = _get_hotbar_manager()
 	var scene_state_manager_ = _get_scene_state_manager()
 	var zone_reset_manager_ = _get_zone_reset_manager()
 	var player_data_: Dictionary = player_.to_save_dict()
@@ -62,6 +63,8 @@ func save_game() -> bool:
 		"scene_state": scene_state_manager_.to_save_dict() if scene_state_manager_ != null else {},
 		"zone_reset": zone_reset_manager_.to_save_dict() if zone_reset_manager_ != null else {}
 	}
+	if hotbar_manager_ != null and hotbar_manager_.has_method("to_save_dict"):
+		save_data_["hotbar"] = hotbar_manager_.to_save_dict()
 	save_data_["checksum"] = _calculate_checksum(player_data_, inventory_data_)
 
 	var save_file_ := FileAccess.open(SAVE_FILE_PATH, FileAccess.WRITE)
@@ -152,6 +155,11 @@ func load_game() -> bool:
 	if quest_manager_ != null:
 		var quest_data_ = migrated_data_.get("quest", {})
 		quest_manager_.from_save_dict(quest_data_ if typeof(quest_data_) == TYPE_DICTIONARY else {})
+
+	var hotbar_manager_ = _get_hotbar_manager()
+	if hotbar_manager_ != null and hotbar_manager_.has_method("from_save_dict"):
+		var hotbar_data_ = migrated_data_.get("hotbar", {})
+		hotbar_manager_.from_save_dict(hotbar_data_ if typeof(hotbar_data_) == TYPE_DICTIONARY else {})
 
 	var scene_state_manager_ = _get_scene_state_manager()
 	if scene_state_manager_ != null:
@@ -278,6 +286,13 @@ func _get_quest_manager() -> Node:
 	if tree_ == null or tree_.root == null:
 		return null
 	return tree_.root.get_node_or_null("QuestManager")
+
+
+func _get_hotbar_manager() -> Node:
+	var tree_: SceneTree = get_tree()
+	if tree_ == null or tree_.root == null:
+		return null
+	return tree_.root.get_node_or_null("HotbarRuntime")
 
 
 func _get_scene_state_manager() -> Node:
@@ -524,6 +539,14 @@ func _migrate_save_data(data_: Dictionary, from_version_: int) -> Dictionary:
 		if not migrated_data_.has("quest") or typeof(migrated_data_.get("quest", {})) != TYPE_DICTIONARY:
 			migrated_data_["quest"] = {}
 		migrated_data_["save_version"] = 7
+		migrated_data_.erase("checksum")
+	if from_version_ < 8:
+		# v8: persist hotbar inventory-slot bindings
+		if not migrated_data_.has("hotbar") or typeof(migrated_data_.get("hotbar", {})) != TYPE_DICTIONARY:
+			migrated_data_["hotbar"] = {
+				"bindings": [-1, -1, -1, -1, -1]
+			}
+		migrated_data_["save_version"] = 8
 		migrated_data_.erase("checksum")
 	if not migrated_data_.has("scene_state") or typeof(migrated_data_.get("scene_state", {})) != TYPE_DICTIONARY:
 		migrated_data_["scene_state"] = {}

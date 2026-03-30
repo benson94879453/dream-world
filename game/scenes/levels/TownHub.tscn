@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="PackedScene" path="res://game/scenes/Player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://game/scenes/interactables/Portal.tscn" id="2_portal_scene"]
@@ -10,6 +10,9 @@
 [ext_resource type="PackedScene" path="res://game/scenes/ui/InventoryUI.tscn" id="8_inventory_ui"]
 [ext_resource type="PackedScene" path="res://game/scenes/ui/ChestUI.tscn" id="9_chest_ui"]
 [ext_resource type="PackedScene" path="res://game/scenes/npcs/InstructorNPC.tscn" id="10_instructor_scene"]
+[ext_resource type="PackedScene" path="res://game/scenes/ui/QuestTrackerUI.tscn" id="11_quest_tracker_ui"]
+[ext_resource type="PackedScene" path="res://game/scenes/ui/QuestToastUI.tscn" id="12_quest_toast_ui"]
+[ext_resource type="PackedScene" path="res://game/scenes/ui/QuestJournalUI.tscn" id="13_quest_journal_ui"]
 
 [sub_resource type="CircleShape2D" id="1_blacksmith_trigger_shape"]
 radius = 30.0
@@ -26,6 +29,7 @@ offset_left = -640.0
 offset_top = -360.0
 offset_right = 640.0
 offset_bottom = 360.0
+mouse_filter = 2
 color = Color(0.19, 0.29, 0.20, 1)
 
 [node name="TownSquare" type="ColorRect" parent="World"]
@@ -33,6 +37,7 @@ offset_left = -220.0
 offset_top = -120.0
 offset_right = 220.0
 offset_bottom = 120.0
+mouse_filter = 2
 color = Color(0.48, 0.42, 0.33, 1)
 
 [node name="NorthFence" type="ColorRect" parent="World"]
@@ -40,6 +45,7 @@ offset_left = -640.0
 offset_top = -300.0
 offset_right = 640.0
 offset_bottom = -260.0
+mouse_filter = 2
 color = Color(0.34, 0.22, 0.12, 1)
 
 [node name="SouthFence" type="ColorRect" parent="World"]
@@ -47,6 +53,7 @@ offset_left = -640.0
 offset_top = 260.0
 offset_right = 640.0
 offset_bottom = 300.0
+mouse_filter = 2
 color = Color(0.34, 0.22, 0.12, 1)
 
 [node name="Player" parent="World" instance=ExtResource("1_player")]
@@ -77,6 +84,7 @@ offset_left = -22.0
 offset_top = -50.0
 offset_right = 42.0
 offset_bottom = -26.0
+mouse_filter = 2
 text = "鐵匠"
 horizontal_alignment = 1
 
@@ -86,6 +94,7 @@ offset_left = -62.0
 offset_top = -70.0
 offset_right = 96.0
 offset_bottom = -46.0
+mouse_filter = 2
 modulate = Color(1, 0.92549, 0.592157, 1)
 text = "[F] 與鐵匠交談"
 horizontal_alignment = 1
@@ -121,6 +130,7 @@ offset_left = -34.0
 offset_top = -62.0
 offset_right = 34.0
 offset_bottom = -38.0
+mouse_filter = 2
 text = "任務板"
 horizontal_alignment = 1
 
@@ -130,6 +140,7 @@ offset_left = -92.0
 offset_top = -86.0
 offset_right = 92.0
 offset_bottom = -62.0
+mouse_filter = 2
 modulate = Color(1, 0.92549, 0.592157, 1)
 text = "[F] 查看委託"
 horizontal_alignment = 1
@@ -150,6 +161,7 @@ offset_left = -42.0
 offset_top = 34.0
 offset_right = 56.0
 offset_bottom = 58.0
+mouse_filter = 2
 text = "Dungeon 01"
 horizontal_alignment = 1
 
@@ -170,3 +182,9 @@ position = Vector2(208, 24)
 [node name="InventoryUI" parent="UI" instance=ExtResource("8_inventory_ui")]
 
 [node name="ChestUI" parent="UI" instance=ExtResource("9_chest_ui")]
+
+[node name="QuestTrackerUI" parent="UI" instance=ExtResource("11_quest_tracker_ui")]
+
+[node name="QuestToastUI" parent="UI" instance=ExtResource("12_quest_toast_ui")]
+
+[node name="QuestJournalUI" parent="UI" instance=ExtResource("13_quest_journal_ui")]

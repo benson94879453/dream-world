@@ -1,0 +1,253 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/ui/QuestJournalUI.gd" id="1_quest_journal_ui_script"]
+
+[node name="QuestJournalUI" type="CanvasLayer"]
+layer = 15
+script = ExtResource("1_quest_journal_ui_script")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0.02, 0.03, 0.04, 0.66)
+
+[node name="MainPanel" type="PanelContainer" parent="."]
+anchor_left = 0.08
+anchor_top = 0.08
+anchor_right = 0.92
+anchor_bottom = 0.92
+
+[node name="PanelMargin" type="MarginContainer" parent="MainPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="Root" type="VBoxContainer" parent="MainPanel/PanelMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TitleBar" type="HBoxContainer" parent="MainPanel/PanelMargin/Root"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleBlock" type="VBoxContainer" parent="MainPanel/PanelMargin/Root/TitleBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="TitleLabel" type="Label" parent="MainPanel/PanelMargin/Root/TitleBar/TitleBlock"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "任務日誌"
+
+[node name="SubtitleLabel" type="Label" parent="MainPanel/PanelMargin/Root/TitleBar/TitleBlock"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "按 J 開啟或關閉，查看目前進度與已回報紀錄。"
+autowrap_mode = 3
+
+[node name="CloseHintLabel" type="Label" parent="MainPanel/PanelMargin/Root/TitleBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "[J] 關閉"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="ContentRow" type="HBoxContainer" parent="MainPanel/PanelMargin/Root"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="LeftPanel" type="PanelContainer" parent="MainPanel/PanelMargin/Root/ContentRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.35
+custom_minimum_size = Vector2(360, 0)
+
+[node name="LeftMargin" type="MarginContainer" parent="MainPanel/PanelMargin/Root/ContentRow/LeftPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="LeftContent" type="VBoxContainer" parent="MainPanel/PanelMargin/Root/ContentRow/LeftPanel/LeftMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ActiveSection" type="VBoxContainer" parent="MainPanel/PanelMargin/Root/ContentRow/LeftPanel/LeftMargin/LeftContent"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ActiveHeader" type="HBoxContainer" parent="MainPanel/PanelMargin/Root/ContentRow/LeftPanel/LeftMargin/LeftContent/ActiveSection"]
+layout_mode = 2
+
+[node name="ActiveTitleLabel" type="Label" parent="MainPanel/PanelMargin/Root/ContentRow/LeftPanel/LeftMargin/LeftContent/ActiveSection/ActiveHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "進行中"
+
+[node name="ActiveCountLabel" type="Label" parent="MainPanel/PanelMargin/Root/ContentRow/LeftPanel/LeftMargin/LeftContent/ActiveSection/ActiveHeader"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "0"
+horizontal_alignment = 2
+
+[node name="ActiveQuestList" type="VBoxContainer" parent="MainPanel/PanelMargin/Root/ContentRow/LeftPanel/LeftMargin/LeftContent/ActiveSection"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="CompletedSection" type="VBoxContainer" parent="MainPanel/PanelMargin/Root/ContentRow/LeftPanel/LeftMargin/LeftContent"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CompletedHeader" type="HBoxContainer" parent="MainPanel/PanelMargin/Root/ContentRow/LeftPanel/LeftMargin/LeftContent/CompletedSection"]
+layout_mode = 2
+
+[node name="CompletedTitleLabel" type="Label" parent="MainPanel/PanelMargin/Root/ContentRow/LeftPanel/LeftMargin/LeftContent/CompletedSection/CompletedHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "已回報"
+
+[node name="CompletedCountLabel" type="Label" parent="MainPanel/PanelMargin/Root/ContentRow/LeftPanel/LeftMargin/LeftContent/CompletedSection/CompletedHeader"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "0"
+horizontal_alignment = 2
+
+[node name="CompletedQuestList" type="VBoxContainer" parent="MainPanel/PanelMargin/Root/ContentRow/LeftPanel/LeftMargin/LeftContent/CompletedSection"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RightPanel" type="PanelContainer" parent="MainPanel/PanelMargin/Root/ContentRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.65
+
+[node name="DetailsMargin" type="MarginContainer" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="DetailsContent" type="VBoxContainer" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="EmptyStateLabel" type="Label" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "目前沒有可顯示的任務。"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="QuestStatusLabel" type="Label" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "進行中"
+
+[node name="QuestNameLabel" type="Label" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "任務名稱"
+autowrap_mode = 3
+
+[node name="QuestMetaLabel" type="Label" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "類型：討伐"
+
+[node name="QuestDescriptionLabel" type="Label" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "任務描述"
+autowrap_mode = 3
+
+[node name="QuestProgressPanel" type="PanelContainer" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent"]
+layout_mode = 2
+
+[node name="ProgressMargin" type="MarginContainer" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent/QuestProgressPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="ProgressContent" type="VBoxContainer" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent/QuestProgressPanel/ProgressMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ProgressStatusLabel" type="Label" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent/QuestProgressPanel/ProgressMargin/ProgressContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "任務進度"
+
+[node name="ProgressLabel" type="Label" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent/QuestProgressPanel/ProgressMargin/ProgressContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "0/0"
+
+[node name="ProgressBar" type="ProgressBar" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent/QuestProgressPanel/ProgressMargin/ProgressContent"]
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+max_value = 1.0
+value = 0.0
+show_percentage = false
+
+[node name="QuestObjectivesPanel" type="PanelContainer" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent"]
+layout_mode = 2
+
+[node name="ObjectivesMargin" type="MarginContainer" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent/QuestObjectivesPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="ObjectivesContent" type="VBoxContainer" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent/QuestObjectivesPanel/ObjectivesMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ObjectivesTitleLabel" type="Label" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent/QuestObjectivesPanel/ObjectivesMargin/ObjectivesContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "目標"
+
+[node name="QuestObjectivesList" type="VBoxContainer" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent/QuestObjectivesPanel/ObjectivesMargin/ObjectivesContent"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="QuestRewardsPanel" type="PanelContainer" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent"]
+layout_mode = 2
+
+[node name="RewardsMargin" type="MarginContainer" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent/QuestRewardsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="RewardsContent" type="VBoxContainer" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent/QuestRewardsPanel/RewardsMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RewardsTitleLabel" type="Label" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent/QuestRewardsPanel/RewardsMargin/RewardsContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "獎勵"
+
+[node name="QuestRewardsList" type="VBoxContainer" parent="MainPanel/PanelMargin/Root/ContentRow/RightPanel/DetailsMargin/DetailsContent/QuestRewardsPanel/RewardsMargin/RewardsContent"]
+layout_mode = 2
+theme_override_constants/separation = 6

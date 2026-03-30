@@ -10,6 +10,7 @@ const QuestInstanceResource = preload("res://game/scripts/data/QuestInstance.gd"
 const ACTION_ACCEPT_PREFIX: String = "quest_accept:"
 const ACTION_TURN_IN_PREFIX: String = "quest_turn_in:"
 const ACTION_OPEN_BASE_DIALOG: StringName = &"quest_open_base_dialog"
+const DEFAULT_EMPTY_DIALOG_MESSAGE: String = "目前沒有新的委託，之後再來看看吧。"
 
 @export var npc_id: StringName = &""
 @export var available_quest_ids: Array[StringName] = []
@@ -70,7 +71,9 @@ func build_runtime_dialog(base_dialog_: DialogDataResource, npc_name_: String) -
 	var turn_in_quests_ := get_turn_in_quests()
 	var tracked_quests_ := _get_relevant_active_quests()
 	if available_quests_.is_empty() and turn_in_quests_.is_empty() and tracked_quests_.is_empty():
-		return null
+		if base_dialog_ != null:
+			return base_dialog_
+		return _build_feedback_dialog(DEFAULT_EMPTY_DIALOG_MESSAGE)
 
 	var menu_choices_: Array[DialogChoiceDataResource] = []
 	for quest_ in turn_in_quests_:
@@ -192,28 +195,41 @@ func _on_dialog_action_requested(action_id_: StringName) -> void:
 		return
 
 	if action_id_ == ACTION_OPEN_BASE_DIALOG:
-		_pending_dialog = _base_dialog
+		_queue_pending_dialog(_base_dialog)
 		return
 
 	if action_text_.begins_with(ACTION_ACCEPT_PREFIX):
 		var quest_id_ := StringName(action_text_.trim_prefix(ACTION_ACCEPT_PREFIX))
-		var quest_data_ = quest_manager_.get_quest_data(quest_id_) as QuestDataResource
 		var success_: bool = quest_manager_.accept_quest(quest_id_)
-		_pending_dialog = _build_feedback_dialog(
-			"已接下任務：%s" % quest_data_.quest_name if success_ and quest_data_ != null else "現在還不能接這個任務。"
-		)
+		if success_:
+			_pending_dialog = null
+			return
+
+		_queue_pending_dialog(_build_feedback_dialog("現在還不能接這個任務。"))
 		return
 
 	if action_text_.begins_with(ACTION_TURN_IN_PREFIX):
 		var quest_id_ := StringName(action_text_.trim_prefix(ACTION_TURN_IN_PREFIX))
-		var quest_ = quest_manager_.get_quest_by_id(quest_id_) as QuestInstanceResource
 		var success_: bool = quest_manager_.turn_in_quest(quest_id_)
-		_pending_dialog = _build_feedback_dialog(
-			"任務回報完成：%s" % quest_.quest_data.quest_name if success_ and quest_ != null and quest_.quest_data != null else "這個任務目前還不能回報。"
-		)
+		if success_:
+			_pending_dialog = null
+			return
+
+		_queue_pending_dialog(_build_feedback_dialog("這個任務目前還不能回報。"))
 
 
 func _on_dialog_ended(_dialog_id_: StringName) -> void:
+	if _pending_dialog == null:
+		return
+
+	call_deferred("_start_pending_dialog")
+
+
+func _queue_pending_dialog(dialog_data_: DialogDataResource) -> void:
+	_pending_dialog = dialog_data_
+
+
+func _start_pending_dialog() -> void:
 	if _pending_dialog == null:
 		return
 

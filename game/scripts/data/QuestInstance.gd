@@ -29,7 +29,8 @@ static func create_from_data(quest_data_: QuestDataResource) -> QuestInstance:
 static func create_from_save_dict(quest_data_: QuestDataResource, data_: Dictionary) -> QuestInstance:
 	var quest_instance_ := create_from_data(quest_data_)
 	quest_instance_.quest_id = StringName(String(data_.get("quest_id", quest_data_.quest_id)))
-	quest_instance_.status = int(data_.get("status", QuestDataResource.QuestStatus.ACTIVE))
+	var status_value_: int = int(data_.get("status", QuestDataResource.QuestStatus.ACTIVE))
+	quest_instance_.status = status_value_ as QuestDataResource.QuestStatus
 	quest_instance_.current_progress = maxi(int(data_.get("current_progress", 0)), 0)
 	quest_instance_.target_amount = maxi(int(data_.get("target_amount", quest_data_.target_amount)), 1)
 	quest_instance_.accepted_at = String(data_.get("accepted_at", quest_instance_.accepted_at))

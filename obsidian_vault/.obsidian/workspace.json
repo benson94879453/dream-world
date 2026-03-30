@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "reviews/review_019_inventory_ui.md",
+                "file": "codex_prompt.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "review_019_inventory_ui"
+              "title": "codex_prompt"
             }
           }
         ]
@@ -183,34 +183,34 @@
       "bases:建立新的 base": false
     }
   },
-  "active": "81b34e2c537eab82",
+  "active": "fe9c764075f51b47",
   "lastOpenFiles": [
-    "reviews/review_020_hub_vertical_slice_complete.md",
+    "reviews/review_025_hotbar_save_v8.md",
     "codex_prompt.md",
-    "Kimi_Codex_Workflow.md",
-    "0324/PROJECT_BRIEF_FOR_PLANNER.md",
+    "reviews/review_024_quest_journal_ui.md",
+    "reviews/review_023_quest_ui_input_recovery.md",
+    "Codex_Task_Prompt.md",
+    "0324/PROJECT_REPORT.md",
+    "0324/01_MVP_TODO.md",
+    "0324/00_Project_Goals.md",
+    "reviews/review_022_quest_toast_ui.md",
+    "reviews/review_021_quest_tracker_hud.md",
+    "WORKFLOW_TEMPLATE.md",
+    "reviews/review_020_hub_vertical_slice_complete.md",
+    "review_template.md",
+    "Workflow.md",
+    "WORKFLOW_QUICKSTART.md",
+    "SYNC_SUMMARY.md",
+    "PHASE3_PLAN.md",
+    "reviews/review_019_inventory_ui.md",
     "0324/04_Coding_Habits.md",
     "0324/05_weapon_strengthen.md",
     "0324/03_Implementation_Order.md",
     "0324/02_Tech_Spec_Notes.md",
-    "review_template.md",
-    "SYNC_SUMMARY.md",
-    "WORKFLOW_TEMPLATE.md",
-    "WORKFLOW_QUICKSTART.md",
-    "PHASE3_PLAN.md",
-    "0324/01_MVP_TODO.md",
-    "0324/00_Project_Goals.md",
     "reviews/review_018_mouse_attack.md",
     "reviews/review_018_plus_projectile_direction.md",
-    "reviews/review_019_inventory_ui.md",
     "0324/01_MVP_TODO.md.md",
     "0324/00_Project_Goals.md.md",
-    "reviews/review_017_plus_arena_test.md",
-    "reviews/review_017_rune_effects.md",
-    "reviews/review_016_currency_decompose.md",
-    "reviews/review_015_rune_socket.md",
-    "0324/04_Coding_Habits.md.md",
-    "0324/05_weapon_strengthen.md.md",
     "reviews"
   ]
 }

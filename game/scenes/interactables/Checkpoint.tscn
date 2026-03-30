@@ -37,6 +37,7 @@ offset_left = -92.0
 offset_top = -66.0
 offset_right = 92.0
 offset_bottom = -42.0
+mouse_filter = 2
 modulate = Color(1, 0.92549, 0.592157, 1)
 text = "[F] 在營火休息"
 horizontal_alignment = 1

@@ -1,0 +1,43 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/ui/QuestToastUI.gd" id="1_quest_toast_ui_script"]
+
+[node name="QuestToastUI" type="CanvasLayer"]
+layer = 15
+
+[node name="ToastRoot" type="Control" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_quest_toast_ui_script")
+
+[node name="TopBar" type="HBoxContainer" parent="ToastRoot"]
+anchor_right = 1.0
+offset_top = 24.0
+offset_bottom = 104.0
+mouse_filter = 2
+alignment = 1
+
+[node name="ToastPanel" type="PanelContainer" parent="ToastRoot/TopBar"]
+visible = false
+custom_minimum_size = Vector2(420, 0)
+mouse_filter = 2
+modulate = Color(1, 1, 1, 0)
+
+[node name="ToastMargin" type="MarginContainer" parent="ToastRoot/TopBar/ToastPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 14
+
+[node name="ToastLabel" type="Label" parent="ToastRoot/TopBar/ToastPanel/ToastMargin"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 20
+text = ""
+horizontal_alignment = 1
+autowrap_mode = 3

@@ -28,10 +28,14 @@ func bind_slot(hotbar_index_: int, inventory_index_: int, inventory_: InventoryR
 	return _apply_binding(hotbar_index_, inventory_index_)
 
 
-func clear_slot(hotbar_index_: int) -> bool:
+func unbind_slot(hotbar_index_: int) -> bool:
 	if not _is_valid_hotbar_index(hotbar_index_):
 		return false
 	return _apply_binding(hotbar_index_, -1)
+
+
+func clear_slot(hotbar_index_: int) -> bool:
+	return unbind_slot(hotbar_index_)
 
 
 func swap_slots(from_index_: int, to_index_: int) -> bool:
@@ -101,6 +105,34 @@ func get_slot_display_name(inventory_: InventoryResource, hotbar_index_: int) ->
 	return "Empty"
 
 
+func to_save_dict() -> Dictionary:
+	return {
+		"bindings": _build_bindings_copy()
+	}
+
+
+func from_save_dict(data_: Dictionary) -> bool:
+	var next_bindings_: Array[int] = _build_empty_bindings()
+	if typeof(data_) != TYPE_DICTIONARY:
+		_apply_bindings(next_bindings_)
+		return false
+
+	var bindings_ = data_.get("bindings", [])
+	if typeof(bindings_) != TYPE_ARRAY or bindings_.size() != HOTBAR_SIZE:
+		_apply_bindings(next_bindings_)
+		return false
+
+	var max_slots_: int = _get_inventory_slot_count()
+	for hotbar_index_ in range(HOTBAR_SIZE):
+		var binding_index_: int = int(bindings_[hotbar_index_])
+		if binding_index_ < -1 or binding_index_ >= max_slots_:
+			binding_index_ = -1
+		next_bindings_[hotbar_index_] = binding_index_
+
+	_apply_bindings(next_bindings_)
+	return true
+
+
 func use_hotbar_slot(player_: PlayerController, hotbar_index_: int) -> bool:
 	if player_ == null or not _is_valid_hotbar_index(hotbar_index_):
 		return false
@@ -153,6 +185,45 @@ func _apply_binding(hotbar_index_: int, inventory_index_: int) -> bool:
 	hotbar_inventory_indices[hotbar_index_] = inventory_index_
 	binding_changed.emit(hotbar_index_, inventory_index_)
 	return true
+
+
+func _apply_bindings(bindings_: Array[int]) -> void:
+	hotbar_inventory_indices = bindings_.duplicate()
+	_notify_bindings_changed()
+
+
+func _notify_bindings_changed() -> void:
+	for hotbar_index_ in range(HOTBAR_SIZE):
+		binding_changed.emit(hotbar_index_, hotbar_inventory_indices[hotbar_index_])
+
+
+func _build_bindings_copy() -> Array[int]:
+	var bindings_: Array[int] = _build_empty_bindings()
+	for hotbar_index_ in range(mini(hotbar_inventory_indices.size(), HOTBAR_SIZE)):
+		bindings_[hotbar_index_] = hotbar_inventory_indices[hotbar_index_]
+	return bindings_
+
+
+func _build_empty_bindings() -> Array[int]:
+	var bindings_: Array[int] = []
+	bindings_.resize(HOTBAR_SIZE)
+	for hotbar_index_ in range(HOTBAR_SIZE):
+		bindings_[hotbar_index_] = -1
+	return bindings_
+
+
+func _get_inventory_slot_count() -> int:
+	var inventory_ := _get_player_inventory()
+	if inventory_ == null:
+		return 20
+	return maxi(inventory_.max_slots, inventory_.slots.size())
+
+
+func _get_player_inventory() -> InventoryResource:
+	var player_ = get_tree().get_first_node_in_group("player")
+	if player_ == null or not player_.has_method("get_inventory"):
+		return null
+	return player_.get_inventory() as InventoryResource
 
 
 func _is_valid_hotbar_index(hotbar_index_: int) -> bool:

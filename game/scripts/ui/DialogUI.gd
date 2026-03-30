@@ -28,6 +28,8 @@ func _ready() -> void:
 	assert(continue_indicator != null, "DialogUI requires ContinueIndicator")
 	assert(choices_container != null, "DialogUI requires ChoicesContainer")
 
+	add_to_group("modal_ui")
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	hide_dialog()
 
 	var dialog_manager_ = _get_dialog_manager()

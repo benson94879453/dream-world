@@ -127,13 +127,26 @@ func get_stat_modifier(stat_key_: StringName) -> float:
 
 
 func to_save_dict() -> Dictionary:
-	return {
-		"weapon_main": equipped_weapon.to_save_dict() if equipped_weapon != null else null,
-		"helmet": equipped_helmet.to_save_dict() if equipped_helmet != null else null,
-		"chestplate": equipped_chestplate.to_save_dict() if equipped_chestplate != null else null,
-		"leggings": equipped_leggings.to_save_dict() if equipped_leggings != null else null,
-		"boots": equipped_boots.to_save_dict() if equipped_boots != null else null
+	var save_data_: Dictionary = {
+		"weapon_main": null,
+		"helmet": null,
+		"chestplate": null,
+		"leggings": null,
+		"boots": null
 	}
+
+	if equipped_weapon != null:
+		save_data_["weapon_main"] = equipped_weapon.to_save_dict()
+	if equipped_helmet != null:
+		save_data_["helmet"] = equipped_helmet.to_save_dict()
+	if equipped_chestplate != null:
+		save_data_["chestplate"] = equipped_chestplate.to_save_dict()
+	if equipped_leggings != null:
+		save_data_["leggings"] = equipped_leggings.to_save_dict()
+	if equipped_boots != null:
+		save_data_["boots"] = equipped_boots.to_save_dict()
+
+	return save_data_
 
 
 func from_save_dict(data_: Dictionary) -> bool:

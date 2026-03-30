@@ -134,10 +134,6 @@ func _unhandled_input(event_: InputEvent) -> void:
 	if is_controls_locked() or is_dashing:
 		return
 
-	if event_.is_action_pressed("attack"):
-		request_attack_state()
-		return
-
 	if event_.is_action_pressed("attack_mouse"):
 		request_attack_state()
 #endregion
@@ -752,30 +748,30 @@ func _debug_equip_weapon(weapon_data_: WeaponData) -> void:
 
 func _try_handle_debug_inventory(event_: InputEvent) -> bool:
 	var key_event_ := event_ as InputEventKey
-	if key_event_ == null or not key_event_.pressed or key_event_.echo:
+	if key_event_ != null and key_event_.echo:
 		return false
 
-	if key_event_.physical_keycode == KEY_H:
+	if event_.is_action_pressed("debug_add_herb"):
 		_debug_add_inventory_item(debug_inventory_herb_data, 5)
 		return true
 
-	if key_event_.physical_keycode == KEY_J:
+	if event_.is_action_pressed("debug_add_potion"):
 		_debug_add_inventory_item(debug_inventory_potion_data, 3)
 		return true
 
-	if key_event_.physical_keycode == KEY_K:
+	if event_.is_action_pressed("debug_add_runes"):
 		_debug_add_all_runes()
 		return true
 
-	if key_event_.physical_keycode == KEY_O:
+	if event_.is_action_pressed("debug_print_inventory"):
 		_debug_print_inventory()
 		return true
 
-	if key_event_.physical_keycode == KEY_L:
+	if event_.is_action_pressed("debug_add_upgrade_materials"):
 		_debug_add_upgrade_materials()
 		return true
 
-	if key_event_.physical_keycode == KEY_G:
+	if event_.is_action_pressed("debug_add_gold"):
 		add_gold(1000)
 		record_recent_pickup("金幣", 1000)
 		print("[Debug][Gold] Added 1000 gold (current=%d)" % gold)
@@ -890,15 +886,7 @@ func _try_handle_hotbar_input(event_: InputEvent) -> bool:
 	if hotbar_manager_ != null and hotbar_manager_.use_hotbar_slot(self, hotbar_index_):
 		return true
 
-	if not enable_debug_weapon_switching:
-		return false
-
-	var debug_weapon_data_: WeaponData = _get_debug_weapon_for_index(hotbar_index_)
-	if debug_weapon_data_ == null:
-		return false
-
-	_debug_equip_weapon(debug_weapon_data_)
-	return true
+	return false
 
 
 func _toggle_inventory_ui() -> void:
@@ -908,22 +896,6 @@ func _toggle_inventory_ui() -> void:
 
 	var next_open_: bool = not bool(inventory_ui_.call("is_open"))
 	inventory_ui_.call("set_inventory_open", next_open_)
-
-
-func _get_debug_weapon_for_index(hotbar_index_: int) -> WeaponData:
-	match hotbar_index_:
-		0:
-			return debug_equip_slot_1
-		1:
-			return debug_equip_slot_2
-		2:
-			return debug_equip_slot_3
-		3:
-			return debug_equip_slot_4
-		4:
-			return debug_equip_slot_5
-		_:
-			return null
 
 
 func _set_facing_right() -> void:

@@ -19,6 +19,6 @@ enum ItemType {
 @export var tags: Array[StringName] = []
 
 #region Public
-func get_stack_key(instance_data_: Dictionary = {}) -> StringName:
+func get_stack_key(_instance_data_: Dictionary = {}) -> StringName:
 	return item_id
 #endregion

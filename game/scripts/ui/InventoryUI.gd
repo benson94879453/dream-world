@@ -75,6 +75,7 @@ func _ready() -> void:
 	assert(tooltip_delay_timer != null, "InventoryUI requires TooltipDelayTimer")
 
 	add_to_group("inventory_ui")
+	add_to_group("modal_ui")
 	layer = 10
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
@@ -104,7 +105,19 @@ func _process(_delta: float) -> void:
 
 
 func _input(event_: InputEvent) -> void:
+	var key_event_ := event_ as InputEventKey
+	if key_event_ != null and key_event_.echo:
+		return
+
+	if visible and event_.is_action_pressed("ui_cancel"):
+		set_inventory_open(false)
+		get_viewport().set_input_as_handled()
+		return
+
 	if not event_.is_action_pressed("ui_inventory"):
+		return
+
+	if not visible and _is_other_modal_ui_open():
 		return
 
 	set_inventory_open(not is_open())
@@ -448,4 +461,13 @@ func _reset_open_animation_state() -> void:
 	backdrop.modulate = Color.WHITE
 	main_panel.modulate = Color.WHITE
 	main_panel.scale = Vector2.ONE
+
+
+func _is_other_modal_ui_open() -> bool:
+	for modal_ui_ in get_tree().get_nodes_in_group("modal_ui"):
+		if modal_ui_ == null or modal_ui_ == self:
+			continue
+		if modal_ui_.visible:
+			return true
+	return false
 #endregion

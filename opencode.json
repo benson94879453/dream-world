@@ -1,0 +1,22 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "blink": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Blink AI Gateway",
+      "options": {
+        "baseURL": "https://core.blink.new/api/v1/ai",
+        "apiKey": "blnk_ak_KtNEL-QbshBNxflqNv8ogd_qiUtErmAR5BOXoQLPH8hzyhqi"
+      },
+      "models": {
+        "anthropic/claude-opus-4.6": { "name": "Claude Opus 4.6" },
+        "anthropic/claude-sonnet-4.6": { "name": "Claude Sonnet 4.6" },
+        "anthropic/claude-haiku-4.5": { "name": "Claude Haiku 4.5" },
+        "openai/gpt-5.4-nano": { "name": "GPT-5.4-nano" },
+        "openai/gpt-5.4-mini": { "name": "GPT-5.4-mini" },
+        "google/gemini-3.1-flash-lite-preview": { "name": "Gemini 3.1 Flash Lite Preview" },
+        "google/gemini-3.1-pro-preview": { "name": "Gemini 3.1 Pro Preview" }
+      }
+    }
+  }
+}
