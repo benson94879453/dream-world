@@ -1,6 +1,7 @@
 class_name LootTableData
 extends Resource
 
+const GearDataResource = preload("res://game/scripts/data/GearData.gd")
 const LootEntryResource = preload("res://game/scripts/data/LootEntryData.gd")
 const RuneDataResource = preload("res://game/scripts/data/RuneData.gd")
 
@@ -12,12 +13,12 @@ const RuneDataResource = preload("res://game/scripts/data/RuneData.gd")
 
 #region Public
 func generate_drops() -> Array[Dictionary]:
-	var rng_ := RandomNumberGenerator.new()
+	var rng_: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng_.randomize()
 
 	var drops_: Array[Dictionary] = []
-	var min_gold_ := maxi(min_gold, 0)
-	var max_gold_ := maxi(max_gold, min_gold_)
+	var min_gold_: int = maxi(min_gold, 0)
+	var max_gold_: int = maxi(max_gold, min_gold_)
 	if max_gold_ > 0:
 		drops_.append({
 			"gold": rng_.randi_range(min_gold_, max_gold_)
@@ -39,18 +40,24 @@ func generate_drops() -> Array[Dictionary]:
 			})
 			continue
 
+		if loot_entry_.gear_data != null:
+			drops_.append({
+				"gear_data": loot_entry_.gear_data as GearDataResource
+			})
+			continue
+
 		if loot_entry_.item_data == null:
 			continue
 
-		var min_amount_ := maxi(loot_entry_.min_amount, 1)
-		var max_amount_ := maxi(loot_entry_.max_amount, min_amount_)
+		var min_amount_: int = maxi(loot_entry_.min_amount, 1)
+		var max_amount_: int = maxi(loot_entry_.max_amount, min_amount_)
 		drops_.append({
 			"item_data": loot_entry_.item_data,
 			"amount": rng_.randi_range(min_amount_, max_amount_)
 		})
 
 	if rune_drop_chance > 0.0 and rng_.randf() <= minf(rune_drop_chance, 1.0):
-		var rune_data_ := _roll_rune_drop(rng_)
+		var rune_data_: RuneDataResource = _roll_rune_drop(rng_)
 		if rune_data_ != null:
 			drops_.append({
 				"item_data": rune_data_,
@@ -66,7 +73,7 @@ func _roll_rune_drop(rng_: RandomNumberGenerator) -> RuneDataResource:
 	if not rune_drop_pool.is_empty():
 		rune_pool_ = rune_drop_pool
 	else:
-		var rune_manager_ = _get_rune_manager()
+		var rune_manager_: Node = _get_rune_manager()
 		if rune_manager_ != null:
 			rune_pool_ = rune_manager_.available_runes
 

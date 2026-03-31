@@ -38,7 +38,7 @@ func get_upgrade_failure_reason(weapon_: WeaponInstanceResource, inventory_: Inv
 	if not weapon_.can_upgrade():
 		return "武器已達最高星級。"
 
-	var save_manager_ = _get_save_manager()
+	var save_manager_: Node = _get_save_manager()
 	if save_manager_ == null:
 		return "SaveManager 尚未就緒。"
 	if affix_table == null:
@@ -46,14 +46,14 @@ func get_upgrade_failure_reason(weapon_: WeaponInstanceResource, inventory_: Inv
 	if affix_table == null:
 		return "找不到詞綴設定。"
 
-	var upgrade_costs_ := get_upgrade_costs(weapon_)
+	var upgrade_costs_: Array[Dictionary] = get_upgrade_costs(weapon_)
 	if upgrade_costs_.is_empty():
 		return "找不到升級材料設定。"
 
 	for cost_entry_ in upgrade_costs_:
-		var item_id_ := StringName(String(cost_entry_.get("item_id", "")))
-		var amount_ := int(cost_entry_.get("amount", 0))
-		var item_data_ := save_manager_.resolve_item_data(item_id_) as ItemDataResource
+		var item_id_: StringName = StringName(String(cost_entry_.get("item_id", "")))
+		var amount_: int = int(cost_entry_.get("amount", 0))
+		var item_data_: ItemDataResource = save_manager_.resolve_item_data(item_id_) as ItemDataResource
 		if item_data_ == null:
 			return "缺少材料資料：%s" % String(item_id_)
 		if inventory_.get_item_count(item_data_) < amount_:
@@ -63,18 +63,18 @@ func get_upgrade_failure_reason(weapon_: WeaponInstanceResource, inventory_: Inv
 
 
 func upgrade_weapon(weapon_: WeaponInstanceResource, inventory_: InventoryResource) -> bool:
-	var failure_reason_ := get_upgrade_failure_reason(weapon_, inventory_)
+	var failure_reason_: String = get_upgrade_failure_reason(weapon_, inventory_)
 	if not failure_reason_.is_empty():
 		upgrade_failed.emit(weapon_, failure_reason_)
 		return false
 
-	var save_manager_ = _get_save_manager()
+	var save_manager_: Node = _get_save_manager()
 	assert(save_manager_ != null, "UpgradeManager requires SaveManager")
 
 	for cost_entry_ in get_upgrade_costs(weapon_):
-		var item_id_ := StringName(String(cost_entry_.get("item_id", "")))
-		var amount_ := int(cost_entry_.get("amount", 0))
-		var item_data_ := save_manager_.resolve_item_data(item_id_) as ItemDataResource
+		var item_id_: StringName = StringName(String(cost_entry_.get("item_id", "")))
+		var amount_: int = int(cost_entry_.get("amount", 0))
+		var item_data_: ItemDataResource = save_manager_.resolve_item_data(item_id_) as ItemDataResource
 		assert(item_data_ != null, "UpgradeManager cost item data must resolve")
 
 		var removed_amount_ := inventory_.remove_item(item_data_, amount_)
@@ -96,7 +96,7 @@ func get_upgrade_preview(weapon_: WeaponInstanceResource) -> Dictionary:
 	if weapon_ == null or weapon_.weapon_data == null:
 		return {}
 
-	var next_star_level_ := mini(weapon_.star_level + 1, 5)
+	var next_star_level_: int = mini(weapon_.star_level + 1, 5)
 	return {
 		"weapon_name": weapon_.weapon_data.display_name,
 		"current_star_level": weapon_.star_level,
@@ -134,7 +134,7 @@ func _calculate_attack_with_star_level(weapon_: WeaponInstanceResource, star_lev
 	if weapon_ == null or weapon_.weapon_data == null:
 		return 0.0
 
-	var attack_bonus_ := _calculate_attack_bonus_with_star_level(weapon_, star_level_)
+	var attack_bonus_: float = _calculate_attack_bonus_with_star_level(weapon_, star_level_)
 	return (weapon_.weapon_data.base_atk + weapon_.enhance_level) * (1.0 + attack_bonus_)
 
 

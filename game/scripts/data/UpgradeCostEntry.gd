@@ -9,7 +9,7 @@ func get_costs() -> Array[Dictionary]:
 	var normalized_costs_: Array[Dictionary] = []
 
 	for item_id_ in item_costs.keys():
-		var amount_ := int(item_costs[item_id_])
+		var amount_: int = int(item_costs[item_id_])
 		if amount_ <= 0:
 			continue
 

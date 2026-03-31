@@ -11,7 +11,7 @@ func _ready() -> void:
 	actor = get_parent() as PlayerController
 	assert(actor != null, "PlayerStateMachine parent must be PlayerController")
 	
-	var current_state_ := get_node_or_null(initial_state) as PlayerState
+	var current_state_: PlayerState = get_node_or_null(initial_state) as PlayerState
 	if current_state_ == null:
 		current_state_ = _find_first_state()
 	assert(current_state_ != null, "PlayerStateMachine failed to resolve initial state")
@@ -47,7 +47,7 @@ func handle_input(event_: InputEvent) -> void:
 
 #region State Management
 func transition_to(state_name_: StringName) -> void:
-	var next_state_ := get_node_or_null(NodePath(str(state_name_))) as PlayerState
+	var next_state_: PlayerState = get_node_or_null(NodePath(str(state_name_))) as PlayerState
 	assert(next_state_ != null, "PlayerStateMachine failed to resolve next state: %s" % state_name_)
 
 	if next_state_ == current_state:

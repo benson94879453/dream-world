@@ -30,31 +30,48 @@ theme_override_colors/font_color = Color(0.77, 0.79, 0.84, 0.9)
 theme_override_font_sizes/font_size = 12
 text = "Shift+左鍵可快速卸下"
 
-[node name="WeaponSlot" parent="Margin/Root" instance=ExtResource("2_equipment_slot_scene")]
-custom_minimum_size = Vector2(0, 104)
-slot_type = 0
-
-[node name="ArmorLabel" type="Label" parent="Margin/Root"]
+[node name="Paperdoll" type="Control" parent="Margin/Root"]
+custom_minimum_size = Vector2(256, 340)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "防具"
 
-[node name="ArmorGrid" type="GridContainer" parent="Margin/Root"]
-layout_mode = 2
-theme_override_constants/h_separation = 8
-theme_override_constants/v_separation = 8
-columns = 2
-
-[node name="HelmetSlot" parent="Margin/Root/ArmorGrid" instance=ExtResource("2_equipment_slot_scene")]
+[node name="HelmetSlot" parent="Margin/Root/Paperdoll" instance=ExtResource("2_equipment_slot_scene")]
+layout_mode = 0
+offset_left = 82.0
+offset_top = 0.0
+offset_right = 174.0
+offset_bottom = 80.0
 slot_type = 1
 
-[node name="ChestplateSlot" parent="Margin/Root/ArmorGrid" instance=ExtResource("2_equipment_slot_scene")]
+[node name="WeaponSlot" parent="Margin/Root/Paperdoll" instance=ExtResource("2_equipment_slot_scene")]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 88.0
+offset_right = 74.0
+offset_bottom = 168.0
+slot_type = 0
+
+[node name="ChestplateSlot" parent="Margin/Root/Paperdoll" instance=ExtResource("2_equipment_slot_scene")]
+layout_mode = 0
+offset_left = 82.0
+offset_top = 88.0
+offset_right = 174.0
+offset_bottom = 168.0
 slot_type = 2
 
-[node name="LeggingsSlot" parent="Margin/Root/ArmorGrid" instance=ExtResource("2_equipment_slot_scene")]
+[node name="LeggingsSlot" parent="Margin/Root/Paperdoll" instance=ExtResource("2_equipment_slot_scene")]
+layout_mode = 0
+offset_left = 82.0
+offset_top = 176.0
+offset_right = 174.0
+offset_bottom = 256.0
 slot_type = 3
 
-[node name="BootsSlot" parent="Margin/Root/ArmorGrid" instance=ExtResource("2_equipment_slot_scene")]
+[node name="BootsSlot" parent="Margin/Root/Paperdoll" instance=ExtResource("2_equipment_slot_scene")]
+layout_mode = 0
+offset_left = 82.0
+offset_top = 264.0
+offset_right = 174.0
+offset_bottom = 340.0
 slot_type = 4
 
 [node name="StatsPanel" type="VBoxContainer" parent="Margin/Root"]

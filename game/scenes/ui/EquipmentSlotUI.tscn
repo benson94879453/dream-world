@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://game/scripts/ui/EquipmentSlotUI.gd" id="1_equipment_slot_ui_script"]
 
 [node name="EquipmentSlotUI" type="PanelContainer"]
-custom_minimum_size = Vector2(92, 100)
+custom_minimum_size = Vector2(80, 80)
 mouse_filter = 0
 script = ExtResource("1_equipment_slot_ui_script")
 

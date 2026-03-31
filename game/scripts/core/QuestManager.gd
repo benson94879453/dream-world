@@ -24,7 +24,7 @@ func _ready() -> void:
 
 #region Public
 func accept_quest(quest_id_: StringName) -> bool:
-	var quest_data_ := get_quest_data(quest_id_)
+	var quest_data_: QuestDataResource = get_quest_data(quest_id_)
 	if not can_accept_quest(quest_data_):
 		return false
 
@@ -48,7 +48,7 @@ func abandon_quest(quest_id_: StringName) -> bool:
 
 
 func turn_in_quest(quest_id_: StringName) -> bool:
-	var quest_ := get_quest_by_id(quest_id_)
+	var quest_: QuestInstanceResource = get_quest_by_id(quest_id_)
 	if quest_ == null:
 		return false
 
@@ -58,7 +58,7 @@ func turn_in_quest(quest_id_: StringName) -> bool:
 	if quest_.status != QuestDataResource.QuestStatus.COMPLETED:
 		return false
 
-	var player_ = _get_player()
+	var player_: Node = _get_player()
 	if player_ == null:
 		return false
 
@@ -68,7 +68,7 @@ func turn_in_quest(quest_id_: StringName) -> bool:
 		return false
 
 	if quest_data_.quest_type == QuestDataResource.QuestType.DELIVER:
-		var item_data_ := _resolve_item_data(quest_data_.target_item_id)
+		var item_data_: ItemDataResource = _resolve_item_data(quest_data_.target_item_id)
 		if item_data_ == null:
 			return false
 		if inventory_ == null or inventory_.remove_item(item_data_, quest_.target_amount) < quest_.target_amount:
@@ -79,14 +79,14 @@ func turn_in_quest(quest_id_: StringName) -> bool:
 		player_.add_gold(quest_data_.reward_gold)
 
 	if quest_data_.reward_item_id != &"" and quest_data_.reward_item_amount > 0 and inventory_ != null:
-		var reward_item_data_ := _resolve_item_data(quest_data_.reward_item_id)
+		var reward_item_data_: ItemDataResource = _resolve_item_data(quest_data_.reward_item_id)
 		if reward_item_data_ != null:
 			var remaining_amount_: int = inventory_.add_item(reward_item_data_, quest_data_.reward_item_amount)
 			if remaining_amount_ > 0:
 				push_warning("[QuestManager] Reward item inventory overflow: %s (%d left)" % [String(quest_data_.reward_item_id), remaining_amount_])
 
 	if quest_data_.reward_weapon_id != &"" and inventory_ != null:
-		var weapon_data_ = _resolve_weapon_data(quest_data_.reward_weapon_id)
+		var weapon_data_: WeaponData = _resolve_weapon_data(quest_data_.reward_weapon_id)
 		if weapon_data_ != null:
 			if not inventory_.add_weapon(WeaponInstanceResource.create_from_data(weapon_data_)):
 				push_warning("[QuestManager] Reward weapon inventory overflow: %s" % String(quest_data_.reward_weapon_id))
@@ -149,7 +149,7 @@ func report_npc_talked(npc_id_: StringName) -> void:
 func get_active_quests() -> Array[QuestInstanceResource]:
 	var quests_: Array[QuestInstanceResource] = []
 	for quest_id_ in active_quests.keys():
-		var quest_ := active_quests.get(quest_id_) as QuestInstanceResource
+		var quest_: QuestInstanceResource = active_quests.get(quest_id_) as QuestInstanceResource
 		if quest_ != null:
 			quests_.append(quest_)
 
@@ -217,7 +217,7 @@ func from_save_dict(data_: Dictionary) -> bool:
 	var raw_completed_quests_ = data_.get("completed_quests", [])
 	if typeof(raw_completed_quests_) == TYPE_ARRAY:
 		for quest_id_value_ in raw_completed_quests_:
-			var quest_id_ := StringName(String(quest_id_value_))
+			var quest_id_: StringName = StringName(String(quest_id_value_))
 			if quest_id_.is_empty() or completed_quests.has(quest_id_):
 				continue
 			completed_quests.append(quest_id_)
@@ -230,8 +230,8 @@ func from_save_dict(data_: Dictionary) -> bool:
 		if typeof(quest_entry_) != TYPE_DICTIONARY:
 			continue
 
-		var quest_id_ := StringName(String(quest_entry_.get("quest_id", "")))
-		var quest_data_ := get_quest_data(quest_id_)
+		var quest_id_: StringName = StringName(String(quest_entry_.get("quest_id", "")))
+		var quest_data_: QuestDataResource = get_quest_data(quest_id_)
 		if quest_data_ == null:
 			push_warning("[QuestManager] Missing quest data during load: %s" % String(quest_id_))
 			continue
@@ -246,7 +246,7 @@ func _load_quest_data_from_files() -> void:
 	quest_data_cache.clear()
 
 	for quest_path_ in _collect_resource_paths(QUEST_DATA_ROOT):
-		var quest_data_ := load(quest_path_) as QuestDataResource
+		var quest_data_: QuestDataResource = load(quest_path_) as QuestDataResource
 		if quest_data_ == null or quest_data_.quest_id.is_empty():
 			continue
 		quest_data_cache[quest_data_.quest_id] = quest_data_
@@ -332,17 +332,17 @@ func _resolve_item_data(item_id_: StringName) -> ItemDataResource:
 	if item_id_.is_empty():
 		return null
 
-	var save_manager_ = _get_save_manager()
+	var save_manager_: Node = _get_save_manager()
 	if save_manager_ == null:
 		return null
 	return save_manager_.resolve_item_data(item_id_) as ItemDataResource
 
 
-func _resolve_weapon_data(weapon_id_: StringName):
+func _resolve_weapon_data(weapon_id_: StringName) -> WeaponData:
 	if weapon_id_.is_empty():
 		return null
 
-	var save_manager_ = _get_save_manager()
+	var save_manager_: Node = _get_save_manager()
 	if save_manager_ == null:
 		return null
 	return save_manager_.resolve_weapon_data(weapon_id_)
@@ -352,12 +352,12 @@ func _get_inventory_item_count(item_id_: StringName) -> int:
 	if item_id_.is_empty():
 		return 0
 
-	var player_ = _get_player()
+	var player_: Node = _get_player()
 	if player_ == null:
 		return 0
 
 	var inventory_ = player_.get_inventory()
-	var item_data_ := _resolve_item_data(item_id_)
+	var item_data_: ItemDataResource = _resolve_item_data(item_id_)
 	if inventory_ == null or item_data_ == null:
 		return 0
 
@@ -365,7 +365,7 @@ func _get_inventory_item_count(item_id_: StringName) -> int:
 
 
 func _get_player_level() -> int:
-	var player_ = _get_player()
+	var player_: Node = _get_player()
 	if player_ == null:
 		return 1
 	if player_.has_method("get_level"):

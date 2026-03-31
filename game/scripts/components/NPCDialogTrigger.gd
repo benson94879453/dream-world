@@ -26,7 +26,7 @@ func _ready() -> void:
 	interaction_prompt_label.text = "[F] 與%s交談" % npc_name
 	_update_prompt_visibility()
 
-	var dialog_manager_ = _get_dialog_manager()
+	var dialog_manager_: Node = _get_dialog_manager()
 	if dialog_manager_ != null:
 		dialog_manager_.dialog_started.connect(_on_dialog_started)
 		dialog_manager_.dialog_ended.connect(_on_dialog_ended)
@@ -38,11 +38,11 @@ func _input(event_: InputEvent) -> void:
 	if _is_modal_ui_active():
 		return
 
-	var key_event_ := event_ as InputEventKey
+	var key_event_: InputEventKey = event_ as InputEventKey
 	if key_event_ != null and key_event_.echo:
 		return
 
-	var dialog_manager_ = _get_dialog_manager()
+	var dialog_manager_: Node = _get_dialog_manager()
 	if dialog_manager_ != null and dialog_manager_.is_dialog_active:
 		return
 
@@ -69,12 +69,12 @@ func _on_body_exited(body_: Node) -> void:
 
 
 func _start_dialog() -> void:
-	var dialog_manager_ = _get_dialog_manager()
+	var dialog_manager_: Node = _get_dialog_manager()
 	if dialog_manager_ == null or dialog_manager_.is_dialog_active:
 		return
 
 	var dialog_to_open_ := dialog_data
-	var quest_giver_ := _get_quest_giver()
+	var quest_giver_: NPCQuestGiverResource = _get_quest_giver()
 	if quest_giver_ != null:
 		var quest_dialog_ := quest_giver_.build_runtime_dialog(dialog_data, npc_name)
 		if quest_dialog_ != null:
@@ -95,7 +95,7 @@ func _on_dialog_ended(_dialog_id_: StringName) -> void:
 
 
 func _update_prompt_visibility() -> void:
-	var dialog_manager_ = _get_dialog_manager()
+	var dialog_manager_: Node = _get_dialog_manager()
 	var dialog_active_: bool = dialog_manager_ != null and dialog_manager_.is_dialog_active
 	interaction_prompt.visible = player_in_range and not dialog_active_ and not _is_modal_ui_active()
 
@@ -106,7 +106,7 @@ func _get_dialog_manager() -> Node:
 
 func _get_quest_giver() -> NPCQuestGiverResource:
 	for child_ in get_children():
-		var quest_giver_ := child_ as NPCQuestGiverResource
+		var quest_giver_: NPCQuestGiverResource = child_ as NPCQuestGiverResource
 		if quest_giver_ != null:
 			return quest_giver_
 	return null

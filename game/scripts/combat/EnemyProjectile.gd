@@ -36,7 +36,7 @@ func setup(direction_: Vector2, source_node_: Node2D) -> void:
 
 #region Helpers
 func _on_body_entered(body_: Node) -> void:
-	var body_node_ := body_ as Node2D
+	var body_node_: Node2D = body_ as Node2D
 	if body_node_ == null:
 		queue_free()
 		return
@@ -44,7 +44,7 @@ func _on_body_entered(body_: Node) -> void:
 	if source_node != null and (body_node_ == source_node or source_node.is_ancestor_of(body_node_)):
 		return
 
-	var damage_receiver_ := body_node_.get_node_or_null("DamageReceiver") as DamageReceiver
+	var damage_receiver_: DamageReceiver = body_node_.get_node_or_null("DamageReceiver") as DamageReceiver
 	if damage_receiver_ == null:
 		queue_free()
 		return

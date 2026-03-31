@@ -61,7 +61,7 @@ func _bind_quest_manager() -> void:
 
 
 func _refresh_entries() -> void:
-	var visible_quests_ := _get_visible_quests()
+	var visible_quests_: Array[QuestInstanceResource] = _get_visible_quests()
 	var visible_ids_: Array[StringName] = []
 
 	for index_ in range(visible_quests_.size()):
@@ -71,19 +71,19 @@ func _refresh_entries() -> void:
 
 		visible_ids_.append(quest_.quest_id)
 		if not quest_entry_map.has(quest_.quest_id):
-			var entry_ := _create_entry_widgets()
+			var entry_: Dictionary = _create_entry_widgets()
 			quest_entry_map[quest_.quest_id] = entry_
 			quest_entries.add_child(entry_.get("container") as Control)
 
 		var entry_data_: Dictionary = quest_entry_map.get(quest_.quest_id, {})
 		_update_entry(entry_data_, quest_)
-		var entry_container_ := entry_data_.get("container") as Control
+		var entry_container_: Control = entry_data_.get("container") as Control
 		if entry_container_ != null:
 			quest_entries.move_child(entry_container_, index_)
 
 	var stale_ids_: Array[StringName] = []
 	for quest_id_value_ in quest_entry_map.keys():
-		var quest_id_ := StringName(String(quest_id_value_))
+		var quest_id_: StringName = StringName(String(quest_id_value_))
 		if visible_ids_.has(quest_id_):
 			continue
 		stale_ids_.append(quest_id_)
@@ -118,13 +118,13 @@ func _sort_quests(left_: QuestInstanceResource, right_: QuestInstanceResource) -
 
 
 func _create_entry_widgets() -> Dictionary:
-	var container_ := PanelContainer.new()
+	var container_: PanelContainer = PanelContainer.new()
 	container_.name = "QuestEntryContainer"
 	container_.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	container_.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	container_.add_theme_stylebox_override("panel", _build_stylebox(ENTRY_BACKGROUND_COLOR, ENTRY_BORDER_COLOR, 1, 5))
 
-	var margin_ := MarginContainer.new()
+	var margin_: MarginContainer = MarginContainer.new()
 	margin_.name = "EntryMargin"
 	margin_.add_theme_constant_override("margin_left", 14)
 	margin_.add_theme_constant_override("margin_top", 12)
@@ -132,18 +132,18 @@ func _create_entry_widgets() -> Dictionary:
 	margin_.add_theme_constant_override("margin_bottom", 12)
 	container_.add_child(margin_)
 
-	var root_ := VBoxContainer.new()
+	var root_: VBoxContainer = VBoxContainer.new()
 	root_.name = "QuestEntryRoot"
 	root_.add_theme_constant_override("separation", 4)
 	margin_.add_child(root_)
 
-	var name_label_ := Label.new()
+	var name_label_: Label = Label.new()
 	name_label_.name = "QuestNameLabel"
 	name_label_.add_theme_font_size_override("font_size", 18)
 	name_label_.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	root_.add_child(name_label_)
 
-	var progress_label_ := Label.new()
+	var progress_label_: Label = Label.new()
 	progress_label_.name = "QuestProgressLabel"
 	progress_label_.add_theme_font_size_override("font_size", 14)
 	progress_label_.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -163,8 +163,8 @@ func _create_entry_widgets() -> Dictionary:
 
 
 func _update_entry(entry_data_: Dictionary, quest_: QuestInstanceResource) -> void:
-	var quest_name_label_ := entry_data_.get("name_label") as Label
-	var quest_progress_label_ := entry_data_.get("progress_label") as Label
+	var quest_name_label_: Label = entry_data_.get("name_label") as Label
+	var quest_progress_label_: Label = entry_data_.get("progress_label") as Label
 	if quest_name_label_ == null or quest_progress_label_ == null or quest_ == null:
 		return
 
@@ -181,11 +181,11 @@ func _remove_entry(quest_id_: StringName) -> void:
 		return
 
 	var entry_data_: Dictionary = quest_entry_map.get(quest_id_, {})
-	var highlight_tween_ := entry_data_.get("highlight_tween") as Tween
+	var highlight_tween_: Tween = entry_data_.get("highlight_tween") as Tween
 	if highlight_tween_ != null:
 		highlight_tween_.kill()
 
-	var entry_container_ := entry_data_.get("container") as Control
+	var entry_container_: Control = entry_data_.get("container") as Control
 	if entry_container_ != null:
 		entry_container_.queue_free()
 
@@ -197,12 +197,12 @@ func _flash_completed_entry(quest_id_: StringName) -> void:
 		return
 
 	var entry_data_: Dictionary = quest_entry_map.get(quest_id_, {})
-	var highlight_tween_ := entry_data_.get("highlight_tween") as Tween
+	var highlight_tween_: Tween = entry_data_.get("highlight_tween") as Tween
 	if highlight_tween_ != null:
 		highlight_tween_.kill()
 
 	entry_data_["is_highlighted"] = true
-	var tween_ := create_tween()
+	var tween_: Tween = create_tween()
 	entry_data_["highlight_tween"] = tween_
 	quest_entry_map[quest_id_] = entry_data_
 
@@ -234,8 +234,8 @@ func _on_entry_highlight_finished(quest_id_: StringName) -> void:
 
 
 func _apply_entry_colors(entry_data_: Dictionary, quest_name_color_: Color, quest_progress_color_: Color) -> void:
-	var quest_name_label_ := entry_data_.get("name_label") as Label
-	var quest_progress_label_ := entry_data_.get("progress_label") as Label
+	var quest_name_label_: Label = entry_data_.get("name_label") as Label
+	var quest_progress_label_: Label = entry_data_.get("progress_label") as Label
 	if quest_name_label_ == null or quest_progress_label_ == null:
 		return
 
@@ -248,7 +248,7 @@ func _apply_panel_style() -> void:
 
 
 func _set_mouse_filter_recursive(node_: Node, filter_: Control.MouseFilter) -> void:
-	var control_ := node_ as Control
+	var control_: Control = node_ as Control
 	if control_ != null:
 		control_.mouse_filter = filter_
 
@@ -257,7 +257,7 @@ func _set_mouse_filter_recursive(node_: Node, filter_: Control.MouseFilter) -> v
 
 
 func _build_stylebox(background_color_: Color, border_color_: Color, border_width_: int, corner_radius_: int) -> StyleBoxFlat:
-	var stylebox_ := StyleBoxFlat.new()
+	var stylebox_: StyleBoxFlat = StyleBoxFlat.new()
 	stylebox_.bg_color = background_color_
 	stylebox_.border_color = border_color_
 	stylebox_.border_width_left = border_width_
@@ -280,8 +280,8 @@ func _sync_panel_layout() -> void:
 		return
 
 	quest_panel.reset_size()
-	var panel_width_ := maxf(quest_panel.size.x, PANEL_MIN_WIDTH)
-	var panel_position_x_ := maxf(size.x - panel_width_ - SCREEN_MARGIN, SCREEN_MARGIN)
+	var panel_width_: float = maxf(quest_panel.size.x, PANEL_MIN_WIDTH)
+	var panel_position_x_: float = maxf(size.x - panel_width_ - SCREEN_MARGIN, SCREEN_MARGIN)
 	quest_panel.position = Vector2(panel_position_x_, SCREEN_MARGIN)
 #endregion
 

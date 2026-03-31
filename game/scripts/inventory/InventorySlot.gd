@@ -51,8 +51,8 @@ func add_item(item_data_: ItemDataResource, amount_: int) -> int:
 		item_data = item_data_
 		amount = 0
 
-	var stack_limit_ := _get_stack_limit(item_data_)
-	var addable_amount_ := mini(amount_, stack_limit_ - amount)
+	var stack_limit_: int = _get_stack_limit(item_data_)
+	var addable_amount_: int = mini(amount_, stack_limit_ - amount)
 	if addable_amount_ <= 0:
 		return 0
 
@@ -92,7 +92,7 @@ func remove_item(amount_: int) -> int:
 	if item_data == null or amount_ <= 0:
 		return 0
 
-	var removed_amount_ := mini(amount_, amount)
+	var removed_amount_: int = mini(amount_, amount)
 	amount -= removed_amount_
 
 	if amount <= 0:

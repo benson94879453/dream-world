@@ -157,7 +157,7 @@ func _spawn_spell_actor() -> void:
 	var spell_parent_: Node = owner_actor.get_parent()
 	assert(spell_parent_ != null, "StaffWeapon owner_actor must have a parent to spawn spell actors")
 
-	var spell_actor_ := weapon_data.attack_actor_scene.instantiate() as SpellActor
+	var spell_actor_: SpellActor = weapon_data.attack_actor_scene.instantiate() as SpellActor
 	assert(spell_actor_ != null, "WeaponData.attack_actor_scene must instantiate SpellActor")
 	var spell_direction_: Vector2 = _get_spell_direction()
 

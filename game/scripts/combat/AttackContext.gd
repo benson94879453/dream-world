@@ -20,7 +20,7 @@ var weapon_instance: WeaponInstance = null
 
 #region Helpers
 func duplicate_context() -> AttackContext:
-	var copy_ := AttackContext.new()
+	var copy_: AttackContext = AttackContext.new()
 	copy_.source_node = source_node
 	copy_.attacker_node = attacker_node
 	copy_.attacker_faction = attacker_faction

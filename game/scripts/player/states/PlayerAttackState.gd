@@ -26,7 +26,7 @@ func exit() -> void:
 
 
 func handle_input(event_: InputEvent) -> void:
-	var key_event_ := event_ as InputEventKey
+	var key_event_: InputEventKey = event_ as InputEventKey
 	if key_event_ != null and key_event_.echo:
 		return
 

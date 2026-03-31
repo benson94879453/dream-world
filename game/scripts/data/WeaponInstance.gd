@@ -65,13 +65,13 @@ static func create_from_save_dict(weapon_data_: WeaponData, data_: Dictionary) -
 	var runes_ = data_.get("runes", [])
 	if typeof(runes_) == TYPE_ARRAY:
 		for slot_index_ in range(mini(runes_.size(), weapon_instance_.rune_slots.size())):
-			var rune_id_ := StringName(String(runes_[slot_index_]))
+			var rune_id_: StringName = StringName(String(runes_[slot_index_]))
 			if rune_id_.is_empty():
 				continue
 
 			var save_manager_ = _get_save_manager()
 			assert(save_manager_ != null, "WeaponInstance restore requires SaveManager")
-			var rune_data_ = save_manager_.resolve_rune_data(rune_id_) as RuneDataResource
+			var rune_data_: RuneDataResource = save_manager_.resolve_rune_data(rune_id_) as RuneDataResource
 			if rune_data_ == null:
 				push_warning("[WeaponInstance] Missing rune data during load: %s" % String(rune_id_))
 				continue
@@ -101,7 +101,7 @@ func get_base_attack() -> float:
 
 func get_attack_cooldown() -> float:
 	assert(weapon_data != null, "WeaponInstance requires WeaponData")
-	var attack_speed_bonus_ := get_total_stat_modifier(&"attack_speed_bonus_pct")
+	var attack_speed_bonus_: float = get_total_stat_modifier(&"attack_speed_bonus_pct")
 	var attack_speed_ := weapon_data.attack_speed * maxf(1.0 + attack_speed_bonus_, 0.1)
 	return 1.0 / maxf(attack_speed_, 0.001)
 
@@ -125,7 +125,7 @@ func can_upgrade() -> bool:
 
 func get_total_stat_modifier(stat_key_: StringName) -> float:
 	var total_modifier_: float = 0.0
-	var rune_modifiers_ := get_rune_stat_modifiers()
+	var rune_modifiers_: Dictionary = get_rune_stat_modifiers()
 
 	for affix_ in affixes:
 		if affix_ == null:
@@ -247,7 +247,7 @@ func _rebuild_rune_slots() -> void:
 
 	rune_slots.clear()
 	for slot_index_ in range(_star_level):
-		var slot_ := RuneSlotResource.new()
+		var slot_: RuneSlotResource = RuneSlotResource.new()
 		slot_.slot_index = slot_index_
 
 		match slot_index_:

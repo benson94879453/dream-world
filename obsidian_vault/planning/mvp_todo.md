@@ -2,7 +2,7 @@
 
 > 最小可交付任務清單
 > Godot 4.x / 單人開發
-> 最後更新: 2026-03-30
+> 最後更新: 2026-03-31
 
 ---
 
@@ -168,6 +168,8 @@ Town Hub
 
 **目標**：玩家在戰鬥中隨時能看到進行中任務的進度。
 
+**狀態**：✅ 已完成，見 `reviews/review_021_quest_tracker_hud.md`
+
 | 任務 | 工時 | 相依性 | 驗收標準 |
 |------|:---:|:------:|----------|
 | `QuestTrackerUI.tscn` + `QuestTrackerUI.gd` | 小(4-6h) | - | 右側顯示最多 3 筆進行中任務，每筆含名稱 + 進度（3/5） |
@@ -176,16 +178,18 @@ Town Hub
 | 加入 TownHub.tscn + Dungeon01.tscn | 小(1h) | 上 | 兩個場景均可見 HUD |
 
 **驗收**：
-- [ ] 接任務後 HUD 立即顯示該任務與進度
-- [ ] 擊殺敵人/撿取物品後進度數字即時更新
-- [ ] 任務達標時文字變色提示
-- [ ] 交付任務後從 HUD 移除
+- [x] 接任務後 HUD 立即顯示該任務與進度
+- [x] 擊殺敵人/撿取物品後進度數字即時更新
+- [x] 任務達標時文字變色提示
+- [x] 交付任務後從 HUD 移除
 
 ---
 
 ### 9A-2 任務通知 Toast
 
 **目標**：接取、完成、交付任務時顯示短暫的浮動通知。
+
+**狀態**：✅ 已完成，見 `reviews/review_022_quest_toast_ui.md`
 
 | 任務 | 工時 | 相依性 | 驗收標準 |
 |------|:---:|:------:|----------|
@@ -195,15 +199,17 @@ Town Hub
 | 交付通知（`quest_turned_in`） | 小(1h) | 上 | 顯示「任務回報：{任務名稱} +{金幣} 金」 |
 
 **驗收**：
-- [ ] 三種通知各有對應文字與顏色區分
-- [ ] Toast 不堆疊（佇列播放，前一則結束後才顯示下一則）
-- [ ] 不影響對話 UI / 背包 UI 的正常操作
+- [x] 三種通知各有對應文字與顏色區分
+- [x] Toast 不堆疊（佇列播放，前一則結束後才顯示下一則）
+- [x] 不影響對話 UI / 背包 UI 的正常操作
 
 ---
 
 ### 9A-2.5 任務 UI 輸入恢復整合修復
 
 **目標**：在 9A-1 / 9A-2 完成後，修復任務 UI 導入造成的輸入攔截、隱藏對話鎖定，以及任務板空狀態無法互動問題。
+
+**狀態**：✅ 已完成，見 `reviews/review_023_quest_ui_input_recovery.md`
 
 | 任務 | 工時 | 相依性 | 驗收標準 |
 |------|:---:|:------:|----------|
@@ -224,6 +230,8 @@ Town Hub
 
 **目標**：玩家可查看所有進行中任務的完整描述與進度，以及已完成任務清單。
 
+**狀態**：✅ 已完成，見 `reviews/review_024_quest_journal_ui.md`
+
 | 任務 | 工時 | 相依性 | 驗收標準 |
 |------|:---:|:------:|----------|
 | `QuestJournalUI.tscn` + `QuestJournalUI.gd` | 中(1-2d) | - | 左側任務列表 + 右側詳情面板 |
@@ -235,10 +243,10 @@ Town Hub
 | 加入 TownHub.tscn + Dungeon01.tscn | 小(1h) | 上 | 兩場景均可用 |
 
 **驗收**：
-- [ ] 按 J 可開關日誌，對話/背包開啟時不能同時打開
-- [ ] 進行中任務顯示正確進度
-- [ ] 點擊任務顯示完整描述與獎勵
-- [ ] 已完成任務可在另一分頁或灰色區塊查閱
+- [x] 按 J 可開關日誌，對話/背包開啟時不能同時打開
+- [x] 進行中任務顯示正確進度
+- [x] 點擊任務顯示完整描述與獎勵
+- [x] 已完成任務可在另一分頁或灰色區塊查閱
 
 ---
 
@@ -250,6 +258,8 @@ Town Hub
 
 **目標**：讀檔後快捷欄綁定自動還原。
 
+**狀態**：✅ 已完成，見 `reviews/review_025_hotbar_save_v8.md`
+
 | 任務 | 工時 | 相依性 | 驗收標準 |
 |------|:---:|:------:|----------|
 | `HotbarManager.to_save_dict()` / `from_save_dict()` | 小(2-3h) | - | 將 `hotbar_inventory_indices[5]` 序列化至存檔 |
@@ -258,14 +268,16 @@ Town Hub
 | 讀檔後套用綁定 | 小(1h) | 上 | `from_save_dict` 呼叫時更新 HotbarRuntime，UI 自動重繪 |
 
 **驗收**：
-- [ ] F5 存檔後 F10 讀檔，快捷欄綁定完全還原
-- [ ] 舊存檔（v7）正常讀入，快捷欄為空（不報錯）
+- [x] F5 存檔後 F10 讀檔，快捷欄綁定完全還原
+- [x] 舊存檔（v7）正常讀入，快捷欄為空（不報錯）
 
 ---
 
 ### 9B-2 Checkpoint 重生點跨重啟（Save v8 附加）
 
 **目標**：重開遊戲後在最後觸發的 Checkpoint 位置重生，而非強制回 TownHub。
+
+**狀態**：✅ 已完成，見 `reviews/review_027_checkpoint_respawn.md`
 
 | 任務 | 工時 | 相依性 | 驗收標準 |
 |------|:------|:------:|----------|
@@ -275,8 +287,8 @@ Town Hub
 | Save v8 migration | 小(0.5h) | 上 | 舊存檔 respawn 預設為 TownHub Spawn_default |
 
 **驗收**：
-- [ ] 在 Dungeon01 Checkpoint 存檔，重開遊戲後在該 Checkpoint 附近重生
-- [ ] 若存檔時在 TownHub，重開後仍在 TownHub
+- [x] 在 Dungeon01 Checkpoint 存檔，重開遊戲後在該 Checkpoint 附近重生
+- [x] 若存檔時在 TownHub，重開後仍在 TownHub
 
 ---
 
@@ -292,8 +304,10 @@ Town Hub
 | 更新 `consumable_potion.tres` | 小(0.5h) | 上 | 設定 `consumable_effect = HEAL, consumable_heal_amount = 50` |
 
 **驗收**：
-- [ ] 使用藥水回血量由 `.tres` 資料決定，而非硬編碼
-- [ ] 空格子不報錯，效果不同的道具可共存於背包
+- [x] 使用藥水回血量由 `.tres` 資料決定，而非硬編碼
+- [x] 空格子不報錯，效果不同的道具可共存於背包
+
+**狀態**：✅ 已完成，見 `reviews/review_028_consumable_data_driven.md`
 
 ---
 
@@ -309,7 +323,9 @@ Town Hub
 | 驗證 `DropComponent` 在 Boss 死亡時正常觸發 | 小(1h) | 上 | 場景上出現 PickupItem |
 
 **驗收**：
-- [ ] 擊敗 Boss 後地上有掉落物
+- [x] 擊敗 Boss 後地上有掉落物
+
+**狀態**：✅ 已完成，見 `reviews/review_030_boss_loot_drop.md`
 
 ---
 
@@ -322,8 +338,10 @@ Town Hub
 | 播放 Boss 死亡音效 | 小(1h) | 上 | 有區別於普通敵人的音效 |
 
 **驗收**：
-- [ ] Boss 死亡有停頓感 + 淡出動畫
-- [ ] 不影響 PersistentObject 的狀態儲存（死亡後重進不重生）
+- [x] Boss 死亡有停頓感 + 淡出動畫
+- [x] 不影響 PersistentObject 的狀態儲存（死亡後重進不重生）
+
+**狀態**：✅ 已完成，見 `reviews/review_031_boss_death_presentation.md`
 
 ---
 
@@ -335,7 +353,9 @@ Town Hub
 | Dungeon01 返回傳送門設定監聽 `dungeon01_boss_boar` | 小(0.5h) | 上 | Boss 死前傳送門顯示「尚未開放」，死後變為「前往城鎮」|
 
 **驗收**：
-- [ ] Boss 死亡前後傳送門視覺有明顯差異
+- [x] Boss 死亡前後傳送門視覺有明顯差異
+
+**狀態**：✅ 已完成，見 `reviews/review_032_boss_portal_highlight.md`
 
 ---
 
@@ -351,9 +371,11 @@ Town Hub
 | 5 次 Save/Load 循環驗收測試 | 小(1-2h) | 上 | 每次讀檔後 hotbar + respawn + quest 全部正確還原 |
 
 **驗收**：
-- [ ] v7 存檔讀入無錯誤
-- [ ] v8 新存檔含 `hotbar` 與 `respawn` 欄位
-- [ ] 所有欄位讀後一致
+- [x] v7 存檔讀入無錯誤
+- [x] v8 新存檔含 `hotbar` 與 `respawn` 欄位
+- [x] 所有欄位讀後一致
+
+**狀態**：✅ 已完成，見 `reviews/review_029_save_v8_finalize.md`
 
 ---
 
@@ -426,12 +448,12 @@ P1    9A-2     任務通知 Toast                無
 P1    9A-3     任務日誌介面（J 鍵）          無
 P1    9B-1     Hotbar 進存檔                 無
 P1    9B-2     Checkpoint 跨重啟重生         無
-P1    9B-3     消耗品系統擴充                無
-P1    9D       Save v8 整合                  9B-1, 9B-2
+P1    9B-3     消耗品系統擴充                ✅
+P1    9D       Save v8 整合                  ✅
 ────  ──────   ──────────────────────────   ──────────────────
-P2    9C-1     Boss 掉落                     無
-P2    9C-2     Boss 死亡演出                 無
-P2    9C-3     Boss 後傳送門高亮             9C-2
+P2    9C-1     Boss 掉落                     ✅
+P2    9C-2     Boss 死亡演出                 ✅
+P2    9C-3     Boss 後傳送門高亮             ✅
 P2    10A-1    新敵人（第4種）               無
 P2    10A-2    Dungeon 02 場景               10A-1
 P2    10A-3    Dungeon 02 任務               10A-2

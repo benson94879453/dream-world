@@ -25,7 +25,7 @@ func _setup_spell_actor() -> void:
 	assert(explosion_area != null, "ExplosionSpellActor explosion_area_path must point to Area2D")
 	assert(explosion_shape != null, "ExplosionSpellActor explosion_shape_path must point to CollisionShape2D")
 
-	var circle_shape_ := explosion_shape.shape as CircleShape2D
+	var circle_shape_: CircleShape2D = explosion_shape.shape as CircleShape2D
 	assert(circle_shape_ != null, "ExplosionSpellActor explosion shape must be CircleShape2D")
 	circle_shape_.radius = explosion_radius
 
@@ -55,7 +55,7 @@ func _apply_explosion() -> void:
 
 	var affected_count_: int = 0
 	for body_ in explosion_area.get_overlapping_bodies():
-		var target_body_ := body_ as Node2D
+		var target_body_: Node2D = body_ as Node2D
 		if target_body_ == null:
 			continue
 		if not _can_affect_target(target_body_):
@@ -72,7 +72,7 @@ func _apply_explosion() -> void:
 
 
 func _build_attack_context() -> AttackContext:
-	var attack_context_ := AttackContext.new()
+	var attack_context_: AttackContext = AttackContext.new()
 	attack_context_.source_node = self
 	attack_context_.attacker_node = owner_actor
 	attack_context_.attacker_faction = &"player" if owner_actor != null and owner_actor.is_in_group("player") else &"enemy"

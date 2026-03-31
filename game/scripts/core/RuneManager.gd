@@ -38,7 +38,7 @@ func get_available_runes_from_inventory(inventory_: InventoryResource) -> Array[
 		if slot_.weapon_instance != null or slot_.gear_instance != null:
 			continue
 
-		var rune_data_ := _resolve_rune_data_from_slot(slot_)
+		var rune_data_: RuneDataResource = _resolve_rune_data_from_slot(slot_)
 		if rune_data_ == null:
 			continue
 
@@ -56,8 +56,8 @@ func get_available_runes_from_inventory(inventory_: InventoryResource) -> Array[
 		entries_.append(grouped_entries_[rune_id_])
 
 	entries_.sort_custom(func(left_: Dictionary, right_: Dictionary) -> bool:
-		var left_rune_ := left_.get("rune_data", null) as RuneDataResource
-		var right_rune_ := right_.get("rune_data", null) as RuneDataResource
+		var left_rune_: RuneDataResource = left_.get("rune_data", null) as RuneDataResource
+		var right_rune_: RuneDataResource = right_.get("rune_data", null) as RuneDataResource
 		if left_rune_ == null or right_rune_ == null:
 			return false
 		return left_rune_.display_name < right_rune_.display_name
@@ -89,7 +89,7 @@ func get_equip_failure_reason(weapon_: WeaponInstanceResource, inventory_: Inven
 
 
 func equip_rune(weapon_: WeaponInstanceResource, inventory_: InventoryResource, slot_index_: int, rune_data_: RuneDataResource) -> bool:
-	var failure_reason_ := get_equip_failure_reason(weapon_, inventory_, slot_index_, rune_data_)
+	var failure_reason_: String = get_equip_failure_reason(weapon_, inventory_, slot_index_, rune_data_)
 	if not failure_reason_.is_empty():
 		return false
 
@@ -126,7 +126,7 @@ func get_unequip_failure_reason(weapon_: WeaponInstanceResource, inventory_: Inv
 
 
 func unequip_rune(weapon_: WeaponInstanceResource, inventory_: InventoryResource, slot_index_: int) -> RuneInstanceResource:
-	var failure_reason_ := get_unequip_failure_reason(weapon_, inventory_, slot_index_)
+	var failure_reason_: String = get_unequip_failure_reason(weapon_, inventory_, slot_index_)
 	if not failure_reason_.is_empty():
 		return null
 
@@ -174,7 +174,7 @@ func unequip_rune_with_cost(weapon_: WeaponInstanceResource, inventory_: Invento
 			"rune_instance": null
 		}
 
-	var rune_instance_ := unequip_rune(weapon_, inventory_, slot_index_)
+	var rune_instance_: RuneInstanceResource = unequip_rune(weapon_, inventory_, slot_index_)
 	if rune_instance_ == null:
 		player_.add_gold(gold_cost_)
 		return {
@@ -202,7 +202,7 @@ func _refresh_rune_cache() -> void:
 	rune_data_by_id.clear()
 
 	for rune_path_ in _collect_resource_paths(RUNE_DATA_ROOT):
-		var rune_data_ := load(rune_path_) as RuneDataResource
+		var rune_data_: RuneDataResource = load(rune_path_) as RuneDataResource
 		if rune_data_ == null:
 			continue
 
@@ -223,11 +223,11 @@ func _resolve_rune_data_from_slot(slot_) -> RuneDataResource:
 	if slot_ == null or slot_.item_data == null:
 		return null
 
-	var rune_data_ := slot_.item_data as RuneDataResource
+	var rune_data_: RuneDataResource = slot_.item_data as RuneDataResource
 	if rune_data_ != null:
 		return rune_data_
 
-	var item_id_ := StringName(slot_.item_data.item_id)
+	var item_id_: StringName = StringName(slot_.item_data.item_id)
 	if item_id_.is_empty() or not String(item_id_).begins_with("rune_"):
 		return null
 

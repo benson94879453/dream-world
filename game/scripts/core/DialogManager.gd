@@ -209,7 +209,7 @@ func _are_choice_requirements_met(choice_: DialogChoiceDataResource) -> bool:
 
 
 func _set_player_dialog_lock(enabled_: bool) -> void:
-	var player_ := get_tree().get_first_node_in_group("player") as PlayerController
+	var player_: PlayerController = get_tree().get_first_node_in_group("player") as PlayerController
 	if player_ == null:
 		return
 
@@ -226,7 +226,7 @@ func _report_npc_talked(npc_id_: StringName) -> void:
 	if tree_ == null or tree_.root == null:
 		return
 
-	var quest_manager_ = tree_.root.get_node_or_null("QuestManager")
+	var quest_manager_: Node = tree_.root.get_node_or_null("QuestManager")
 	if quest_manager_ == null or not quest_manager_.has_method("report_npc_talked"):
 		return
 

@@ -19,6 +19,14 @@ color = Color(0.28, 0.64, 0.98, 0.8)
 polygon = PackedVector2Array(-12, -16, 12, -16, 18, 0, 12, 16, -12, 16, -18, 0)
 color = Color(0.85, 0.94, 1, 0.9)
 
+[node name="HighlightGlow" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-28, -30, 28, -30, 38, 0, 28, 30, -28, 30, -38, 0)
+color = Color(0.5, 0.86, 1, 0.28)
+
+[node name="SealBand" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-20, -5, 20, -5, 24, 0, 20, 5, -20, 5, -24, 0)
+color = Color(0.95, 0.68, 0.28, 0.85)
+
 [node name="InteractionPrompt" type="Label" parent="."]
 visible = false
 offset_left = -68.0

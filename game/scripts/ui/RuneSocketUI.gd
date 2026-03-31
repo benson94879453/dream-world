@@ -80,7 +80,7 @@ func refresh_ui() -> void:
 func _update_slot_buttons() -> void:
 	for slot_index_ in range(slot_buttons.size()):
 		var button_: Button = slot_buttons[slot_index_]
-		var slot_ := _get_slot(slot_index_)
+		var slot_: RuneSlotResource = _get_slot(slot_index_)
 		if slot_ == null:
 			button_.disabled = true
 			button_.text = "🔒 %d" % (slot_index_ + 1)
@@ -100,11 +100,11 @@ func _update_slot_buttons() -> void:
 
 
 func _update_selected_slot_info() -> void:
-	var player_ = _get_player()
+	var player_: Node = _get_player()
 	var current_gold_: int = player_.get_gold() if player_ != null else 0
 	gold_label.text = "持有金幣：%d" % current_gold_
 
-	var slot_ := _get_slot(selected_slot_index)
+	var slot_: RuneSlotResource = _get_slot(selected_slot_index)
 	if slot_ == null:
 		selected_slot_label.text = "請先選擇已解鎖的符文槽。"
 		equipped_rune_info.text = "目前沒有可操作的槽位。"
@@ -130,7 +130,7 @@ func _update_rune_list() -> void:
 	_clear_rune_list()
 	_set_empty_state("")
 
-	var rune_manager_ = _get_rune_manager()
+	var rune_manager_: Node = _get_rune_manager()
 	if rune_manager_ == null or current_inventory == null:
 		_set_empty_state("找不到符文背包資料。")
 		return
@@ -140,16 +140,16 @@ func _update_rune_list() -> void:
 		_set_empty_state("背包裡沒有符文。")
 		return
 
-	var selected_slot_ := _get_slot(selected_slot_index)
+	var selected_slot_: RuneSlotResource = _get_slot(selected_slot_index)
 	var created_button_count_: int = 0
 	for rune_entry_ in rune_entries_:
-		var rune_data_ := rune_entry_.get("rune_data", null) as RuneDataResource
+		var rune_data_: RuneDataResource = rune_entry_.get("rune_data", null) as RuneDataResource
 		var amount_: int = int(rune_entry_.get("amount", 0))
 		if rune_data_ == null or amount_ <= 0:
 			continue
 
 		var can_equip_selected_slot_: bool = selected_slot_ != null and selected_slot_.can_equip(rune_data_)
-		var button_ := Button.new()
+		var button_: Button = Button.new()
 		button_.text = _build_rune_button_text(rune_data_, amount_)
 		button_.custom_minimum_size = Vector2(WRAPPED_TEXT_MIN_WIDTH, 68.0)
 		button_.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -173,7 +173,7 @@ func _update_rune_list() -> void:
 
 
 func _update_action_buttons() -> void:
-	var rune_manager_ = _get_rune_manager()
+	var rune_manager_: Node = _get_rune_manager()
 	if rune_manager_ == null:
 		equip_button.disabled = true
 		unequip_button.disabled = true
@@ -190,7 +190,7 @@ func _update_action_buttons() -> void:
 	elif not equip_reason_.is_empty() and selected_rune != null:
 		status_label.text = equip_reason_
 	elif _get_slot(selected_slot_index) != null and not _get_slot(selected_slot_index).is_empty():
-		var player_ = _get_player()
+		var player_: Node = _get_player()
 		var gold_reason_: String = rune_manager_.get_unequip_failure_reason_with_gold(current_weapon, current_inventory, selected_slot_index, player_)
 		if not gold_reason_.is_empty():
 			status_label.text = gold_reason_
@@ -216,7 +216,7 @@ func _on_rune_button_pressed(rune_data_: RuneDataResource) -> void:
 
 
 func _on_equip_pressed() -> void:
-	var rune_manager_ = _get_rune_manager()
+	var rune_manager_: Node = _get_rune_manager()
 	assert(rune_manager_ != null, "RuneSocketUI requires RuneManager")
 
 	var failure_reason_: String = rune_manager_.get_equip_failure_reason(current_weapon, current_inventory, selected_slot_index, selected_rune)
@@ -233,9 +233,9 @@ func _on_equip_pressed() -> void:
 
 
 func _on_unequip_pressed() -> void:
-	var rune_manager_ = _get_rune_manager()
+	var rune_manager_: Node = _get_rune_manager()
 	assert(rune_manager_ != null, "RuneSocketUI requires RuneManager")
-	var player_ = _get_player()
+	var player_: Node = _get_player()
 
 	var failure_reason_: String = rune_manager_.get_unequip_failure_reason_with_gold(current_weapon, current_inventory, selected_slot_index, player_)
 	if not failure_reason_.is_empty():

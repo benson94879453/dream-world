@@ -1,5 +1,8 @@
 extends Node
 
+signal state_recorded(state_id: String, state_data: Dictionary)
+signal current_scene_state_reapplied(scene_path: String)
+
 var scene_states: Dictionary = {}
 var _reapply_requested: bool = false
 
@@ -18,8 +21,10 @@ func record_state(state_id: String, state_data: Dictionary) -> void:
 
 	var scene_path_: String = _extract_scene_path_from_state_id(state_id)
 	if scene_path_.is_empty():
-		push_warning("[SceneStateManager] Failed to extract scene path from state_id: %s" % state_id)
-		return
+		scene_path_ = _extract_scene_path_from_state_data(state_data)
+		if scene_path_.is_empty():
+			push_warning("[SceneStateManager] Failed to extract scene path from state_id: %s" % state_id)
+			return
 
 	var scene_bucket_: Dictionary = scene_states.get(scene_path_, {})
 	if typeof(scene_bucket_) != TYPE_DICTIONARY:
@@ -29,6 +34,7 @@ func record_state(state_id: String, state_data: Dictionary) -> void:
 	next_state_data_["type"] = String(next_state_data_.get("type", "generic"))
 	scene_bucket_[state_id] = next_state_data_
 	scene_states[scene_path_] = scene_bucket_
+	state_recorded.emit(state_id, next_state_data_.duplicate(true))
 
 
 func get_state(state_id: String) -> Dictionary:
@@ -37,7 +43,7 @@ func get_state(state_id: String) -> Dictionary:
 
 	var scene_path_: String = _extract_scene_path_from_state_id(state_id)
 	if scene_path_.is_empty():
-		return {}
+		return _find_state_in_any_scene(state_id)
 
 	var scene_bucket_: Dictionary = scene_states.get(scene_path_, {})
 	if typeof(scene_bucket_) != TYPE_DICTIONARY:
@@ -111,7 +117,7 @@ func reapply_current_scene_state() -> void:
 
 	var persistent_objects_: Array = []
 	for node_ in get_tree().get_nodes_in_group("persistent_object"):
-		var persistent_object_ := node_ as PersistentObject
+		var persistent_object_: PersistentObject = node_ as PersistentObject
 		if persistent_object_ == null:
 			continue
 		if not current_scene_.is_ancestor_of(persistent_object_):
@@ -129,6 +135,8 @@ func reapply_current_scene_state() -> void:
 			continue
 		persistent_object_.reload_persistent_state()
 
+	current_scene_state_reapplied.emit(current_scene_.scene_file_path)
+
 
 func _extract_scene_path_from_state_id(state_id: String) -> String:
 	var parts_: PackedStringArray = state_id.split(":")
@@ -140,6 +148,28 @@ func _extract_scene_path_from_state_id(state_id: String) -> String:
 		scene_parts_.append(parts_[part_index_])
 
 	return ":".join(scene_parts_)
+
+
+func _extract_scene_path_from_state_data(state_data: Dictionary) -> String:
+	if typeof(state_data) != TYPE_DICTIONARY:
+		return ""
+
+	return String(state_data.get("scene_path", "")).strip_edges()
+
+
+func _find_state_in_any_scene(state_id: String) -> Dictionary:
+	for scene_path_ in scene_states.keys():
+		var scene_bucket_: Dictionary = scene_states.get(scene_path_, {})
+		if typeof(scene_bucket_) != TYPE_DICTIONARY:
+			continue
+
+		var state_data_ = scene_bucket_.get(state_id, {})
+		if typeof(state_data_) != TYPE_DICTIONARY:
+			continue
+
+		return state_data_.duplicate(true)
+
+	return {}
 
 
 func _flush_reapply_current_scene_state() -> void:

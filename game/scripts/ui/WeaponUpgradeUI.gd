@@ -73,11 +73,11 @@ func _ready() -> void:
 	decompose_confirm_dialog.confirmed.connect(_on_decompose_confirmed)
 	close_button.pressed.connect(hide_upgrade_ui)
 
-	var dialog_manager_ = _get_dialog_manager()
+	var dialog_manager_: Node = _get_dialog_manager()
 	if dialog_manager_ != null:
 		dialog_manager_.dialog_action_requested.connect(_on_dialog_action_requested)
 
-	var upgrade_manager_ = _get_upgrade_manager()
+	var upgrade_manager_: Node = _get_upgrade_manager()
 	if upgrade_manager_ != null:
 		upgrade_manager_.upgrade_succeeded.connect(_on_upgrade_succeeded)
 		upgrade_manager_.upgrade_failed.connect(_on_upgrade_failed)
@@ -92,7 +92,7 @@ func _unhandled_input(event_: InputEvent) -> void:
 	if not visible:
 		return
 
-	var key_event_ := event_ as InputEventKey
+	var key_event_: InputEventKey = event_ as InputEventKey
 	if key_event_ != null and key_event_.echo:
 		return
 
@@ -103,7 +103,7 @@ func _unhandled_input(event_: InputEvent) -> void:
 
 #region Public
 func open_for_current_weapon() -> void:
-	var player_ = _get_player()
+	var player_: Node = _get_player()
 	var weapon_: WeaponInstanceResource = player_.get_equipped_weapon() if player_ != null else null
 	if weapon_ == null:
 		status_label.text = "目前沒有裝備武器。"
@@ -131,11 +131,11 @@ func hide_upgrade_ui() -> void:
 
 #region Helpers
 func _refresh_view() -> void:
-	var player_ = _get_player()
+	var player_: Node = _get_player()
 	var weapon_: WeaponInstanceResource = player_.get_equipped_weapon() if player_ != null else null
 	var inventory_: InventoryResource = player_.get_inventory() if player_ != null else null
-	var upgrade_manager_ = _get_upgrade_manager()
-	var decompose_manager_ = _get_decompose_manager()
+	var upgrade_manager_: Node = _get_upgrade_manager()
+	var decompose_manager_: Node = _get_decompose_manager()
 
 	gold_label.text = "持有金幣：%d" % (player_.get_gold() if player_ != null else 0)
 	rune_socket_ui.setup(weapon_, inventory_)
@@ -199,7 +199,7 @@ func _build_material_summary(costs_: Array, inventory_: InventoryResource) -> St
 	if costs_.is_empty():
 		return "材料：\n- 已達最高星級"
 
-	var save_manager_ = _get_save_manager()
+	var save_manager_: Node = _get_save_manager()
 	var lines_: PackedStringArray = PackedStringArray(["材料："])
 	for cost_entry_ in costs_:
 		if typeof(cost_entry_) != TYPE_DICTIONARY:
@@ -220,7 +220,7 @@ func _build_reward_summary(entries_: Array, empty_text_: String) -> String:
 	for entry_ in entries_:
 		if typeof(entry_) != TYPE_DICTIONARY:
 			continue
-		var item_data_ := entry_.get("item_data", null) as ItemDataResource
+		var item_data_: ItemDataResource = entry_.get("item_data", null) as ItemDataResource
 		var amount_: int = int(entry_.get("amount", 0))
 		if item_data_ == null or amount_ <= 0:
 			continue
@@ -238,7 +238,7 @@ func _build_chance_reward_summary(entries_: Array) -> String:
 		if typeof(entry_) != TYPE_DICTIONARY:
 			continue
 
-		var item_data_ := entry_.get("item_data", null) as ItemDataResource
+		var item_data_: ItemDataResource = entry_.get("item_data", null) as ItemDataResource
 		var item_name_: String = item_data_.display_name if item_data_ != null else String(entry_.get("label", ""))
 		var amount_: int = int(entry_.get("amount", 0))
 		var chance_: float = float(entry_.get("chance", 0.0)) * 100.0
@@ -275,7 +275,7 @@ func _on_tab_changed(tab_index_: int) -> void:
 		return
 
 	if tab_index_ == 1:
-		var player_ = _get_player()
+		var player_: Node = _get_player()
 		var weapon_: WeaponInstanceResource = player_.get_equipped_weapon() if player_ != null else null
 		var inventory_: InventoryResource = player_.get_inventory() if player_ != null else null
 		rune_socket_ui.setup(weapon_, inventory_)
@@ -286,13 +286,13 @@ func _on_tab_changed(tab_index_: int) -> void:
 
 
 func _on_upgrade_pressed() -> void:
-	var player_ = _get_player()
+	var player_: Node = _get_player()
 	if player_ == null:
 		return
 
 	var weapon_: WeaponInstanceResource = player_.get_equipped_weapon()
 	var inventory_: InventoryResource = player_.get_inventory()
-	var upgrade_manager_ = _get_upgrade_manager()
+	var upgrade_manager_: Node = _get_upgrade_manager()
 	if weapon_ == null or inventory_ == null or upgrade_manager_ == null:
 		return
 
@@ -319,13 +319,13 @@ func _on_upgrade_failed(_weapon_, reason_: String) -> void:
 
 
 func _on_decompose_pressed() -> void:
-	var player_ = _get_player()
+	var player_: Node = _get_player()
 	if player_ == null:
 		return
 
 	var weapon_: WeaponInstanceResource = player_.get_equipped_weapon()
 	var inventory_: InventoryResource = player_.get_inventory()
-	var decompose_manager_ = _get_decompose_manager()
+	var decompose_manager_: Node = _get_decompose_manager()
 	if weapon_ == null or inventory_ == null or decompose_manager_ == null:
 		return
 
@@ -345,13 +345,13 @@ func _on_decompose_pressed() -> void:
 
 
 func _on_decompose_confirmed() -> void:
-	var player_ = _get_player()
+	var player_: Node = _get_player()
 	if player_ == null:
 		return
 
 	var weapon_: WeaponInstanceResource = player_.get_equipped_weapon()
 	var inventory_: InventoryResource = player_.get_inventory()
-	var decompose_manager_ = _get_decompose_manager()
+	var decompose_manager_: Node = _get_decompose_manager()
 	if weapon_ == null or inventory_ == null or decompose_manager_ == null:
 		return
 
@@ -366,7 +366,7 @@ func _on_decompose_confirmed() -> void:
 
 
 func _connect_inventory_signals() -> void:
-	var player_ = _get_player()
+	var player_: Node = _get_player()
 	var inventory_: InventoryResource = player_.get_inventory() if player_ != null else null
 	if inventory_ == tracked_inventory:
 		return
@@ -399,7 +399,7 @@ func _disconnect_inventory_signals(inventory_: InventoryResource) -> void:
 
 
 func _connect_player_signals() -> void:
-	var player_ = _get_player()
+	var player_: Node = _get_player()
 	if player_ == tracked_player:
 		return
 
@@ -430,7 +430,7 @@ func _on_player_gold_changed(_new_amount_: int, _delta_: int) -> void:
 
 
 func _set_player_locked(locked_: bool) -> void:
-	var player_ = _get_player()
+	var player_: Node = _get_player()
 	if player_ == null:
 		return
 

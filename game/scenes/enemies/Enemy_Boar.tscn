@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="Script" path="res://game/scripts/enemies/EnemyAIController.gd" id="1_enemy_ai_script"]
 [ext_resource type="Texture2D" path="res://game/assets/entities/spider_boss_sheet.png" id="2_enemy_texture"]
@@ -14,6 +14,7 @@
 [ext_resource type="Script" uid="uid://cvcqep5bl7753" path="res://game/scripts/combat/FeedbackReceiver.gd" id="12_feedback_receiver_script"]
 [ext_resource type="Script" uid="uid://cqmxxwf5v8fg3" path="res://game/scripts/combat/DamageReceiver.gd" id="13_damage_receiver_script"]
 [ext_resource type="Script" path="res://game/scripts/components/DropComponent.gd" id="14_drop_component_script"]
+[ext_resource type="AudioStreamWAV" path="res://game/audio/boss/boar_boss_death.wav" id="15_boss_death_audio"]
 
 [sub_resource type="RectangleShape2D" id="1_enemy_body_shape"]
 size = Vector2(28, 22)
@@ -34,6 +35,12 @@ script = ExtResource("1_enemy_ai_script")
 charge_animation_row = 4
 dead_animation_row = 5
 dead_animation_column = 2
+boss_death_presentation_enabled = true
+boss_death_hitstop_duration_ms = 500
+boss_death_flash_color = Color(1.85, 1.85, 1.85, 1)
+boss_death_flash_recover_duration = 0.18
+boss_death_pose_hold_duration = 0.4
+boss_death_fade_duration = 0.5
 
 [node name="Visual" type="Node2D" parent="."]
 
@@ -112,3 +119,6 @@ script = ExtResource("12_feedback_receiver_script")
 
 [node name="DropComponent" type="Node" parent="."]
 script = ExtResource("14_drop_component_script")
+
+[node name="BossDeathAudioPlayer" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("15_boss_death_audio")

@@ -46,11 +46,11 @@ func equip_gear(gear_instance_: GearInstanceResource) -> GearInstanceResource:
 	if gear_instance_ == null or gear_instance_.gear_data == null:
 		return null
 
-	var slot_ := _get_slot_enum_for_gear(gear_instance_)
+	var slot_: int = _get_slot_enum_for_gear(gear_instance_)
 	if slot_ == -1:
 		return null
 
-	var old_gear_ := _get_gear_in_slot(slot_)
+	var old_gear_: GearInstanceResource = _get_gear_in_slot(slot_)
 	_set_gear_in_slot(slot_, gear_instance_)
 	gear_changed.emit(slot_, old_gear_, gear_instance_)
 	equipment_changed.emit()
@@ -68,7 +68,7 @@ func unequip_slot(slot_: EquipmentSlot) -> Variant:
 			equipment_changed.emit()
 			return old_weapon_
 		EquipmentSlot.HELMET, EquipmentSlot.CHESTPLATE, EquipmentSlot.LEGGINGS, EquipmentSlot.BOOTS:
-			var old_gear_ := _get_gear_in_slot(slot_)
+			var old_gear_: GearInstanceResource = _get_gear_in_slot(slot_)
 			if old_gear_ == null:
 				return null
 			_set_gear_in_slot(slot_, null)
@@ -112,7 +112,7 @@ func get_total_stat_modifiers() -> Dictionary:
 			continue
 
 		for modifier_key_ in gear_instance_.gear_data.stat_modifiers:
-			var normalized_key_ := StringName(String(modifier_key_))
+			var normalized_key_: StringName = StringName(String(modifier_key_))
 			var current_value_: float = float(total_modifiers_.get(normalized_key_, 0.0))
 			var add_value_: float = float(gear_instance_.gear_data.stat_modifiers.get(modifier_key_, 0.0))
 			total_modifiers_[normalized_key_] = current_value_ + add_value_
@@ -155,7 +155,7 @@ func from_save_dict(data_: Dictionary) -> bool:
 
 	clear()
 
-	var save_manager_ = _get_save_manager()
+	var save_manager_: Node = _get_save_manager()
 	if save_manager_ == null:
 		push_warning("[Equipment] SaveManager is unavailable during load")
 		return false
@@ -233,7 +233,7 @@ func _load_weapon_from_save(save_manager_: Node, weapon_data_: Variant) -> void:
 	if typeof(weapon_data_) != TYPE_DICTIONARY:
 		return
 
-	var weapon_id_ := StringName(String(weapon_data_.get("weapon_id", "")))
+	var weapon_id_: StringName = StringName(String(weapon_data_.get("weapon_id", "")))
 	var weapon_resource_ = save_manager_.resolve_weapon_data(weapon_id_)
 	if weapon_resource_ == null:
 		return
@@ -245,13 +245,13 @@ func _load_gear_from_save(save_manager_: Node, slot_: EquipmentSlot, gear_data_:
 	if typeof(gear_data_) != TYPE_DICTIONARY:
 		return
 
-	var gear_id_ := StringName(String(gear_data_.get("gear_id", "")))
+	var gear_id_: StringName = StringName(String(gear_data_.get("gear_id", "")))
 	var gear_resource_ = save_manager_.resolve_gear_data(gear_id_)
 	if gear_resource_ == null:
 		return
 
 	var gear_instance_ := GearInstanceResource.create_from_save_dict(gear_resource_, gear_data_)
-	var target_slot_ := _get_slot_enum_for_gear(gear_instance_)
+	var target_slot_: int = _get_slot_enum_for_gear(gear_instance_)
 	if target_slot_ != slot_:
 		return
 

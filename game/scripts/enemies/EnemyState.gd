@@ -30,7 +30,7 @@ func clear_transition() -> void:
 
 #region Helpers
 func get_actor() -> EnemyAIController:
-	var machine_ := get_parent() as EnemyStateMachine
+	var machine_: EnemyStateMachine = get_parent() as EnemyStateMachine
 
 	assert(machine_ != null, "EnemyState must be parented under EnemyStateMachine")
 	assert(machine_.actor != null, "EnemyStateMachine actor must be assigned before state access")

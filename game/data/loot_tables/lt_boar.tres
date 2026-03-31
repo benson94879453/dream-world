@@ -1,26 +1,36 @@
-[gd_resource type="Resource" script_class="LootTableData" format=3 uid="uid://4rpxdp5m6qia"]
+[gd_resource type="Resource" script_class="LootTableData" load_steps=8 format=3 uid="uid://4rpxdp5m6qia"]
 
 [ext_resource type="Script" uid="uid://dg0svn0hdvmes" path="res://game/scripts/data/LootTableData.gd" id="1_loot_table_script"]
 [ext_resource type="Script" uid="uid://c2yc8pkclcmif" path="res://game/scripts/data/LootEntryData.gd" id="2_loot_entry_script"]
-[ext_resource type="Resource" path="res://game/data/items/material_boar_tusk.tres" id="3_tusk_item"]
-[ext_resource type="Resource" path="res://game/data/items/material_boar_hide.tres" id="4_hide_item"]
+[ext_resource type="Resource" path="res://game/data/gears/gear_iron_helmet.tres" id="3_helmet_gear"]
+[ext_resource type="Resource" path="res://game/data/gears/gear_iron_chestplate.tres" id="4_chestplate_gear"]
 [ext_resource type="Script" uid="uid://bg05lgmk1u44p" path="res://game/scripts/data/RuneData.gd" id="4_q7ink"]
+[ext_resource type="Resource" path="res://game/data/gears/gear_iron_leggings.tres" id="5_leggings_gear"]
+[ext_resource type="Resource" path="res://game/data/gears/gear_iron_boots.tres" id="6_boots_gear"]
 
-[sub_resource type="Resource" id="1_tusk_entry"]
+[sub_resource type="Resource" id="1_helmet_entry"]
 script = ExtResource("2_loot_entry_script")
-item_data = ExtResource("3_tusk_item")
-max_amount = 2
-drop_chance = 0.75
+gear_data = ExtResource("3_helmet_gear")
+drop_chance = 0.6
 
-[sub_resource type="Resource" id="2_hide_entry"]
+[sub_resource type="Resource" id="2_chestplate_entry"]
 script = ExtResource("2_loot_entry_script")
-item_data = ExtResource("4_hide_item")
-max_amount = 3
-drop_chance = 0.9
+gear_data = ExtResource("4_chestplate_gear")
+drop_chance = 0.35
+
+[sub_resource type="Resource" id="3_leggings_entry"]
+script = ExtResource("2_loot_entry_script")
+gear_data = ExtResource("5_leggings_gear")
+drop_chance = 0.45
+
+[sub_resource type="Resource" id="4_boots_entry"]
+script = ExtResource("2_loot_entry_script")
+gear_data = ExtResource("6_boots_gear")
+drop_chance = 0.5
 
 [resource]
 script = ExtResource("1_loot_table_script")
-loot_entries = Array[ExtResource("2_loot_entry_script")]([SubResource("1_tusk_entry"), SubResource("2_hide_entry")])
-min_gold = 30
-max_gold = 80
+loot_entries = Array[ExtResource("2_loot_entry_script")]([SubResource("1_helmet_entry"), SubResource("2_chestplate_entry"), SubResource("3_leggings_entry"), SubResource("4_boots_entry")])
+min_gold = 500
+max_gold = 500
 rune_drop_chance = 0.03

@@ -86,7 +86,7 @@ func _get_attack_phase_duration_seconds(frame_count_: int) -> float:
 
 
 func _get_attack_cooldown_seconds() -> float:
-	var attack_profile_ = _get_attack_profile()
+	var attack_profile_: WeaponAttackProfileResource = _get_attack_profile()
 	if attack_profile_ != null:
 		return maxf(attack_profile_.cooldown_seconds, 0.0)
 	return weapon_instance.get_attack_cooldown()
@@ -123,7 +123,7 @@ func _spawn_presentation_scene(scene_: PackedScene, global_position_: Vector2) -
 	var presentation_node_: Node = scene_.instantiate()
 	parent_node_.add_child(presentation_node_)
 
-	var presentation_node_2d_ := presentation_node_ as Node2D
+	var presentation_node_2d_: Node2D = presentation_node_ as Node2D
 	if presentation_node_2d_ == null:
 		return
 

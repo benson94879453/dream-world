@@ -123,7 +123,7 @@ func _apply_panel_style() -> void:
 
 
 func _set_mouse_filter_recursive(node_: Node, filter_: Control.MouseFilter) -> void:
-	var control_ := node_ as Control
+	var control_: Control = node_ as Control
 	if control_ != null:
 		control_.mouse_filter = filter_
 

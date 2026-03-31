@@ -29,10 +29,10 @@ func add_item(item_data_: ItemDataResource, amount_: int) -> int:
 		return amount_
 
 	var remaining_amount_ := amount_
-	var added_amount_ := 0
+	var added_amount_: int = 0
 
 	while remaining_amount_ > 0:
-		var slot_index_ := _find_slot_for_item(item_data_)
+		var slot_index_: int = _find_slot_for_item(item_data_)
 		if slot_index_ == -1:
 			break
 
@@ -59,8 +59,8 @@ func remove_item(item_data_: ItemDataResource, amount_: int) -> int:
 		return 0
 
 	var remaining_amount_ := amount_
-	var removed_amount_ := 0
-	var target_stack_key_ := _get_stack_key(item_data_)
+	var removed_amount_: int = 0
+	var target_stack_key_: StringName = _get_stack_key(item_data_)
 
 	for slot_index_ in range(slots.size()):
 		if remaining_amount_ <= 0:
@@ -94,7 +94,7 @@ func add_weapon(weapon_instance_: WeaponInstanceResource) -> bool:
 	if _find_weapon_slot(weapon_instance_) != -1:
 		return false
 
-	var slot_index_ := _find_first_empty_slot()
+	var slot_index_: int = _find_first_empty_slot()
 	if slot_index_ == -1:
 		return false
 
@@ -107,7 +107,7 @@ func add_weapon(weapon_instance_: WeaponInstanceResource) -> bool:
 
 
 func remove_weapon(weapon_instance_: WeaponInstanceResource) -> bool:
-	var slot_index_ := _find_weapon_slot(weapon_instance_)
+	var slot_index_: int = _find_weapon_slot(weapon_instance_)
 	if slot_index_ == -1:
 		return false
 
@@ -127,7 +127,7 @@ func add_gear(gear_instance_: GearInstanceResource) -> bool:
 	if _find_gear_slot(gear_instance_) != -1:
 		return false
 
-	var slot_index_ := _find_first_empty_slot()
+	var slot_index_: int = _find_first_empty_slot()
 	if slot_index_ == -1:
 		return false
 
@@ -140,7 +140,7 @@ func add_gear(gear_instance_: GearInstanceResource) -> bool:
 
 
 func remove_gear(gear_instance_: GearInstanceResource) -> bool:
-	var slot_index_ := _find_gear_slot(gear_instance_)
+	var slot_index_: int = _find_gear_slot(gear_instance_)
 	if slot_index_ == -1:
 		return false
 
@@ -157,8 +157,8 @@ func get_item_count(item_data_: ItemDataResource) -> int:
 	if item_data_ == null:
 		return 0
 
-	var total_amount_ := 0
-	var target_stack_key_ := _get_stack_key(item_data_)
+	var total_amount_: int = 0
+	var target_stack_key_: StringName = _get_stack_key(item_data_)
 	for slot_ in slots:
 		if slot_.weapon_instance != null or slot_.gear_instance != null or slot_.item_data == null:
 			continue
@@ -183,7 +183,7 @@ func can_add_item(item_data_: ItemDataResource, amount_: int) -> bool:
 		return false
 
 	var remaining_amount_: int = amount_
-	var target_stack_key_ := _get_stack_key(item_data_)
+	var target_stack_key_: StringName = _get_stack_key(item_data_)
 	for slot_ in slots:
 		if slot_.weapon_instance != null or slot_.gear_instance != null:
 			continue
@@ -292,7 +292,7 @@ func split_stack(slot_index_: int) -> int:
 	if source_slot_.item_data == null or source_slot_.amount <= 1:
 		return -1
 
-	var empty_slot_index_ := _find_first_empty_slot(slot_index_)
+	var empty_slot_index_: int = _find_first_empty_slot(slot_index_)
 	if empty_slot_index_ == -1:
 		return -1
 
@@ -318,7 +318,7 @@ func split_stack(slot_index_: int) -> int:
 
 
 func get_empty_slot_count() -> int:
-	var empty_slot_count_ := 0
+	var empty_slot_count_: int = 0
 
 	for slot_ in slots:
 		if slot_.is_empty():
@@ -376,14 +376,14 @@ func from_save_dict(data_: Dictionary) -> bool:
 	if typeof(data_) != TYPE_DICTIONARY:
 		return false
 
-	var version_ := int(data_.get("version", 1))
+	var version_: int = int(data_.get("version", 1))
 	if version_ >= 2:
 		return _load_v2(data_)
 	return _load_v1(data_)
 
 
 func get_equipped_weapon_uid() -> String:
-	var owner_player_ = _get_owner_player()
+	var owner_player_: Node = _get_owner_player()
 	if owner_player_ == null:
 		return ""
 
@@ -398,7 +398,7 @@ func equip_weapon_by_uid(uid_: String) -> bool:
 	if uid_.is_empty():
 		return false
 
-	var owner_player_ = _get_owner_player()
+	var owner_player_: Node = _get_owner_player()
 	if owner_player_ == null:
 		return false
 
@@ -422,12 +422,12 @@ func debug_print_contents() -> void:
 		var slot_: InventorySlotResource = slots[slot_index_]
 		match slot_.get_content_type():
 			&"weapon":
-				var weapon_name_ := String(slot_.weapon_instance.weapon_id)
+				var weapon_name_: String = String(slot_.weapon_instance.weapon_id)
 				if slot_.weapon_instance.weapon_data != null:
 					weapon_name_ = slot_.weapon_instance.weapon_data.display_name
 				print("[Inventory][%d] Weapon: %s (%s)" % [slot_index_, weapon_name_, slot_.weapon_instance.instance_uid])
 			&"gear":
-				var gear_name_ := String(slot_.gear_instance.gear_id)
+				var gear_name_: String = String(slot_.gear_instance.gear_id)
 				if slot_.gear_instance.gear_data != null:
 					gear_name_ = slot_.gear_instance.gear_data.display_name
 				print("[Inventory][%d] Gear: %s (%s)" % [slot_index_, gear_name_, slot_.gear_instance.instance_uid])
@@ -441,7 +441,7 @@ func debug_print_contents() -> void:
 func _initialize_slots() -> void:
 	slots.clear()
 
-	var slot_count_ := maxi(max_slots, 0)
+	var slot_count_: int = maxi(max_slots, 0)
 	for _slot_index_ in range(slot_count_):
 		slots.append(InventorySlotResource.new())
 
@@ -449,7 +449,7 @@ func _initialize_slots() -> void:
 func _load_v1(data_: Dictionary) -> bool:
 	clear()
 
-	var save_manager_ = _get_save_manager()
+	var save_manager_: Node = _get_save_manager()
 	if save_manager_ == null:
 		push_warning("[Inventory] SaveManager is unavailable during v1 load")
 		return false
@@ -458,9 +458,9 @@ func _load_v1(data_: Dictionary) -> bool:
 		if typeof(stackable_entry_) != TYPE_DICTIONARY:
 			continue
 
-		var item_id_ := StringName(String(stackable_entry_.get("item_id", "")))
-		var amount_ := int(stackable_entry_.get("amount", 0))
-		var item_data_ = save_manager_.resolve_item_data(item_id_) as ItemDataResource
+		var item_id_: StringName = StringName(String(stackable_entry_.get("item_id", "")))
+		var amount_: int = int(stackable_entry_.get("amount", 0))
+		var item_data_: ItemDataResource = save_manager_.resolve_item_data(item_id_) as ItemDataResource
 		if item_data_ == null or amount_ <= 0:
 			continue
 
@@ -470,7 +470,7 @@ func _load_v1(data_: Dictionary) -> bool:
 		if typeof(weapon_entry_) != TYPE_DICTIONARY:
 			continue
 
-		var weapon_id_ := StringName(String(weapon_entry_.get("weapon_id", "")))
+		var weapon_id_: StringName = StringName(String(weapon_entry_.get("weapon_id", "")))
 		var weapon_data_ = save_manager_.resolve_weapon_data(weapon_id_)
 		if weapon_data_ == null:
 			continue
@@ -484,7 +484,7 @@ func _load_v1(data_: Dictionary) -> bool:
 func _load_v2(data_: Dictionary) -> bool:
 	clear()
 
-	var save_manager_ = _get_save_manager()
+	var save_manager_: Node = _get_save_manager()
 	if save_manager_ == null:
 		push_warning("[Inventory] SaveManager is unavailable during v2 load")
 		return false
@@ -500,13 +500,13 @@ func _load_v2(data_: Dictionary) -> bool:
 			continue
 
 		var slot_: InventorySlotResource = slots[slot_index_]
-		var content_type_ := StringName(String(slot_entry_.get("type", "empty")))
+		var content_type_: StringName = StringName(String(slot_entry_.get("type", "empty")))
 
 		match content_type_:
 			&"item":
-				var item_id_ := StringName(String(slot_entry_.get("item_id", "")))
-				var amount_ := int(slot_entry_.get("amount", 0))
-				var item_data_ = save_manager_.resolve_item_data(item_id_) as ItemDataResource
+				var item_id_: StringName = StringName(String(slot_entry_.get("item_id", "")))
+				var amount_: int = int(slot_entry_.get("amount", 0))
+				var item_data_: ItemDataResource = save_manager_.resolve_item_data(item_id_) as ItemDataResource
 				if item_data_ == null or amount_ <= 0:
 					continue
 				if slot_.add_item(item_data_, amount_) > 0:
@@ -516,7 +516,7 @@ func _load_v2(data_: Dictionary) -> bool:
 				if typeof(weapon_entry_) != TYPE_DICTIONARY:
 					continue
 
-				var weapon_id_ := StringName(String(weapon_entry_.get("weapon_id", "")))
+				var weapon_id_: StringName = StringName(String(weapon_entry_.get("weapon_id", "")))
 				var weapon_data_ = save_manager_.resolve_weapon_data(weapon_id_)
 				if weapon_data_ == null:
 					continue
@@ -529,8 +529,8 @@ func _load_v2(data_: Dictionary) -> bool:
 				if typeof(gear_entry_) != TYPE_DICTIONARY:
 					continue
 
-				var gear_id_ := StringName(String(gear_entry_.get("gear_id", "")))
-				var gear_data_ := _resolve_gear_data(gear_id_)
+				var gear_id_: StringName = StringName(String(gear_entry_.get("gear_id", "")))
+				var gear_data_: GearDataResource = _resolve_gear_data(gear_id_)
 				if gear_data_ == null:
 					continue
 
@@ -550,7 +550,7 @@ func _find_slot_for_item(item_data_: ItemDataResource) -> int:
 	if item_data_.item_type == ItemData.ItemType.WEAPON or item_data_.item_type == ItemData.ItemType.EQUIPMENT:
 		return -1
 
-	var target_stack_key_ := _get_stack_key(item_data_)
+	var target_stack_key_: StringName = _get_stack_key(item_data_)
 	for slot_index_ in range(slots.size()):
 		var slot_: InventorySlotResource = slots[slot_index_]
 		if slot_.weapon_instance != null or slot_.gear_instance != null or slot_.item_data == null:
@@ -621,7 +621,7 @@ func _resolve_gear_data(gear_id_: StringName) -> GearDataResource:
 	if gear_id_.is_empty():
 		return null
 
-	var save_manager_ = _get_save_manager()
+	var save_manager_: Node = _get_save_manager()
 	if save_manager_ == null:
 		return null
 

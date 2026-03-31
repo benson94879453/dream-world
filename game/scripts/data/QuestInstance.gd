@@ -17,7 +17,7 @@ var turned_in_at: String = ""
 static func create_from_data(quest_data_: QuestDataResource) -> QuestInstance:
 	assert(quest_data_ != null, "QuestInstance.create_from_data requires QuestData")
 
-	var quest_instance_ := QuestInstance.new()
+	var quest_instance_: QuestInstance = QuestInstance.new()
 	quest_instance_.quest_id = quest_data_.quest_id
 	quest_instance_.quest_data = quest_data_
 	quest_instance_.status = QuestDataResource.QuestStatus.ACTIVE

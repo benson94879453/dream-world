@@ -4,6 +4,7 @@ extends PanelContainer
 const EquipmentNode = preload("res://game/scripts/inventory/Equipment.gd")
 const GearInstanceResource = preload("res://game/scripts/data/GearInstance.gd")
 const WeaponInstanceResource = preload("res://game/scripts/data/WeaponInstance.gd")
+const UIColorsResource = preload("res://game/scripts/ui/UIColors.gd")
 
 enum SlotType {
 	WEAPON_MAIN,
@@ -19,6 +20,7 @@ signal slot_shift_clicked(slot_type: SlotType)
 @export var slot_type: SlotType = SlotType.WEAPON_MAIN
 
 var equipment: EquipmentNode = null
+var hovered: bool = false
 
 @onready var icon_rect: TextureRect = $Margin/Content/Icon
 @onready var slot_label: Label = $Margin/Content/SlotLabel
@@ -32,6 +34,8 @@ func _ready() -> void:
 
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	_set_child_mouse_filters(self)
+	mouse_entered.connect(_on_mouse_entered)
+	mouse_exited.connect(_on_mouse_exited)
 	slot_label.text = _get_slot_label_text()
 	_apply_style()
 	_update_visual()
@@ -69,7 +73,7 @@ func clear() -> void:
 
 #region Helpers
 func _gui_input(event_: InputEvent) -> void:
-	var mouse_event_ := event_ as InputEventMouseButton
+	var mouse_event_: InputEventMouseButton = event_ as InputEventMouseButton
 	if mouse_event_ == null or not mouse_event_.pressed:
 		return
 	if mouse_event_.button_index != MOUSE_BUTTON_LEFT:
@@ -91,14 +95,14 @@ func _update_visual() -> void:
 	var equipped_instance_ = equipment.get_equipped_in_slot(_get_equipment_slot_enum())
 	match slot_type:
 		SlotType.WEAPON_MAIN:
-			var weapon_ := equipped_instance_ as WeaponInstanceResource
+			var weapon_: WeaponInstanceResource = equipped_instance_ as WeaponInstanceResource
 			if weapon_ != null and weapon_.weapon_data != null and weapon_.weapon_data.weapon_sprite_texture != null:
 				icon_rect.texture = weapon_.weapon_data.weapon_sprite_texture
 				icon_rect.visible = true
 				fallback_label.visible = false
 				return
 		_:
-			var gear_ := equipped_instance_ as GearInstanceResource
+			var gear_: GearInstanceResource = equipped_instance_ as GearInstanceResource
 			if gear_ != null and gear_.gear_data != null and gear_.gear_data.icon != null:
 				icon_rect.texture = gear_.gear_data.icon
 				icon_rect.visible = true
@@ -157,23 +161,17 @@ func _get_slot_fallback_text() -> String:
 
 
 func _apply_style() -> void:
-	var stylebox_ := StyleBoxFlat.new()
-	stylebox_.bg_color = Color(0.17, 0.17, 0.17, 0.98)
-	stylebox_.border_color = Color(0.72, 0.56, 0.31, 1.0)
-	stylebox_.border_width_left = 2
-	stylebox_.border_width_top = 2
-	stylebox_.border_width_right = 2
-	stylebox_.border_width_bottom = 2
-	stylebox_.corner_radius_top_left = 3
-	stylebox_.corner_radius_top_right = 3
-	stylebox_.corner_radius_bottom_left = 3
-	stylebox_.corner_radius_bottom_right = 3
+	var stylebox_: StyleBoxFlat
+	if hovered:
+		stylebox_ = UIColorsResource.build_panel_style(UIColorsResource.SLOT_HOVER_BG, UIColorsResource.SLOT_ACTIVE_BORDER, 2, 6)
+	else:
+		stylebox_ = UIColorsResource.build_borderless_style(UIColorsResource.SLOT_BG, 6)
 	add_theme_stylebox_override("panel", stylebox_)
 
 
 func _set_child_mouse_filters(node_: Node) -> void:
 	for child_node_ in node_.get_children():
-		var child_control_ := child_node_ as Control
+		var child_control_: Control = child_node_ as Control
 		if child_control_ != null:
 			child_control_.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_set_child_mouse_filters(child_node_)
@@ -185,4 +183,14 @@ func _on_weapon_changed(_old_weapon_: WeaponInstanceResource, _new_weapon_: Weap
 
 func _on_gear_changed(_slot_: int, _old_gear_: GearInstanceResource, _new_gear_: GearInstanceResource) -> void:
 	_update_visual()
+
+
+func _on_mouse_entered() -> void:
+	hovered = true
+	_apply_style()
+
+
+func _on_mouse_exited() -> void:
+	hovered = false
+	_apply_style()
 #endregion

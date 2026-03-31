@@ -217,7 +217,7 @@ func _on_pickup_area_entered(body_: Node2D) -> void:
 	if not pickup_enabled:
 		return
 
-	var player_ := body_ as PlayerController
+	var player_: PlayerController = body_ as PlayerController
 	if player_ == null:
 		return
 
@@ -234,7 +234,7 @@ func _on_pickup_area_entered(body_: Node2D) -> void:
 			var picked_amount_: int = amount - remaining_amount_
 			if picked_amount_ > 0:
 				player_.record_recent_pickup(item_data.display_name, picked_amount_)
-				var quest_manager_ = _get_quest_manager()
+				var quest_manager_: Node = _get_quest_manager()
 				if quest_manager_ != null:
 					quest_manager_.report_item_collected(item_data.item_id, picked_amount_)
 
@@ -259,7 +259,7 @@ func _on_pickup_area_entered(body_: Node2D) -> void:
 
 func _try_pickup_overlaps() -> void:
 	for body_ in pickup_area.get_overlapping_bodies():
-		var body_node_ := body_ as Node2D
+		var body_node_: Node2D = body_ as Node2D
 		if body_node_ == null:
 			continue
 

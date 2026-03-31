@@ -3,6 +3,7 @@ extends Node
 const DEFAULT_WEAPON_DATA = preload("res://game/data/weapons/wpn_unarmed.tres")
 const InventoryResource = preload("res://game/scripts/inventory/Inventory.gd")
 const ItemDataResource = preload("res://game/scripts/data/ItemData.gd")
+const RuneDataResource = preload("res://game/scripts/data/RuneData.gd")
 const WeaponInstanceResource = preload("res://game/scripts/data/WeaponInstance.gd")
 
 signal weapon_decomposed(weapon_id: StringName, rewards: Dictionary)
@@ -38,7 +39,7 @@ func get_decompose_reward_preview(weapon_: WeaponInstanceResource) -> Dictionary
 		"chance_items": []
 	}
 
-	var weapon_material_ := _get_weapon_material_item(weapon_)
+	var weapon_material_: ItemDataResource = _get_weapon_material_item(weapon_)
 	if star_level_ >= 1 and weapon_material_ != null:
 		_append_reward_item(preview_["items"], weapon_material_, star_level_)
 
@@ -64,7 +65,7 @@ func get_decompose_reward_preview(weapon_: WeaponInstanceResource) -> Dictionary
 
 
 func calculate_decompose_rewards(weapon_: WeaponInstanceResource) -> Dictionary:
-	var preview_ := get_decompose_reward_preview(weapon_)
+	var preview_: Dictionary = get_decompose_reward_preview(weapon_)
 	if preview_.is_empty():
 		return {}
 
@@ -73,7 +74,7 @@ func calculate_decompose_rewards(weapon_: WeaponInstanceResource) -> Dictionary:
 		"items": _duplicate_reward_entries(preview_.get("items", []))
 	}
 
-	var rng_ := RandomNumberGenerator.new()
+	var rng_: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng_.randomize()
 
 	for chance_entry_ in preview_.get("chance_items", []):
@@ -82,13 +83,13 @@ func calculate_decompose_rewards(weapon_: WeaponInstanceResource) -> Dictionary:
 		if rng_.randf() > float(chance_entry_.get("chance", 0.0)):
 			continue
 
-		var item_data_ := chance_entry_.get("item_data", null) as ItemDataResource
+		var item_data_: ItemDataResource = chance_entry_.get("item_data", null) as ItemDataResource
 		if item_data_ != null:
 			_append_reward_item(rewards_["items"], item_data_, int(chance_entry_.get("amount", 1)))
 			continue
 
 		if StringName(chance_entry_.get("kind", &"")) == &"random_rune":
-			var rune_data_ = _roll_random_rune()
+			var rune_data_: RuneDataResource = _roll_random_rune()
 			if rune_data_ != null:
 				_append_reward_item(rewards_["items"], rune_data_, int(chance_entry_.get("amount", 1)))
 
@@ -107,7 +108,7 @@ func get_decompose_failure_reason(weapon_: WeaponInstanceResource, inventory_: I
 	if _get_player_from_inventory(inventory_) == null:
 		return "找不到玩家。"
 
-	var preview_ := get_decompose_reward_preview(weapon_)
+	var preview_: Dictionary = get_decompose_reward_preview(weapon_)
 	if preview_.is_empty():
 		return "找不到分解獎勵設定。"
 
@@ -136,8 +137,8 @@ func decompose_weapon(weapon_: WeaponInstanceResource, inventory_: InventoryReso
 			"items": []
 		}
 
-	var player_ = _get_player_from_inventory(inventory_)
-	var rewards_ := calculate_decompose_rewards(weapon_)
+	var player_: Node = _get_player_from_inventory(inventory_)
+	var rewards_: Dictionary = calculate_decompose_rewards(weapon_)
 	rewards_["success"] = true
 	rewards_["reason"] = ""
 
@@ -151,7 +152,7 @@ func decompose_weapon(weapon_: WeaponInstanceResource, inventory_: InventoryReso
 	for item_entry_ in rewards_.get("items", []):
 		if typeof(item_entry_) != TYPE_DICTIONARY:
 			continue
-		var item_data_ := item_entry_.get("item_data", null) as ItemDataResource
+		var item_data_: ItemDataResource = item_entry_.get("item_data", null) as ItemDataResource
 		var amount_: int = int(item_entry_.get("amount", 0))
 		if item_data_ == null or amount_ <= 0:
 			continue
@@ -174,7 +175,7 @@ func _append_reward_item(entries_: Array, item_data_: ItemDataResource, amount_:
 	for entry_ in entries_:
 		if typeof(entry_) != TYPE_DICTIONARY:
 			continue
-		var entry_item_data_ := entry_.get("item_data", null) as ItemDataResource
+		var entry_item_data_: ItemDataResource = entry_.get("item_data", null) as ItemDataResource
 		if entry_item_data_ == null or entry_item_data_.item_id != item_data_.item_id:
 			continue
 		entry_["amount"] = int(entry_.get("amount", 0)) + amount_
@@ -225,7 +226,7 @@ func _can_fit_reward_items(reward_items_: Array, inventory_: InventoryResource, 
 				required_amount_ -= max_stack_
 			continue
 
-		var item_data_ := reward_entry_.get("item_data", null) as ItemDataResource
+		var item_data_: ItemDataResource = reward_entry_.get("item_data", null) as ItemDataResource
 		var remaining_amount_: int = int(reward_entry_.get("amount", 0))
 		if item_data_ == null or remaining_amount_ <= 0:
 			continue
@@ -268,18 +269,18 @@ func _get_weapon_material_item(weapon_: WeaponInstanceResource) -> ItemDataResou
 
 
 func _resolve_item_data(item_id_: StringName) -> ItemDataResource:
-	var save_manager_ = _get_save_manager()
+	var save_manager_: Node = _get_save_manager()
 	if save_manager_ == null:
 		return null
 	return save_manager_.resolve_item_data(item_id_) as ItemDataResource
 
 
-func _roll_random_rune():
-	var rune_manager_ = _get_rune_manager()
+func _roll_random_rune() -> RuneDataResource:
+	var rune_manager_: Node = _get_rune_manager()
 	if rune_manager_ == null or rune_manager_.available_runes.is_empty():
 		return null
 
-	var rng_ := RandomNumberGenerator.new()
+	var rng_: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng_.randomize()
 	return rune_manager_.available_runes[rng_.randi_range(0, rune_manager_.available_runes.size() - 1)]
 

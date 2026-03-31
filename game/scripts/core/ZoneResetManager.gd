@@ -54,7 +54,7 @@ func _apply_reset_strategy(scene_path: String, strategy: int) -> void:
 	if typeof(zone_config_) != TYPE_DICTIONARY or zone_config_.is_empty():
 		return
 
-	var scene_state_manager_ := _get_scene_state_manager()
+	var scene_state_manager_: Node = _get_scene_state_manager()
 	if scene_state_manager_ == null:
 		return
 

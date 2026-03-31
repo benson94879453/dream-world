@@ -11,6 +11,8 @@ const GEAR_DATA_ROOT: String = "res://game/data/gears"
 const ITEM_DATA_ROOT: String = "res://game/data/items"
 const RUNE_DATA_ROOT: String = "res://game/data/runes"
 const WEAPON_DATA_ROOT: String = "res://game/data/weapons"
+const DEFAULT_RESPAWN_SPAWN_POINT_ID: String = "Spawn_default"
+const HOTBAR_SLOT_COUNT: int = 5
 
 signal save_completed(success: bool)
 signal load_completed(success: bool)
@@ -28,7 +30,7 @@ func _ready() -> void:
 
 #region Public
 func save_game() -> bool:
-	var player_ = _get_player()
+	var player_: Node = _get_player()
 	if player_ == null:
 		push_warning("[SaveManager] Cannot save without Player")
 		save_completed.emit(false)
@@ -40,15 +42,19 @@ func save_game() -> bool:
 		save_completed.emit(false)
 		return false
 
-	var existing_data_ = _read_save_file()
+	var existing_data_: Dictionary = _read_save_file()
 	var created_at_ = existing_data_.get("created_at", _get_iso8601_utc_now()) if not existing_data_.is_empty() else _get_iso8601_utc_now()
-	var dialog_manager_ = _get_dialog_manager()
-	var quest_manager_ = _get_quest_manager()
-	var hotbar_manager_ = _get_hotbar_manager()
-	var scene_state_manager_ = _get_scene_state_manager()
-	var zone_reset_manager_ = _get_zone_reset_manager()
+	var dialog_manager_: Node = _get_dialog_manager()
+	var quest_manager_: Node = _get_quest_manager()
+	var hotbar_manager_: Node = _get_hotbar_manager()
+	var scene_transition_manager_: Node = _get_scene_transition_manager()
+	var scene_state_manager_: Node = _get_scene_state_manager()
+	var zone_reset_manager_: Node = _get_zone_reset_manager()
 	var player_data_: Dictionary = player_.to_save_dict()
 	var inventory_data_: Dictionary = inventory_.to_save_dict()
+	var hotbar_data_: Dictionary = _build_default_hotbar_save_data()
+	if hotbar_manager_ != null and hotbar_manager_.has_method("to_save_dict"):
+		hotbar_data_ = _normalize_hotbar_save_data(hotbar_manager_.to_save_dict())
 	var save_data_ = {
 		"save_version": SAVE_VERSION,
 		"created_at": created_at_,
@@ -61,21 +67,17 @@ func save_game() -> bool:
 		},
 		"dialog": dialog_manager_.to_save_dict() if dialog_manager_ != null else {},
 		"quest": quest_manager_.to_save_dict() if quest_manager_ != null else {},
+		"hotbar": hotbar_data_,
 		"scene_state": scene_state_manager_.to_save_dict() if scene_state_manager_ != null else {},
-		"zone_reset": zone_reset_manager_.to_save_dict() if zone_reset_manager_ != null else {}
+		"zone_reset": zone_reset_manager_.to_save_dict() if zone_reset_manager_ != null else {},
+		"respawn": _normalize_respawn_save_data(scene_transition_manager_.to_save_dict() if scene_transition_manager_ != null and scene_transition_manager_.has_method("to_save_dict") else {})
 	}
-	if hotbar_manager_ != null and hotbar_manager_.has_method("to_save_dict"):
-		save_data_["hotbar"] = hotbar_manager_.to_save_dict()
-	save_data_["checksum"] = _calculate_checksum(player_data_, inventory_data_)
+	save_data_ = _finalize_save_data_for_current_version(save_data_, true)
 
-	var save_file_ := FileAccess.open(SAVE_FILE_PATH, FileAccess.WRITE)
-	if save_file_ == null:
+	if not _write_save_file_data(save_data_):
 		push_warning("[SaveManager] Failed to open save file for writing: %s" % SAVE_FILE_PATH)
 		save_completed.emit(false)
 		return false
-
-	save_file_.store_string(JSON.stringify(save_data_, "\t"))
-	save_file_.close()
 
 	print("[SaveManager] Save completed: %s" % ProjectSettings.globalize_path(SAVE_FILE_PATH))
 	save_completed.emit(true)
@@ -95,7 +97,7 @@ func load_game() -> bool:
 		push_warning("[SaveManager] No save file found")
 		return _complete_load(false)
 
-	var data_ = _read_save_file()
+	var data_: Dictionary = _read_save_file()
 	if data_.is_empty():
 		push_warning("[SaveManager] Save file is empty or invalid")
 		return _complete_load(false)
@@ -104,18 +106,25 @@ func load_game() -> bool:
 		push_warning("[SaveManager] Save file failed validation")
 		return _complete_load(false)
 
-	var save_version_ := int(data_.get("save_version", 0))
-	var migrated_data_ = _migrate_save_data(data_, save_version_)
-	if not _validate_save_data(migrated_data_, false):
+	var save_version_: int = int(data_.get("save_version", 0))
+	var migrated_data_: Dictionary = _migrate_save_data(data_, save_version_)
+	var migrated_data_changed_: bool = _did_save_data_change(data_, migrated_data_)
+	migrated_data_ = _finalize_save_data_for_current_version(migrated_data_, migrated_data_changed_)
+	if not _validate_save_data(migrated_data_, true, true):
 		push_warning("[SaveManager] Migrated save data failed validation")
 		return _complete_load(false)
 
-	var scene_transition_manager_ = _get_scene_transition_manager()
+	var scene_transition_manager_: Node = _get_scene_transition_manager()
 	if scene_transition_manager_ != null and scene_transition_manager_.has_method("is_transitioning") and bool(scene_transition_manager_.call("is_transitioning")):
 		push_warning("[SaveManager] Cannot load while a scene transition is in progress")
 		return _complete_load(false)
 
-	var player_ = _get_player()
+	var respawn_data_: Dictionary = _normalize_respawn_save_data(migrated_data_.get("respawn", {}))
+	if scene_transition_manager_ != null and scene_transition_manager_.has_method("from_save_dict"):
+		scene_transition_manager_.from_save_dict(respawn_data_)
+		_debug_log_load_step("scene_transition.from_save_dict -> done")
+
+	var player_: Node = _get_player()
 	if player_ == null:
 		push_warning("[SaveManager] Cannot load without Player")
 		return _complete_load(false)
@@ -125,11 +134,11 @@ func load_game() -> bool:
 		push_warning("[SaveManager] Cannot load without Inventory")
 		return _complete_load(false)
 
-	var dialog_manager_ = _get_dialog_manager()
-	var quest_manager_ = _get_quest_manager()
-	var hotbar_manager_ = _get_hotbar_manager()
-	var scene_state_manager_ = _get_scene_state_manager()
-	var zone_reset_manager_ = _get_zone_reset_manager()
+	var dialog_manager_: Node = _get_dialog_manager()
+	var quest_manager_: Node = _get_quest_manager()
+	var hotbar_manager_: Node = _get_hotbar_manager()
+	var scene_state_manager_: Node = _get_scene_state_manager()
+	var zone_reset_manager_: Node = _get_zone_reset_manager()
 
 	_debug_log_player_runtime_state(player_, "before_reset")
 	_debug_log_modal_ui_state("before_reset")
@@ -147,7 +156,7 @@ func load_game() -> bool:
 	var player_load_report_: Dictionary = player_.from_save_dict(player_data_)
 	_debug_log_load_step("player.from_save_dict -> %s" % JSON.stringify(player_load_report_))
 
-	var equipped_restored_ := true
+	var equipped_restored_: bool = true
 	var equipment_data_ = player_data_.get("equipment", {})
 	var has_equipment_save_: bool = typeof(equipment_data_) == TYPE_DICTIONARY and not equipment_data_.is_empty()
 	var has_equipment_weapon_: bool = has_equipment_save_ and typeof(equipment_data_.get("weapon_main", null)) == TYPE_DICTIONARY
@@ -162,7 +171,7 @@ func load_game() -> bool:
 			equipped_restored_ = false
 
 	if not equipped_restored_:
-		var equipped_weapon_uid_ := String(player_data_.get("equipped_weapon_uid", ""))
+		var equipped_weapon_uid_: String = String(player_data_.get("equipped_weapon_uid", ""))
 		if not equipped_weapon_uid_.is_empty():
 			equipped_restored_ = inventory_.equip_weapon_by_uid(equipped_weapon_uid_)
 		if not equipped_restored_:
@@ -197,6 +206,27 @@ func load_game() -> bool:
 		zone_reset_manager_.from_save_dict(zone_reset_data_ if typeof(zone_reset_data_) == TYPE_DICTIONARY else {})
 		_debug_log_load_step("zone_reset.from_save_dict -> done")
 
+	var target_scene_path_: String = String(respawn_data_.get("scene_path", "")).strip_edges()
+	var target_spawn_point_id_: StringName = StringName(String(respawn_data_.get("spawn_point_id", DEFAULT_RESPAWN_SPAWN_POINT_ID)).strip_edges())
+	if target_spawn_point_id_.is_empty():
+		target_spawn_point_id_ = StringName(DEFAULT_RESPAWN_SPAWN_POINT_ID)
+
+	var current_scene_path_: String = ""
+	if scene_transition_manager_ != null and scene_transition_manager_.has_method("get_current_scene_path"):
+		current_scene_path_ = String(scene_transition_manager_.call("get_current_scene_path")).strip_edges()
+
+	var transitioned_to_respawn_scene_: bool = false
+	if scene_transition_manager_ != null and not target_scene_path_.is_empty() and target_scene_path_ != current_scene_path_:
+		_debug_log_load_step("transition_to respawn scene -> %s (%s)" % [target_scene_path_, String(target_spawn_point_id_)])
+		var transition_started_: bool = bool(scene_transition_manager_.call("transition_to", target_scene_path_, target_spawn_point_id_, true))
+		if transition_started_:
+			transitioned_to_respawn_scene_ = true
+			if scene_transition_manager_.has_method("wait_for_transition_completion"):
+				await scene_transition_manager_.call("wait_for_transition_completion")
+			_debug_log_load_step("respawn scene transition -> completed")
+		else:
+			push_warning("[SaveManager] Failed to start respawn scene transition")
+
 	if scene_state_manager_ != null:
 		if scene_state_manager_.has_method("request_reapply_current_scene_state"):
 			scene_state_manager_.request_reapply_current_scene_state()
@@ -205,8 +235,19 @@ func load_game() -> bool:
 			scene_state_manager_.reapply_current_scene_state()
 			_debug_log_load_step("scene_state.reapply_current_scene_state -> immediate")
 
+	if not transitioned_to_respawn_scene_ and scene_transition_manager_ != null and scene_transition_manager_.has_method("apply_saved_respawn"):
+		var respawn_applied_: bool = bool(scene_transition_manager_.call("apply_saved_respawn", respawn_data_))
+		_debug_log_load_step("scene_transition.apply_saved_respawn -> %s" % str(respawn_applied_))
+
+	player_ = _get_player()
 	_debug_log_player_runtime_state(player_, "after_restore")
 	_debug_log_modal_ui_state("after_restore")
+	if migrated_data_changed_:
+		var migration_save_ok_: bool = _write_save_file_data(migrated_data_)
+		if migration_save_ok_:
+			_debug_log_load_step("Persisted migrated save as v8")
+		else:
+			push_warning("[SaveManager] Failed to persist migrated save data")
 	print("[SaveManager] Load completed from: %s" % ProjectSettings.globalize_path(SAVE_FILE_PATH))
 	return _complete_load(true)
 
@@ -230,6 +271,11 @@ func debug_verify_save() -> Dictionary:
 		"checksum_valid": false,
 		"has_equipment": false,
 		"has_inventory_v2": false,
+		"has_hotbar": false,
+		"has_respawn": false,
+		"has_quest": false,
+		"has_scene_state": false,
+		"has_zone_reset": false,
 		"errors": []
 	}
 
@@ -237,13 +283,22 @@ func debug_verify_save() -> Dictionary:
 		report_["errors"].append("No save file found")
 		return report_
 
-	var data_ := _read_save_file()
+	var data_: Dictionary = _read_save_file()
 	if data_.is_empty():
 		report_["errors"].append("Save file is empty or invalid")
 		return report_
 
 	report_["save_version"] = int(data_.get("save_version", 0))
-	var validation_errors_: Array[String] = _collect_save_validation_errors(data_, true)
+	report_["has_hotbar"] = typeof(data_.get("hotbar", null)) == TYPE_DICTIONARY
+	report_["has_respawn"] = typeof(data_.get("respawn", null)) == TYPE_DICTIONARY
+	report_["has_quest"] = typeof(data_.get("quest", null)) == TYPE_DICTIONARY
+	report_["has_scene_state"] = typeof(data_.get("scene_state", null)) == TYPE_DICTIONARY
+	report_["has_zone_reset"] = typeof(data_.get("zone_reset", null)) == TYPE_DICTIONARY
+	var validation_errors_: Array[String] = _collect_save_validation_errors(
+		data_,
+		true,
+		int(report_["save_version"]) >= SAVE_VERSION
+	)
 	report_["valid_structure"] = validation_errors_.is_empty()
 	report_["checksum_valid"] = _is_checksum_valid_for_data(data_)
 
@@ -434,7 +489,7 @@ func _refresh_resource_caches() -> void:
 	weapon_data_by_id.clear()
 
 	for gear_path_ in _collect_resource_paths(GEAR_DATA_ROOT):
-		var gear_resource_ := load(gear_path_) as GearDataResource
+		var gear_resource_: GearDataResource = load(gear_path_) as GearDataResource
 		if gear_resource_ == null or gear_resource_.gear_id.is_empty():
 			continue
 		gear_data_by_id[gear_resource_.gear_id] = gear_resource_
@@ -442,13 +497,13 @@ func _refresh_resource_caches() -> void:
 			item_data_by_id[gear_resource_.item_id] = gear_resource_
 
 	for item_path_ in _collect_resource_paths(ITEM_DATA_ROOT):
-		var item_resource_ := load(item_path_) as ItemDataResource
+		var item_resource_: ItemDataResource = load(item_path_) as ItemDataResource
 		if item_resource_ == null or item_resource_.item_id.is_empty():
 			continue
 		item_data_by_id[item_resource_.item_id] = item_resource_
 
 	for rune_path_ in _collect_resource_paths(RUNE_DATA_ROOT):
-		var rune_resource_ := load(rune_path_) as RuneDataResource
+		var rune_resource_: RuneDataResource = load(rune_path_) as RuneDataResource
 		if rune_resource_ == null:
 			continue
 
@@ -460,7 +515,7 @@ func _refresh_resource_caches() -> void:
 		rune_data_by_id[rune_id_] = rune_resource_
 
 	for weapon_path_ in _collect_resource_paths(WEAPON_DATA_ROOT):
-		var weapon_resource_ := load(weapon_path_) as WeaponDataResource
+		var weapon_resource_: WeaponDataResource = load(weapon_path_) as WeaponDataResource
 		if weapon_resource_ == null or weapon_resource_.weapon_id.is_empty():
 			continue
 		weapon_data_by_id[weapon_resource_.weapon_id] = weapon_resource_
@@ -509,6 +564,19 @@ func _read_save_file() -> Dictionary:
 	return parsed_
 
 
+func _write_save_file_data(data_: Dictionary) -> bool:
+	if typeof(data_) != TYPE_DICTIONARY:
+		return false
+
+	var save_file_ := FileAccess.open(SAVE_FILE_PATH, FileAccess.WRITE)
+	if save_file_ == null:
+		return false
+
+	save_file_.store_string(JSON.stringify(data_, "\t"))
+	save_file_.close()
+	return true
+
+
 func _calculate_checksum(player_data_: Dictionary, inventory_data_: Dictionary) -> String:
 	var normalized_payload_ = JSON.parse_string(JSON.stringify({
 		"player": player_data_,
@@ -522,11 +590,11 @@ func _calculate_checksum(player_data_: Dictionary, inventory_data_: Dictionary) 
 	return _to_canonical_json(normalized_payload_).sha256_text()
 
 
-func _validate_save_data(data_: Dictionary, verify_checksum_: bool) -> bool:
-	return _collect_save_validation_errors(data_, verify_checksum_).is_empty()
+func _validate_save_data(data_: Dictionary, verify_checksum_: bool, require_current_schema_: bool = false) -> bool:
+	return _collect_save_validation_errors(data_, verify_checksum_, require_current_schema_).is_empty()
 
 
-func _collect_save_validation_errors(data_: Dictionary, verify_checksum_: bool) -> Array[String]:
+func _collect_save_validation_errors(data_: Dictionary, verify_checksum_: bool, require_current_schema_: bool = false) -> Array[String]:
 	var errors_: Array[String] = []
 	if typeof(data_) != TYPE_DICTIONARY:
 		errors_.append("Save payload is not a Dictionary")
@@ -554,6 +622,31 @@ func _collect_save_validation_errors(data_: Dictionary, verify_checksum_: bool) 
 	if player_data_.has("equipment") and typeof(player_data_.get("equipment", {})) != TYPE_DICTIONARY:
 		errors_.append("Equipment payload is not a Dictionary")
 
+	if require_current_schema_:
+		var required_dictionary_fields_ := {
+			"dialog": "Dialog",
+			"quest": "Quest",
+			"hotbar": "Hotbar",
+			"scene_state": "SceneState",
+			"zone_reset": "ZoneReset",
+			"respawn": "Respawn"
+		}
+		for field_name_ in required_dictionary_fields_.keys():
+			if not data_.has(field_name_):
+				errors_.append("Missing %s" % field_name_)
+				continue
+
+			if typeof(data_.get(field_name_, null)) != TYPE_DICTIONARY:
+				errors_.append("%s payload is not a Dictionary" % String(required_dictionary_fields_[field_name_]))
+
+		var hotbar_data_ = data_.get("hotbar", {})
+		if typeof(hotbar_data_) == TYPE_DICTIONARY and not _is_valid_hotbar_save_data(hotbar_data_):
+			errors_.append("Hotbar payload has invalid bindings")
+
+		var respawn_data_ = data_.get("respawn", {})
+		if typeof(respawn_data_) == TYPE_DICTIONARY and not _is_valid_respawn_save_data(respawn_data_):
+			errors_.append("Respawn payload is invalid")
+
 	if verify_checksum_ and not _is_checksum_valid_for_data(data_):
 		errors_.append("Checksum mismatch")
 
@@ -580,7 +673,7 @@ func _is_checksum_valid_for_data(data_: Dictionary) -> bool:
 func _to_canonical_json(value_: Variant) -> String:
 	match typeof(value_):
 		TYPE_DICTIONARY:
-			var dictionary_ := value_ as Dictionary
+			var dictionary_: Dictionary = value_ as Dictionary
 			var keys_ := dictionary_.keys()
 			keys_.sort_custom(func(left_, right_) -> bool:
 				return String(left_) < String(right_)
@@ -594,7 +687,7 @@ func _to_canonical_json(value_: Variant) -> String:
 				])
 			return "{%s}" % ",".join(parts_)
 		TYPE_ARRAY:
-			var array_ := value_ as Array
+			var array_: Array = value_ as Array
 			var parts_: PackedStringArray = []
 			for entry_ in array_:
 				parts_.append(_to_canonical_json(entry_))
@@ -613,6 +706,173 @@ func _get_iso8601_utc_now() -> String:
 		int(datetime_.get("minute", 0)),
 		int(datetime_.get("second", 0))
 	]
+
+
+func _build_default_hotbar_bindings() -> Array[int]:
+	var bindings_: Array[int] = []
+	bindings_.resize(HOTBAR_SLOT_COUNT)
+	for hotbar_index_ in range(HOTBAR_SLOT_COUNT):
+		bindings_[hotbar_index_] = -1
+	return bindings_
+
+
+func _build_default_hotbar_save_data() -> Dictionary:
+	return {
+		"bindings": _build_default_hotbar_bindings()
+	}
+
+
+func _normalize_hotbar_save_data(hotbar_data_: Variant) -> Dictionary:
+	var normalized_data_: Dictionary = _build_default_hotbar_save_data()
+	if typeof(hotbar_data_) != TYPE_DICTIONARY:
+		return normalized_data_
+
+	var raw_hotbar_data_: Dictionary = hotbar_data_ as Dictionary
+	var bindings_ = raw_hotbar_data_.get("bindings", [])
+	if typeof(bindings_) != TYPE_ARRAY:
+		return normalized_data_
+
+	for hotbar_index_ in range(mini(bindings_.size(), HOTBAR_SLOT_COUNT)):
+		var binding_value_ = bindings_[hotbar_index_]
+		if typeof(binding_value_) != TYPE_INT and typeof(binding_value_) != TYPE_FLOAT:
+			continue
+
+		normalized_data_["bindings"][hotbar_index_] = maxi(int(binding_value_), -1)
+
+	return normalized_data_
+
+
+func _build_default_respawn_save_data() -> Dictionary:
+	var default_scene_path_: String = String(ProjectSettings.get_setting("application/run/main_scene", "")).strip_edges()
+	return {
+		"scene_path": default_scene_path_,
+		"spawn_point_id": DEFAULT_RESPAWN_SPAWN_POINT_ID,
+		"spawn_position": {}
+	}
+
+
+func _normalize_respawn_save_data(respawn_data_: Variant) -> Dictionary:
+	var normalized_data_: Dictionary = _build_default_respawn_save_data()
+	if typeof(respawn_data_) != TYPE_DICTIONARY:
+		return normalized_data_
+
+	var raw_respawn_data_: Dictionary = respawn_data_ as Dictionary
+	var scene_path_: String = String(raw_respawn_data_.get("scene_path", "")).strip_edges()
+	if scene_path_.is_empty() or not ResourceLoader.exists(scene_path_):
+		return normalized_data_
+
+	normalized_data_["scene_path"] = scene_path_
+
+	var spawn_point_id_: String = String(raw_respawn_data_.get("spawn_point_id", DEFAULT_RESPAWN_SPAWN_POINT_ID)).strip_edges()
+	normalized_data_["spawn_point_id"] = spawn_point_id_ if not spawn_point_id_.is_empty() else DEFAULT_RESPAWN_SPAWN_POINT_ID
+	normalized_data_["spawn_position"] = _normalize_spawn_position_data(raw_respawn_data_.get("spawn_position", {}))
+	return normalized_data_
+
+
+func _normalize_spawn_position_data(position_data_: Variant) -> Dictionary:
+	if typeof(position_data_) != TYPE_DICTIONARY:
+		return {}
+
+	var raw_position_data_: Dictionary = position_data_ as Dictionary
+	if not raw_position_data_.has("x") or not raw_position_data_.has("y"):
+		return {}
+
+	var x_: Variant = raw_position_data_.get("x", null)
+	var y_: Variant = raw_position_data_.get("y", null)
+	if typeof(x_) != TYPE_INT and typeof(x_) != TYPE_FLOAT:
+		return {}
+	if typeof(y_) != TYPE_INT and typeof(y_) != TYPE_FLOAT:
+		return {}
+
+	return {
+		"x": float(x_),
+		"y": float(y_)
+	}
+
+
+func _is_valid_hotbar_save_data(hotbar_data_: Variant) -> bool:
+	if typeof(hotbar_data_) != TYPE_DICTIONARY:
+		return false
+
+	var bindings_ = hotbar_data_.get("bindings", [])
+	if typeof(bindings_) != TYPE_ARRAY or bindings_.size() != HOTBAR_SLOT_COUNT:
+		return false
+
+	for binding_value_ in bindings_:
+		if typeof(binding_value_) != TYPE_INT and typeof(binding_value_) != TYPE_FLOAT:
+			return false
+		if int(binding_value_) < -1:
+			return false
+
+	return true
+
+
+func _is_valid_respawn_save_data(respawn_data_: Variant) -> bool:
+	if typeof(respawn_data_) != TYPE_DICTIONARY:
+		return false
+
+	var scene_path_: String = String(respawn_data_.get("scene_path", "")).strip_edges()
+	if scene_path_.is_empty() or not ResourceLoader.exists(scene_path_):
+		return false
+
+	var spawn_point_id_: String = String(respawn_data_.get("spawn_point_id", "")).strip_edges()
+	if spawn_point_id_.is_empty():
+		return false
+
+	return true
+
+
+func _build_default_progression_save_data() -> Dictionary:
+	return {
+		"unlocked_souls": [],
+		"flags": {}
+	}
+
+
+func _finalize_save_data_for_current_version(data_: Dictionary, touch_updated_at_: bool) -> Dictionary:
+	var finalized_data_ := data_.duplicate(true)
+	var now_utc_: String = _get_iso8601_utc_now()
+
+	finalized_data_["save_version"] = SAVE_VERSION
+	if String(finalized_data_.get("created_at", "")).is_empty():
+		finalized_data_["created_at"] = now_utc_
+	if touch_updated_at_ or String(finalized_data_.get("updated_at", "")).is_empty():
+		finalized_data_["updated_at"] = now_utc_
+
+	var player_data_ = finalized_data_.get("player", {})
+	if typeof(player_data_) != TYPE_DICTIONARY:
+		player_data_ = {}
+	finalized_data_["player"] = player_data_
+
+	var inventory_data_ = finalized_data_.get("inventory", {})
+	if typeof(inventory_data_) != TYPE_DICTIONARY:
+		inventory_data_ = {}
+	finalized_data_["inventory"] = inventory_data_
+
+	var progression_data_ = finalized_data_.get("progression", {})
+	if typeof(progression_data_) != TYPE_DICTIONARY:
+		progression_data_ = _build_default_progression_save_data()
+	else:
+		if typeof(progression_data_.get("unlocked_souls", [])) != TYPE_ARRAY:
+			progression_data_["unlocked_souls"] = []
+		if typeof(progression_data_.get("flags", {})) != TYPE_DICTIONARY:
+			progression_data_["flags"] = {}
+	finalized_data_["progression"] = progression_data_
+
+	for section_name_ in ["dialog", "quest", "scene_state", "zone_reset"]:
+		if typeof(finalized_data_.get(section_name_, {})) != TYPE_DICTIONARY:
+			finalized_data_[section_name_] = {}
+
+	finalized_data_["hotbar"] = _normalize_hotbar_save_data(finalized_data_.get("hotbar", {}))
+	finalized_data_["respawn"] = _normalize_respawn_save_data(finalized_data_.get("respawn", {}))
+	finalized_data_["checksum"] = _calculate_checksum(player_data_, inventory_data_)
+	return finalized_data_
+
+
+func _did_save_data_change(previous_data_: Dictionary, next_data_: Dictionary) -> bool:
+	if typeof(previous_data_) != TYPE_DICTIONARY or typeof(next_data_) != TYPE_DICTIONARY:
+		return true
+	return _to_canonical_json(previous_data_) != _to_canonical_json(next_data_)
 
 
 func _migrate_save_data(data_: Dictionary, from_version_: int) -> Dictionary:
@@ -644,7 +904,7 @@ func _migrate_save_data(data_: Dictionary, from_version_: int) -> Dictionary:
 			equipment_data_ = _build_empty_equipment_save()
 
 		if typeof(equipment_data_.get("weapon_main", null)) != TYPE_DICTIONARY:
-			var legacy_weapon_data_ := _build_legacy_equipped_weapon_save(player_data_)
+			var legacy_weapon_data_: Dictionary = _build_legacy_equipped_weapon_save(player_data_)
 			if not legacy_weapon_data_.is_empty():
 				equipment_data_["weapon_main"] = legacy_weapon_data_
 
@@ -660,12 +920,13 @@ func _migrate_save_data(data_: Dictionary, from_version_: int) -> Dictionary:
 		migrated_data_.erase("checksum")
 	if from_version_ < 8:
 		# v8: persist hotbar inventory-slot bindings
-		if not migrated_data_.has("hotbar") or typeof(migrated_data_.get("hotbar", {})) != TYPE_DICTIONARY:
-			migrated_data_["hotbar"] = {
-				"bindings": [-1, -1, -1, -1, -1]
-			}
+		migrated_data_["hotbar"] = _normalize_hotbar_save_data(migrated_data_.get("hotbar", {}))
+		if not migrated_data_.has("respawn") or typeof(migrated_data_.get("respawn", {})) != TYPE_DICTIONARY:
+			migrated_data_["respawn"] = _build_default_respawn_save_data()
 		migrated_data_["save_version"] = 8
 		migrated_data_.erase("checksum")
+	migrated_data_["hotbar"] = _normalize_hotbar_save_data(migrated_data_.get("hotbar", {}))
+	migrated_data_["respawn"] = _normalize_respawn_save_data(migrated_data_.get("respawn", {}))
 	if not migrated_data_.has("scene_state") or typeof(migrated_data_.get("scene_state", {})) != TYPE_DICTIONARY:
 		migrated_data_["scene_state"] = {}
 	if not migrated_data_.has("zone_reset") or typeof(migrated_data_.get("zone_reset", {})) != TYPE_DICTIONARY:
@@ -687,7 +948,7 @@ func _build_legacy_equipped_weapon_save(player_data_: Dictionary) -> Dictionary:
 	if typeof(player_data_) != TYPE_DICTIONARY:
 		return {}
 
-	var equipped_weapon_id_ := String(player_data_.get("equipped_weapon_id", ""))
+	var equipped_weapon_id_: String = String(player_data_.get("equipped_weapon_id", ""))
 	if equipped_weapon_id_.is_empty():
 		return {}
 

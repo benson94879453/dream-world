@@ -50,7 +50,7 @@ func _unhandled_input(event_: InputEvent) -> void:
 
 
 func _run_save_smoke(save_manager_) -> void:
-	var player_ := get_tree().get_first_node_in_group("player") as PlayerController
+	var player_: PlayerController = get_tree().get_first_node_in_group("player") as PlayerController
 	if player_ == null:
 		push_warning("[Arena_Test] Save smoke requires Player")
 		get_tree().quit(1)
@@ -84,7 +84,7 @@ func _run_save_smoke(save_manager_) -> void:
 	inventory_.add_weapon(WeaponInstanceResource.create_from_data(player_.debug_equip_slot_2))
 	player_.equip_weapon_data(player_.debug_equip_slot_3)
 	player_.get_equipped_weapon().star_level = 3
-	var affix_table_ := load("res://game/data/affixes/affix_table_basic.tres") as AffixTableResource
+	var affix_table_: AffixTableResource = load("res://game/data/affixes/affix_table_basic.tres") as AffixTableResource
 	if affix_table_ != null and not affix_table_.affixes.is_empty():
 		player_.get_equipped_weapon().affixes.append(AffixInstanceResource.create_from_data(affix_table_.affixes[0]))
 	var rune_data_ = rune_manager_.get_rune_data(&"rune_fire")
@@ -93,14 +93,14 @@ func _run_save_smoke(save_manager_) -> void:
 	dialog_manager_.set_flag(&"save_smoke_dialog_flag")
 
 	var save_ok_ = save_manager_.save_game()
-	var save_version_ := -1
-	var saved_hp_ := -1.0
-	var saved_gold_ := -1
-	var saved_equipped_uid_ := ""
-	var saved_weapon_star_level_ := -1
-	var saved_affix_count_ := -1
+	var save_version_: int = -1
+	var saved_hp_: float = -1.0
+	var saved_gold_: int = -1
+	var saved_equipped_uid_: String = ""
+	var saved_weapon_star_level_: int = -1
+	var saved_affix_count_: int = -1
 	var saved_rune_ids_: Array = []
-	var saved_dialog_flag_ := false
+	var saved_dialog_flag_: bool = false
 	var save_file_ := FileAccess.open("user://savegame.json", FileAccess.READ)
 	if save_file_ != null:
 		var raw_save_text_ := save_file_.get_as_text()
@@ -180,7 +180,7 @@ func _run_save_smoke(save_manager_) -> void:
 
 #region Helpers
 func _try_handle_rune_test_input(event_: InputEvent) -> bool:
-	var key_event_ := event_ as InputEventKey
+	var key_event_: InputEventKey = event_ as InputEventKey
 	if key_event_ == null or not key_event_.pressed or key_event_.echo:
 		return false
 
@@ -188,7 +188,7 @@ func _try_handle_rune_test_input(event_: InputEvent) -> bool:
 		_toggle_rune_test_mode()
 		return true
 
-	var rune_test_manager_ = _get_rune_test_manager()
+	var rune_test_manager_: Node = _get_rune_test_manager()
 	if rune_test_manager_ == null or not rune_test_manager_.is_test_mode_enabled():
 		return false
 
@@ -208,7 +208,7 @@ func _try_handle_rune_test_input(event_: InputEvent) -> bool:
 
 
 func _toggle_rune_test_mode() -> void:
-	var rune_test_manager_ = _get_rune_test_manager()
+	var rune_test_manager_: Node = _get_rune_test_manager()
 	if rune_test_manager_ == null:
 		push_warning("[Arena_Test] RuneTestManager autoload is missing")
 		return
@@ -219,15 +219,15 @@ func _toggle_rune_test_mode() -> void:
 
 
 func _run_probability_test() -> void:
-	var player_ := get_tree().get_first_node_in_group("player") as PlayerController
-	var rune_manager_ = _get_rune_manager()
-	var rune_test_manager_ = _get_rune_test_manager()
+	var player_: PlayerController = get_tree().get_first_node_in_group("player") as PlayerController
+	var rune_manager_: Node = _get_rune_manager()
+	var rune_test_manager_: Node = _get_rune_test_manager()
 	if player_ == null or rune_manager_ == null or rune_test_manager_ == null:
 		push_warning("[RuneTest] Missing Player, RuneManager, or RuneTestManager")
 		return
 
-	var endless_weapon_ := _build_test_weapon(player_.debug_equip_slot_2, [&"rune_endless_blade"])
-	var double_weapon_ := _build_test_weapon(player_.debug_equip_slot_2, [&"rune_double_strike"])
+	var endless_weapon_: WeaponInstanceResource = _build_test_weapon(player_.debug_equip_slot_2, [&"rune_endless_blade"])
+	var double_weapon_: WeaponInstanceResource = _build_test_weapon(player_.debug_equip_slot_2, [&"rune_double_strike"])
 	if endless_weapon_ == null or double_weapon_ == null:
 		push_warning("[RuneTest] Failed to build test weapons for probability checks")
 		return
@@ -249,22 +249,22 @@ func _run_probability_test() -> void:
 
 
 func _run_elemental_damage_test() -> void:
-	var player_ := get_tree().get_first_node_in_group("player") as PlayerController
-	var rune_test_manager_ = _get_rune_test_manager()
+	var player_: PlayerController = get_tree().get_first_node_in_group("player") as PlayerController
+	var rune_test_manager_: Node = _get_rune_test_manager()
 	if player_ == null or rune_test_manager_ == null:
 		push_warning("[RuneTest] Missing Player or RuneTestManager for elemental test")
 		return
 
-	var base_weapon_ := _build_test_weapon(player_.debug_equip_slot_2, [])
-	var elemental_weapon_ := _build_test_weapon(player_.debug_equip_slot_2, [&"rune_fire"])
-	var resonance_weapon_ := _build_test_weapon(player_.debug_equip_slot_2, [&"rune_fire", &"rune_elemental_resonance"])
+	var base_weapon_: WeaponInstanceResource = _build_test_weapon(player_.debug_equip_slot_2, [])
+	var elemental_weapon_: WeaponInstanceResource = _build_test_weapon(player_.debug_equip_slot_2, [&"rune_fire"])
+	var resonance_weapon_: WeaponInstanceResource = _build_test_weapon(player_.debug_equip_slot_2, [&"rune_fire", &"rune_elemental_resonance"])
 	if base_weapon_ == null or elemental_weapon_ == null or resonance_weapon_ == null:
 		push_warning("[RuneTest] Failed to build weapons for elemental test")
 		return
 
-	var base_damage_ := _calculate_weapon_preview_damage(base_weapon_)
-	var elemental_damage_ := _calculate_weapon_preview_damage(elemental_weapon_)
-	var resonance_damage_ := _calculate_weapon_preview_damage(resonance_weapon_)
+	var base_damage_: float = _calculate_weapon_preview_damage(base_weapon_)
+	var elemental_damage_: float = _calculate_weapon_preview_damage(elemental_weapon_)
+	var resonance_damage_: float = _calculate_weapon_preview_damage(resonance_weapon_)
 	rune_test_manager_.set_elemental_result(base_damage_, elemental_damage_, resonance_damage_)
 
 	print("[RuneTest][Elemental] Base: %.1f | Fire: %.1f | Fire+Resonance: %.1f" % [
@@ -275,8 +275,8 @@ func _run_elemental_damage_test() -> void:
 
 
 func _run_shield_absorption_test() -> void:
-	var player_ := get_tree().get_first_node_in_group("player") as PlayerController
-	var rune_test_manager_ = _get_rune_test_manager()
+	var player_: PlayerController = get_tree().get_first_node_in_group("player") as PlayerController
+	var rune_test_manager_: Node = _get_rune_test_manager()
 	if player_ == null or rune_test_manager_ == null:
 		push_warning("[RuneTest] Missing Player or RuneTestManager for shield test")
 		return
@@ -337,7 +337,7 @@ func _run_shield_absorption_test() -> void:
 
 
 func _try_handle_debug_enemy_spawn(event_: InputEvent) -> bool:
-	var key_event_ := event_ as InputEventKey
+	var key_event_: InputEventKey = event_ as InputEventKey
 	if key_event_ == null or not key_event_.pressed or key_event_.echo:
 		return false
 
@@ -346,7 +346,7 @@ func _try_handle_debug_enemy_spawn(event_: InputEvent) -> bool:
 			if key_event_.physical_keycode != KEY_F8:
 				return false
 
-	var player_ := get_tree().get_first_node_in_group("player") as PlayerController
+	var player_: PlayerController = get_tree().get_first_node_in_group("player") as PlayerController
 	if player_ == null:
 		push_warning("[Arena_Test] Cannot spawn debug enemy without Player")
 		return true
@@ -367,7 +367,7 @@ func _spawn_enemy(enemy_data_: EnemyDataResource, global_position_: Vector2) -> 
 	assert(enemy_data_ != null, "Arena_Test requires debug_spawn_enemy_data")
 	assert(enemy_data_.enemy_scene != null, "Arena_Test requires EnemyData.enemy_scene")
 
-	var enemy_ := enemy_data_.enemy_scene.instantiate() as EnemyAIControllerResource
+	var enemy_: EnemyAIControllerResource = enemy_data_.enemy_scene.instantiate() as EnemyAIControllerResource
 	assert(enemy_ != null, "EnemyData.enemy_scene must instantiate EnemyAIController")
 
 	enemy_.enemy_data = enemy_data_
@@ -391,7 +391,7 @@ func _build_test_weapon(weapon_data_: WeaponData, rune_ids_: Array[StringName]) 
 
 
 func _equip_rune_on_test_weapon(weapon_instance_: WeaponInstanceResource, rune_id_: StringName) -> bool:
-	var rune_manager_ = _get_rune_manager()
+	var rune_manager_: Node = _get_rune_manager()
 	if weapon_instance_ == null or rune_manager_ == null:
 		return false
 
@@ -411,7 +411,7 @@ func _calculate_weapon_preview_damage(weapon_instance_: WeaponInstanceResource) 
 	if weapon_instance_ == null:
 		return 0.0
 
-	var attack_context_ := AttackContextResource.new()
+	var attack_context_: AttackContextResource = AttackContextResource.new()
 	attack_context_.base_damage = weapon_instance_.get_base_attack()
 	attack_context_.weapon_instance = weapon_instance_
 	attack_context_.tags = [&"melee", weapon_instance_.weapon_data.weapon_type]

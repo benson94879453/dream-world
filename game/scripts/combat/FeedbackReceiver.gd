@@ -55,7 +55,7 @@ func _ensure_hit_audio_player() -> void:
 	if hit_audio_player != null:
 		return
 
-	var host_node_ := get_parent() as Node2D
+	var host_node_: Node2D = get_parent() as Node2D
 	if host_node_ == null:
 		return
 
@@ -78,7 +78,7 @@ func _play_hit_audio(attack_context_: AttackContext) -> void:
 
 
 func _spawn_hit_effect(attack_context_: AttackContext) -> void:
-	var host_node_ := get_parent() as Node2D
+	var host_node_: Node2D = get_parent() as Node2D
 	if host_node_ == null:
 		return
 
@@ -87,12 +87,12 @@ func _spawn_hit_effect(attack_context_: AttackContext) -> void:
 		return
 
 	var hit_effect_ := hit_effect_scene_.instantiate()
-	var effect_parent_ := host_node_.get_parent()
+	var effect_parent_: Node = host_node_.get_parent()
 	if effect_parent_ == null:
 		effect_parent_ = host_node_
 	effect_parent_.add_child(hit_effect_)
 
-	var hit_effect_node_ := hit_effect_ as Node2D
+	var hit_effect_node_: Node2D = hit_effect_ as Node2D
 	if hit_effect_node_ == null:
 		return
 
@@ -105,11 +105,11 @@ func _request_hit_stop(attack_context_: AttackContext) -> void:
 	if attack_context_.hitstop_duration_ms <= 0 or attack_context_.hitstop_scale >= 1.0:
 		return
 
-	var hit_stop_manager_ := _get_hit_stop_manager()
+	var hit_stop_manager_: Node = _get_hit_stop_manager()
 	if hit_stop_manager_ == null:
 		return
 
-	var target_node_ := get_parent()
+	var target_node_: Node = get_parent()
 	if target_node_ != null:
 		hit_stop_manager_.request_hit_stop(target_node_, attack_context_.hitstop_duration_ms, attack_context_.hitstop_scale)
 

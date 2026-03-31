@@ -12,7 +12,7 @@ func _process(delta_: float) -> void:
 	var entry_index_: int = active_hitstops.size() - 1
 	while entry_index_ >= 0:
 		var entry_: Dictionary = active_hitstops[entry_index_]
-		var target_ := entry_.get("target", null) as Node
+		var target_: Node = entry_.get("target", null) as Node
 		if not is_instance_valid(target_):
 			active_hitstops.remove_at(entry_index_)
 			entry_index_ -= 1
@@ -61,7 +61,7 @@ func request_hit_stop(target_: Node, duration_ms_: int, time_scale_: float = 0.0
 #region Helpers
 func _find_existing_entry_index(target_: Node) -> int:
 	for entry_index_ in range(active_hitstops.size()):
-		var existing_target_ := active_hitstops[entry_index_].get("target", null) as Node
+		var existing_target_: Node = active_hitstops[entry_index_].get("target", null) as Node
 		if existing_target_ == target_:
 			return entry_index_
 	return -1
@@ -80,14 +80,14 @@ func _capture_subtree_states(node_: Node, node_states_: Array[Dictionary]) -> vo
 		"physics_processing_internal": node_.is_physics_processing_internal()
 	}
 
-	var timer_ := node_ as Timer
+	var timer_: Timer = node_ as Timer
 	if timer_ != null:
 		entry_["timer_paused"] = timer_.paused
 
 	node_states_.append(entry_)
 
 	for child_ in node_.get_children():
-		var child_node_ := child_ as Node
+		var child_node_: Node = child_ as Node
 		if child_node_ == null:
 			continue
 		_capture_subtree_states(child_node_, node_states_)
@@ -99,7 +99,7 @@ func _freeze_subtree(node_states_: Array[Dictionary], time_scale_: float) -> voi
 		return
 
 	for state_ in node_states_:
-		var node_ := state_.get("node", null) as Node
+		var node_: Node = state_.get("node", null) as Node
 		if not is_instance_valid(node_):
 			continue
 
@@ -112,7 +112,7 @@ func _freeze_subtree(node_states_: Array[Dictionary], time_scale_: float) -> voi
 		node_.set_process_internal(false)
 		node_.set_physics_process_internal(false)
 
-		var timer_ := node_ as Timer
+		var timer_: Timer = node_ as Timer
 		if timer_ != null:
 			timer_.paused = true
 
@@ -126,7 +126,7 @@ func _restore_subtree(entry_: Dictionary) -> void:
 		if typeof(state_) != TYPE_DICTIONARY:
 			continue
 
-		var node_ := state_.get("node", null) as Node
+		var node_: Node = state_.get("node", null) as Node
 		if not is_instance_valid(node_):
 			continue
 
@@ -139,7 +139,7 @@ func _restore_subtree(entry_: Dictionary) -> void:
 		node_.set_process_internal(bool(state_.get("processing_internal", false)))
 		node_.set_physics_process_internal(bool(state_.get("physics_processing_internal", false)))
 
-		var timer_ := node_ as Timer
+		var timer_: Timer = node_ as Timer
 		if timer_ != null and state_.has("timer_paused"):
 			timer_.paused = bool(state_.get("timer_paused", false))
 #endregion

@@ -11,11 +11,11 @@ var tracked_equipment: EquipmentNode = null
 var equipment_slot_uis: Array[EquipmentSlotUIResource] = []
 
 @onready var title_label: Label = $Margin/Root/TitleLabel
-@onready var weapon_slot: EquipmentSlotUIResource = $Margin/Root/WeaponSlot
-@onready var helmet_slot: EquipmentSlotUIResource = $Margin/Root/ArmorGrid/HelmetSlot
-@onready var chestplate_slot: EquipmentSlotUIResource = $Margin/Root/ArmorGrid/ChestplateSlot
-@onready var leggings_slot: EquipmentSlotUIResource = $Margin/Root/ArmorGrid/LeggingsSlot
-@onready var boots_slot: EquipmentSlotUIResource = $Margin/Root/ArmorGrid/BootsSlot
+@onready var weapon_slot: EquipmentSlotUIResource = $Margin/Root/Paperdoll/WeaponSlot
+@onready var helmet_slot: EquipmentSlotUIResource = $Margin/Root/Paperdoll/HelmetSlot
+@onready var chestplate_slot: EquipmentSlotUIResource = $Margin/Root/Paperdoll/ChestplateSlot
+@onready var leggings_slot: EquipmentSlotUIResource = $Margin/Root/Paperdoll/LeggingsSlot
+@onready var boots_slot: EquipmentSlotUIResource = $Margin/Root/Paperdoll/BootsSlot
 @onready var defense_label: Label = $Margin/Root/StatsPanel/DefenseLabel
 @onready var stats_label: Label = $Margin/Root/StatsPanel/StatsLabel
 
@@ -101,8 +101,8 @@ func _update_stats() -> void:
 
 	var stat_lines_: Array[String] = []
 	for modifier_key_ in modifiers_:
-		var stat_key_ := StringName(String(modifier_key_))
-		var value_ := float(modifiers_.get(modifier_key_, 0.0))
+		var stat_key_: StringName = StringName(String(modifier_key_))
+		var value_: float = float(modifiers_.get(modifier_key_, 0.0))
 		stat_lines_.append("%s: %+.1f" % [_format_stat_key(stat_key_), value_])
 
 	stats_label.text = "\n".join(stat_lines_)
@@ -133,7 +133,7 @@ func _on_slot_shift_clicked(slot_type_: EquipmentSlotUIResource.SlotType) -> voi
 	if player == null:
 		return
 
-	var equipment_slot_ := _convert_to_equipment_slot(slot_type_)
+	var equipment_slot_: EquipmentNode.EquipmentSlot = _convert_to_equipment_slot(slot_type_)
 	if not player.try_unequip_to_inventory(equipment_slot_):
 		return
 

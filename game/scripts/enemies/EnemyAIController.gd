@@ -25,6 +25,13 @@ enum AttackType {
 @export var dead_animation_column: int = 0
 @export var animation_frame_count: int = 4
 @export var hitbox_forward_offset: float = 14.0
+@export var boss_death_presentation_enabled: bool = false
+@export var boss_death_hitstop_duration_ms: int = 500
+@export var boss_death_hitstop_scale: float = 0.0
+@export var boss_death_flash_color: Color = Color(1.6, 1.6, 1.6, 1.0)
+@export var boss_death_flash_recover_duration: float = 0.16
+@export var boss_death_pose_hold_duration: float = 0.35
+@export var boss_death_fade_duration: float = 0.45
 
 var enemy_instance: EnemyInstance = null
 var move_speed: float = 0.0
@@ -45,27 +52,35 @@ var current_animation_name: StringName = &""
 var tracked_player: PlayerController = null
 var next_attack_time_msec: int = 0
 var dash_cooldown_timer: float = 0.0
+var death_visual_baseline: Color = Color.WHITE
+var last_received_attack_context: AttackContext = null
+var boss_death_presentation_started: bool = false
 
+@onready var visual_root: CanvasItem = $Visual
 @onready var sprite: Sprite2D = $Visual/Sprite2D
 @onready var state_machine: EnemyStateMachine = $StateMachine
 @onready var player_detection_ray: RayCast2D = get_node_or_null(player_detection_ray_path) as RayCast2D
 @onready var detection_area: Area2D = $DetectionArea
 @onready var detection_shape: CollisionShape2D = $DetectionArea/DetectionCollision
 @onready var health_component: HealthComponent = $HealthComponent
+@onready var damage_receiver: DamageReceiver = $DamageReceiver
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var hitbox: Hitbox = get_node_or_null("Hitbox") as Hitbox
 @onready var dash_hitbox: Hitbox = get_node_or_null("DashHitbox") as Hitbox
 @onready var feedback_receiver: FeedbackReceiver = $FeedbackReceiver
 @onready var drop_component: DropComponentNode = $DropComponent
+@onready var boss_death_audio_player: AudioStreamPlayer2D = get_node_or_null("BossDeathAudioPlayer") as AudioStreamPlayer2D
 
 #region Core Lifecycle
 func _ready() -> void:
 	assert(enemy_data != null, "EnemyAIController requires enemy_data")
+	assert(visual_root != null, "EnemyAIController requires Visual")
 	assert(sprite != null, "EnemyAIController requires Sprite2D")
 	assert(state_machine != null, "EnemyAIController requires StateMachine")
 	assert(detection_area != null, "EnemyAIController requires DetectionArea")
 	assert(detection_shape != null, "EnemyAIController requires DetectionCollision")
 	assert(health_component != null, "EnemyAIController requires HealthComponent")
+	assert(damage_receiver != null, "EnemyAIController requires DamageReceiver")
 	assert(hurtbox != null, "EnemyAIController requires Hurtbox")
 	assert(feedback_receiver != null, "EnemyAIController requires FeedbackReceiver")
 	assert(drop_component != null, "EnemyAIController requires DropComponent")
@@ -86,9 +101,11 @@ func _ready() -> void:
 		assert(dash_speed > 0.0, "Charge/Dash EnemyAIController dash_speed must be greater than 0")
 	_configure_detection_area()
 	_configure_hitbox()
+	death_visual_baseline = visual_root.modulate
 
 	detection_area.body_entered.connect(_on_detection_body_entered)
 	detection_area.body_exited.connect(_on_detection_body_exited)
+	damage_receiver.hit_received.connect(_on_hit_received)
 	health_component.health_changed.connect(_on_health_changed)
 	health_component.died.connect(_on_died)
 
@@ -122,7 +139,7 @@ func can_see_player() -> bool:
 	if not player_detection_ray.is_colliding():
 		return true
 
-	var collider_ := player_detection_ray.get_collider() as Node
+	var collider_: Node = player_detection_ray.get_collider() as Node
 	if collider_ == null:
 		return false
 
@@ -183,7 +200,7 @@ func perform_ranged_attack() -> void:
 	var direction_: Vector2 = (player_.global_position - global_position).normalized()
 	face_direction(direction_)
 
-	var projectile_ := projectile_scene.instantiate() as EnemyProjectile
+	var projectile_: EnemyProjectile = projectile_scene.instantiate() as EnemyProjectile
 	assert(projectile_ != null, "projectile_scene must instantiate EnemyProjectile")
 	assert(get_tree().current_scene != null, "EnemyAIController requires current_scene for projectile spawn")
 
@@ -214,12 +231,14 @@ func die() -> void:
 		dash_hitbox.deactivate()
 	hurtbox.monitoring = false
 	hurtbox.monitorable = false
-	var quest_manager_ = _get_quest_manager()
+	var quest_manager_: Node = _get_quest_manager()
 	if quest_manager_ != null and enemy_data != null:
 		quest_manager_.report_enemy_killed(enemy_data.enemy_id, 1)
 	drop_component.on_death()
 	reset_charge_visual()
+	feedback_receiver.force_reset()
 	play_dead_animation()
+	_start_boss_death_presentation()
 
 
 func is_dead() -> bool:
@@ -260,6 +279,8 @@ func reset_charge_visual() -> void:
 func play_dead_animation() -> void:
 	current_animation_name = &"dead"
 	animation_time = 0.0
+	if visual_root != null:
+		visual_root.modulate = death_visual_baseline
 	sprite.modulate = Color.WHITE
 	sprite.frame_coords = Vector2i(dead_animation_column, dead_animation_row)
 
@@ -297,11 +318,11 @@ func get_enemy_id() -> StringName:
 
 func get_combat_movement_state_name() -> StringName:
 	var preferred_state_name_: StringName = &"KeepDistance" if attack_type == AttackType.RANGED else &"Chase"
-	var preferred_state_ := state_machine.get_node_or_null(NodePath(str(preferred_state_name_))) as EnemyState
+	var preferred_state_: EnemyState = state_machine.get_node_or_null(NodePath(str(preferred_state_name_))) as EnemyState
 	if preferred_state_ != null:
 		return preferred_state_name_
 
-	var fallback_state_ := state_machine.get_node_or_null(NodePath("Chase")) as EnemyState
+	var fallback_state_: EnemyState = state_machine.get_node_or_null(NodePath("Chase")) as EnemyState
 	assert(fallback_state_ != null, "EnemyAIController requires a combat movement state")
 	return &"Chase"
 
@@ -311,7 +332,7 @@ func can_dash_attack() -> bool:
 
 
 func has_state(state_name_: StringName) -> bool:
-	var state_ := state_machine.get_node_or_null(NodePath(str(state_name_))) as EnemyState
+	var state_: EnemyState = state_machine.get_node_or_null(NodePath(str(state_name_))) as EnemyState
 	return state_ != null
 
 
@@ -362,7 +383,7 @@ func _initialize_from_enemy_data() -> void:
 
 
 func _configure_detection_area() -> void:
-	var circle_shape_ := detection_shape.shape as CircleShape2D
+	var circle_shape_: CircleShape2D = detection_shape.shape as CircleShape2D
 	assert(circle_shape_ != null, "EnemyAIController DetectionCollision must use CircleShape2D")
 
 	circle_shape_.radius = detection_radius
@@ -388,7 +409,7 @@ func _resolve_player_target() -> PlayerController:
 	if tracked_player != null and is_instance_valid(tracked_player):
 		return tracked_player
 
-	var player_ := get_tree().get_first_node_in_group("player") as PlayerController
+	var player_: PlayerController = get_tree().get_first_node_in_group("player") as PlayerController
 	if player_ == null:
 		tracked_player = null
 		return null
@@ -425,9 +446,85 @@ func _update_hitbox_facing(hitbox_: Hitbox) -> void:
 
 
 func _supports_charge_dash_behavior() -> bool:
-	var charge_state_ := state_machine.get_node_or_null(NodePath("Charge")) as EnemyState
-	var dash_state_ := state_machine.get_node_or_null(NodePath("Dash")) as EnemyState
+	var charge_state_: EnemyState = state_machine.get_node_or_null(NodePath("Charge")) as EnemyState
+	var dash_state_: EnemyState = state_machine.get_node_or_null(NodePath("Dash")) as EnemyState
 	return charge_state_ != null and dash_state_ != null
+
+
+func _start_boss_death_presentation() -> void:
+	if not boss_death_presentation_enabled or boss_death_presentation_started:
+		return
+
+	boss_death_presentation_started = true
+
+	if visual_root != null:
+		visual_root.modulate = boss_death_flash_color
+
+	_request_boss_death_hit_stop()
+	_play_boss_death_audio()
+	_run_boss_death_presentation()
+
+
+func _request_boss_death_hit_stop() -> void:
+	var hit_stop_manager_: Node = _get_hit_stop_manager()
+	if hit_stop_manager_ == null:
+		return
+
+	hit_stop_manager_.request_hit_stop(self, boss_death_hitstop_duration_ms, boss_death_hitstop_scale)
+
+	if last_received_attack_context == null:
+		return
+
+	var attacker_node_: Node = last_received_attack_context.attacker_node
+	if attacker_node_ == null or attacker_node_ == self:
+		return
+	if not is_instance_valid(attacker_node_) or not attacker_node_.is_inside_tree():
+		return
+
+	hit_stop_manager_.request_hit_stop(attacker_node_, boss_death_hitstop_duration_ms, boss_death_hitstop_scale)
+
+
+func _play_boss_death_audio() -> void:
+	if boss_death_audio_player == null or boss_death_audio_player.stream == null:
+		return
+
+	boss_death_audio_player.play()
+
+
+func _run_boss_death_presentation() -> void:
+	var tree_: SceneTree = get_tree()
+	if tree_ == null:
+		return
+
+	var hitstop_seconds_: float = maxf(float(boss_death_hitstop_duration_ms) / 1000.0, 0.0)
+	if hitstop_seconds_ > 0.0:
+		await tree_.create_timer(hitstop_seconds_).timeout
+		if not is_instance_valid(self):
+			return
+
+	if visual_root != null and boss_death_flash_recover_duration > 0.0:
+		var flash_recover_tween_: Tween = create_tween()
+		flash_recover_tween_.tween_property(visual_root, "modulate", death_visual_baseline, boss_death_flash_recover_duration)
+		await flash_recover_tween_.finished
+		if not is_instance_valid(self):
+			return
+	elif visual_root != null:
+		visual_root.modulate = death_visual_baseline
+
+	if boss_death_pose_hold_duration > 0.0:
+		await tree_.create_timer(boss_death_pose_hold_duration).timeout
+		if not is_instance_valid(self):
+			return
+
+	if visual_root != null and boss_death_fade_duration > 0.0:
+		var fade_tween_: Tween = create_tween()
+		fade_tween_.tween_property(visual_root, "modulate:a", 0.0, boss_death_fade_duration)
+		await fade_tween_.finished
+		if not is_instance_valid(self):
+			return
+
+	hide()
+	queue_free()
 
 
 func _get_quest_manager() -> Node:
@@ -437,8 +534,15 @@ func _get_quest_manager() -> Node:
 	return tree_.root.get_node_or_null("QuestManager")
 
 
+func _get_hit_stop_manager() -> Node:
+	var tree_: SceneTree = get_tree()
+	if tree_ == null or tree_.root == null:
+		return null
+	return tree_.root.get_node_or_null("HitStopManager")
+
+
 func _on_detection_body_entered(body_: Node) -> void:
-	var player_ := body_ as PlayerController
+	var player_: PlayerController = body_ as PlayerController
 	if player_ == null:
 		return
 
@@ -457,6 +561,13 @@ func _on_health_changed(current_hp_: float, _max_hp_: float) -> void:
 		return
 
 	enemy_instance.current_hp = current_hp_
+
+
+func _on_hit_received(attack_context_: AttackContext, _applied_damage_: float) -> void:
+	if attack_context_ == null:
+		return
+
+	last_received_attack_context = attack_context_.duplicate_context()
 
 
 func _on_died() -> void:

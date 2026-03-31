@@ -57,7 +57,7 @@ func _apply_on_hit_rune_effects(attack_context_: AttackContext, applied_damage_:
 	if weapon_instance_ == null or not weapon_instance_.has_active_rune_effect(&"overheal_to_shield"):
 		return
 
-	var attacker_player_ := attack_context_.attacker_node as PlayerController
+	var attacker_player_: PlayerController = attack_context_.attacker_node as PlayerController
 	if attacker_player_ == null:
 		return
 

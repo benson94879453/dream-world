@@ -116,7 +116,7 @@ func _ready() -> void:
 
 #region Input
 func _input(event_: InputEvent) -> void:
-	var key_event_ := event_ as InputEventKey
+	var key_event_: InputEventKey = event_ as InputEventKey
 	if key_event_ != null and key_event_.echo:
 		return
 
@@ -195,7 +195,7 @@ func _apply_theme() -> void:
 	quest_objectives_panel.add_theme_stylebox_override("panel", _build_panel_style(SECTION_PANEL_COLOR, ENTRY_BORDER_COLOR, UIColorsResource.SUBPANEL_BORDER_WIDTH, UIColorsResource.SUBPANEL_CORNER_RADIUS))
 	quest_rewards_panel.add_theme_stylebox_override("panel", _build_panel_style(SECTION_PANEL_COLOR, ENTRY_BORDER_COLOR, UIColorsResource.SUBPANEL_BORDER_WIDTH, UIColorsResource.SUBPANEL_CORNER_RADIUS))
 
-	var progress_style_ := StyleBoxFlat.new()
+	var progress_style_: StyleBoxFlat = StyleBoxFlat.new()
 	progress_style_.bg_color = PROGRESS_BAR_BG_COLOR
 	progress_style_.corner_radius_top_left = 4
 	progress_style_.corner_radius_top_right = 4
@@ -203,7 +203,7 @@ func _apply_theme() -> void:
 	progress_style_.corner_radius_bottom_right = 4
 	progress_bar.add_theme_stylebox_override("background", progress_style_)
 
-	var fill_style_ := StyleBoxFlat.new()
+	var fill_style_: StyleBoxFlat = StyleBoxFlat.new()
 	fill_style_.bg_color = PROGRESS_BAR_FILL_COLOR
 	fill_style_.corner_radius_top_left = 4
 	fill_style_.corner_radius_top_right = 4
@@ -246,8 +246,8 @@ func _build_active_records() -> Array[Dictionary]:
 		})
 
 	records_.sort_custom(func(left_: Dictionary, right_: Dictionary) -> bool:
-		var left_time_ := String(left_.get("accepted_at", ""))
-		var right_time_ := String(right_.get("accepted_at", ""))
+		var left_time_: String = String(left_.get("accepted_at", ""))
+		var right_time_: String = String(right_.get("accepted_at", ""))
 		if left_time_ != right_time_:
 			return left_time_ < right_time_
 		return String(left_.get("quest_id", &"")) < String(right_.get("quest_id", &""))
@@ -259,7 +259,7 @@ func _build_completed_records() -> Array[Dictionary]:
 	var records_: Array[Dictionary] = []
 	for index_ in range(quest_manager.completed_quests.size() - 1, -1, -1):
 		var quest_id_ := quest_manager.completed_quests[index_]
-		var quest_data_ := quest_manager.get_quest_data(quest_id_) as QuestDataResource
+		var quest_data_: QuestDataResource = quest_manager.get_quest_data(quest_id_) as QuestDataResource
 		if quest_data_ == null:
 			continue
 
@@ -280,7 +280,7 @@ func _populate_quest_list(container_: VBoxContainer, records_: Array[Dictionary]
 	_clear_container(container_)
 
 	if records_.is_empty():
-		var empty_label_ := Label.new()
+		var empty_label_: Label = Label.new()
 		empty_label_.text = "尚無已回報任務" if completed_section_ else "目前沒有進行中的任務"
 		empty_label_.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		empty_label_.add_theme_color_override("font_color", MUTED_TEXT_COLOR)
@@ -293,27 +293,27 @@ func _populate_quest_list(container_: VBoxContainer, records_: Array[Dictionary]
 
 
 func _create_quest_entry(record_: Dictionary, completed_section_: bool) -> Control:
-	var quest_data_ := record_.get("quest_data") as QuestDataResource
-	var quest_id_ := StringName(String(record_.get("quest_id", "")))
+	var quest_data_: QuestDataResource = record_.get("quest_data") as QuestDataResource
+	var quest_id_: StringName = StringName(String(record_.get("quest_id", "")))
 	var selected_: bool = quest_id_ == selected_quest_id
 	var status_: QuestDataResource.QuestStatus = record_.get("status", QuestDataResource.QuestStatus.ACTIVE)
 
-	var panel_ := PanelContainer.new()
+	var panel_: PanelContainer = PanelContainer.new()
 	panel_.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	panel_.add_theme_stylebox_override("panel", _build_entry_style(selected_, completed_section_))
 
-	var margin_ := MarginContainer.new()
+	var margin_: MarginContainer = MarginContainer.new()
 	margin_.add_theme_constant_override("margin_left", 12)
 	margin_.add_theme_constant_override("margin_top", 12)
 	margin_.add_theme_constant_override("margin_right", 12)
 	margin_.add_theme_constant_override("margin_bottom", 12)
 	panel_.add_child(margin_)
 
-	var content_ := VBoxContainer.new()
+	var content_: VBoxContainer = VBoxContainer.new()
 	content_.add_theme_constant_override("separation", 6)
 	margin_.add_child(content_)
 
-	var button_ := Button.new()
+	var button_: Button = Button.new()
 	button_.flat = true
 	button_.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button_.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -327,14 +327,14 @@ func _create_quest_entry(record_: Dictionary, completed_section_: bool) -> Contr
 	button_.add_theme_stylebox_override("focus", _build_flat_button_style())
 	content_.add_child(button_)
 
-	var meta_label_ := Label.new()
+	var meta_label_: Label = Label.new()
 	meta_label_.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	meta_label_.add_theme_font_size_override("font_size", 12)
 	meta_label_.add_theme_color_override("font_color", _get_entry_meta_color(completed_section_, status_))
 	meta_label_.text = "%s  ·  %s" % [_get_quest_type_label(quest_data_), _get_status_text(status_)]
 	content_.add_child(meta_label_)
 
-	var progress_text_label_ := Label.new()
+	var progress_text_label_: Label = Label.new()
 	progress_text_label_.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	progress_text_label_.add_theme_font_size_override("font_size", 13)
 	progress_text_label_.add_theme_color_override("font_color", _get_entry_progress_color(completed_section_, status_))
@@ -342,7 +342,7 @@ func _create_quest_entry(record_: Dictionary, completed_section_: bool) -> Contr
 	content_.add_child(progress_text_label_)
 
 	if not completed_section_:
-		var progress_bar_ := ProgressBar.new()
+		var progress_bar_: ProgressBar = ProgressBar.new()
 		progress_bar_.show_percentage = false
 		progress_bar_.max_value = float(maxi(int(record_.get("target_amount", 1)), 1))
 		progress_bar_.value = float(_get_progress_value(record_))
@@ -370,12 +370,12 @@ func _restore_or_select_default_quest() -> void:
 
 
 func _refresh_details() -> void:
-	var record_ := _find_record_by_id(selected_quest_id)
+	var record_: Dictionary = _find_record_by_id(selected_quest_id)
 	if record_.is_empty():
 		_show_empty_state()
 		return
 
-	var quest_data_ := record_.get("quest_data") as QuestDataResource
+	var quest_data_: QuestDataResource = record_.get("quest_data") as QuestDataResource
 	if quest_data_ == null:
 		_show_empty_state()
 		return
@@ -421,7 +421,7 @@ func _show_empty_state() -> void:
 
 func _build_objective_lines(record_: Dictionary) -> PackedStringArray:
 	var lines_: PackedStringArray = []
-	var quest_data_ := record_.get("quest_data") as QuestDataResource
+	var quest_data_: QuestDataResource = record_.get("quest_data") as QuestDataResource
 	if quest_data_ == null:
 		return lines_
 
@@ -477,7 +477,7 @@ func _populate_detail_lines(container_: VBoxContainer, lines_: PackedStringArray
 	_clear_container(container_)
 
 	for line_ in lines_:
-		var label_ := Label.new()
+		var label_: Label = Label.new()
 		label_.text = "• %s" % line_
 		label_.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		label_.add_theme_font_size_override("font_size", 14)
@@ -593,7 +593,7 @@ func _resolve_item_name(item_id_: StringName) -> String:
 	if item_id_.is_empty():
 		return "未知物品"
 	if save_manager != null and save_manager.has_method("resolve_item_data"):
-		var item_data_ := save_manager.call("resolve_item_data", item_id_) as ItemDataResource
+		var item_data_: ItemDataResource = save_manager.call("resolve_item_data", item_id_) as ItemDataResource
 		if item_data_ != null and not item_data_.display_name.is_empty():
 			return item_data_.display_name
 	return _humanize_identifier(String(item_id_), "")
@@ -603,7 +603,7 @@ func _resolve_weapon_name(weapon_id_: StringName) -> String:
 	if weapon_id_.is_empty():
 		return "未知武器"
 	if save_manager != null and save_manager.has_method("resolve_weapon_data"):
-		var weapon_data_ := save_manager.call("resolve_weapon_data", weapon_id_) as WeaponDataResource
+		var weapon_data_: WeaponDataResource = save_manager.call("resolve_weapon_data", weapon_id_) as WeaponDataResource
 		if weapon_data_ != null and not weapon_data_.display_name.is_empty():
 			return weapon_data_.display_name
 	return _humanize_identifier(String(weapon_id_), "")
@@ -621,7 +621,7 @@ func _load_enemy_name_cache() -> void:
 	enemy_name_cache.clear()
 
 	for resource_path_ in _collect_resource_paths(ENEMY_DATA_ROOT):
-		var enemy_data_ := load(resource_path_) as EnemyDataResource
+		var enemy_data_: EnemyDataResource = load(resource_path_) as EnemyDataResource
 		if enemy_data_ == null or enemy_data_.enemy_id.is_empty():
 			continue
 		if enemy_data_.display_name.is_empty():
@@ -671,7 +671,7 @@ func _clear_container(container_: Node) -> void:
 
 
 func _build_panel_style(background_color_: Color, border_color_: Color, border_width_: int, corner_radius_: int) -> StyleBoxFlat:
-	var stylebox_ := StyleBoxFlat.new()
+	var stylebox_: StyleBoxFlat = StyleBoxFlat.new()
 	stylebox_.bg_color = background_color_
 	stylebox_.border_color = border_color_
 	stylebox_.border_width_left = border_width_
@@ -694,13 +694,13 @@ func _build_entry_style(selected_: bool, completed_section_: bool) -> StyleBoxFl
 
 
 func _build_flat_button_style() -> StyleBoxFlat:
-	var stylebox_ := StyleBoxFlat.new()
+	var stylebox_: StyleBoxFlat = StyleBoxFlat.new()
 	stylebox_.draw_center = false
 	return stylebox_
 
 
 func _build_progress_style(color_: Color) -> StyleBoxFlat:
-	var stylebox_ := StyleBoxFlat.new()
+	var stylebox_: StyleBoxFlat = StyleBoxFlat.new()
 	stylebox_.bg_color = color_
 	stylebox_.corner_radius_top_left = 4
 	stylebox_.corner_radius_top_right = 4

@@ -69,7 +69,7 @@ func _build_slot_ui() -> void:
 	slot_uis.clear()
 
 	for slot_index_ in range(maxi(slot_count, 0)):
-		var slot_ui_ := ItemSlotUIScene.instantiate() as ItemSlotUI
+		var slot_ui_: ItemSlotUI = ItemSlotUIScene.instantiate() as ItemSlotUI
 		if slot_ui_ == null:
 			continue
 
@@ -131,7 +131,7 @@ func _on_chest_slot_changed(_slot_index_: int) -> void:
 
 
 func _play_open_animation() -> void:
-	var tween_ := create_tween()
+	var tween_: Tween = create_tween()
 	tween_.set_parallel(true)
 	main_panel.pivot_offset = main_panel.size * 0.5
 	backdrop.modulate.a = 0.0

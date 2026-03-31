@@ -85,7 +85,9 @@ persistent_type = "boss"
 position = Vector2(-560, 0)
 target_scene = "res://game/scenes/levels/TownHub.tscn"
 target_spawn_point = &"Spawn_from_dungeon"
-interaction_prompt = "[F] 返回城鎮"
+interaction_prompt = "[F] 前往城鎮"
+activate_on_state_id = "dungeon01_boss_boar"
+sealed_interaction_prompt = "尚未開放"
 
 [node name="PortalSign" type="Label" parent="World/PortalToHub"]
 offset_left = -44.0

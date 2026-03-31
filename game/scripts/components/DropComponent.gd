@@ -23,7 +23,7 @@ func on_death() -> void:
 	var spawn_parent_: Node = owner_node_.get_parent()
 	assert(spawn_parent_ != null, "DropComponent requires grandparent node for drop spawning")
 
-	var rng_ := RandomNumberGenerator.new()
+	var rng_: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng_.randomize()
 
 	var drops_ := loot_table.generate_drops()
@@ -38,7 +38,7 @@ func on_death() -> void:
 				player_.record_recent_pickup("金幣", gold_amount_)
 			continue
 
-		var pickup_item_ := PickupItemScene.instantiate() as PickupItemResource
+		var pickup_item_: PickupItemResource = PickupItemScene.instantiate() as PickupItemResource
 		if pickup_item_ == null:
 			continue
 
@@ -57,7 +57,7 @@ func on_death() -> void:
 			continue
 
 		spawn_parent_.add_child(pickup_item_)
-		var random_offset_ := Vector2(
+		var random_offset_: Vector2 = Vector2(
 			rng_.randf_range(-random_offset_radius, random_offset_radius),
 			rng_.randf_range(-random_offset_radius, random_offset_radius)
 		)

@@ -43,7 +43,7 @@ func _input(event_: InputEvent) -> void:
 	if _is_dialog_active() or _is_modal_ui_active():
 		return
 
-	var key_event_ := event_ as InputEventKey
+	var key_event_: InputEventKey = event_ as InputEventKey
 	if key_event_ != null and key_event_.echo:
 		return
 
@@ -79,7 +79,7 @@ func activate(player: Node) -> void:
 		push_warning("[Checkpoint] Missing checkpoint_id on %s" % name)
 		return
 
-	var player_controller_ := player as PlayerController
+	var player_controller_: PlayerController = player as PlayerController
 	if player_controller_ == null:
 		return
 
@@ -87,8 +87,8 @@ func activate(player: Node) -> void:
 	if health_component_ != null:
 		health_component_.heal(maxf(heal_amount, health_component_.max_hp))
 
-	var scene_path_ := _get_current_scene_path()
-	var transition_manager_ := _get_scene_transition_manager()
+	var scene_path_: String = _get_current_scene_path()
+	var transition_manager_: Node = _get_scene_transition_manager()
 	if transition_manager_ != null and not scene_path_.is_empty():
 		transition_manager_.set_respawn_point(scene_path_, checkpoint_id, global_position)
 
@@ -101,7 +101,7 @@ func activate(player: Node) -> void:
 	if did_activate_:
 		print("[Checkpoint] Activated: %s" % String(checkpoint_id))
 
-	var save_manager_ := _get_save_manager()
+	var save_manager_: Node = _get_save_manager()
 	if save_manager_ != null:
 		save_manager_.save_game()
 
@@ -109,7 +109,7 @@ func activate(player: Node) -> void:
 
 
 func _load_state() -> void:
-	var scene_state_manager_ := _get_scene_state_manager()
+	var scene_state_manager_: Node = _get_scene_state_manager()
 	if scene_state_manager_ == null or _state_id.is_empty():
 		return
 
@@ -118,7 +118,7 @@ func _load_state() -> void:
 
 
 func _save_state() -> void:
-	var scene_state_manager_ := _get_scene_state_manager()
+	var scene_state_manager_: Node = _get_scene_state_manager()
 	if scene_state_manager_ == null or _state_id.is_empty():
 		return
 
@@ -133,13 +133,13 @@ func _play_activation_feedback() -> void:
 	glow.scale = Vector2.ONE
 	glow.modulate = Color(1.0, 0.85, 0.45, 0.45 if is_activated else 0.0)
 
-	var tween_ := create_tween()
+	var tween_: Tween = create_tween()
 	tween_.set_parallel(true)
 	tween_.tween_property(glow, "scale", Vector2(1.18, 1.18), 0.12)
 	tween_.tween_property(glow, "modulate:a", 0.72, 0.12)
 	await tween_.finished
 
-	var settle_tween_ := create_tween()
+	var settle_tween_: Tween = create_tween()
 	settle_tween_.set_parallel(true)
 	settle_tween_.tween_property(glow, "scale", Vector2.ONE, 0.18)
 	settle_tween_.tween_property(glow, "modulate:a", 0.45, 0.18)
@@ -160,11 +160,11 @@ func _build_state_id() -> String:
 	if checkpoint_id.is_empty():
 		return ""
 
-	var scene_path_ := _get_current_scene_path()
+	var scene_path_: String = _get_current_scene_path()
 	if scene_path_.is_empty():
 		return ""
 
-	var scene_state_manager_ := _get_scene_state_manager()
+	var scene_state_manager_: Node = _get_scene_state_manager()
 	if scene_state_manager_ == null:
 		return ""
 
@@ -172,7 +172,7 @@ func _build_state_id() -> String:
 
 
 func _get_current_scene_path() -> String:
-	var scene_transition_manager_ := _get_scene_transition_manager()
+	var scene_transition_manager_: Node = _get_scene_transition_manager()
 	if scene_transition_manager_ != null and scene_transition_manager_.has_method("get_current_scene_path"):
 		return String(scene_transition_manager_.get_current_scene_path())
 

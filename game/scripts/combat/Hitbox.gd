@@ -26,6 +26,10 @@ func _ready() -> void:
 
 
 func _physics_process(delta_: float) -> void:
+	if not monitoring:
+		set_physics_process(false)
+		return
+
 	var overlapping_areas_: Array[Area2D] = get_overlapping_areas()
 	for area_ in overlapping_areas_:
 		_try_hit(area_)
@@ -54,11 +58,11 @@ func deactivate() -> void:
 
 #region Helpers
 func _try_hit(area_: Area2D) -> void:
-	var hurtbox_ := area_ as Hurtbox
+	var hurtbox_: Hurtbox = area_ as Hurtbox
 	if hurtbox_ == null:
 		return
 
-	var source_root_ := _resolve_source_root()
+	var source_root_: Node = _resolve_source_root()
 	if source_root_ == hurtbox_ or source_root_.is_ancestor_of(hurtbox_):
 		return
 
@@ -66,7 +70,7 @@ func _try_hit(area_: Area2D) -> void:
 		return
 
 	already_hit.append(hurtbox_)
-	var attack_context_ := _build_attack_context()
+	var attack_context_: AttackContext = _build_attack_context()
 	var applied_damage_: float = hurtbox_.receive_hit(attack_context_)
 	if applied_damage_ > 0.0:
 		hit_landed.emit(hurtbox_, attack_context_, applied_damage_)
@@ -74,7 +78,7 @@ func _try_hit(area_: Area2D) -> void:
 
 func _build_attack_context() -> AttackContext:
 	var attack_context_: AttackContext = AttackContext.new()
-	var source_root_ := _resolve_source_root()
+	var source_root_: Node = _resolve_source_root()
 
 	attack_context_.source_node = self
 	attack_context_.attacker_node = source_root_
@@ -99,7 +103,7 @@ func _resolve_source_root() -> Node:
 	if owner != null:
 		return owner
 
-	var source_root_ := get_parent()
+	var source_root_: Node = get_parent()
 	assert(source_root_ != null, "Hitbox requires source_root, scene owner, or parent")
 	return source_root_
 #endregion

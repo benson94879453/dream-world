@@ -13,7 +13,7 @@ func _ready() -> void:
 	scale = start_scale
 	rotation = randf_range(-0.35, 0.35)
 
-	var tween_ := create_tween()
+	var tween_: Tween = create_tween()
 	tween_.set_parallel(true)
 	tween_.tween_property(self, "scale", end_scale, lifetime_seconds)
 	tween_.tween_property(core, "modulate:a", 0.0, lifetime_seconds)

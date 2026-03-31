@@ -8,7 +8,6 @@ signal binding_changed(hotbar_index: int, inventory_index: int)
 signal hotbar_used(hotbar_index: int, result: StringName)
 
 const HOTBAR_SIZE: int = 5
-const DEFAULT_HEAL_AMOUNT: float = 25.0
 
 var hotbar_inventory_indices: Array[int] = [-1, -1, -1, -1, -1]
 
@@ -58,7 +57,7 @@ func get_bound_inventory_index(hotbar_index_: int) -> int:
 	return hotbar_inventory_indices[hotbar_index_]
 
 
-func get_bound_slot(inventory_: InventoryResource, hotbar_index_: int):
+func get_bound_slot(inventory_: InventoryResource, hotbar_index_: int) -> InventorySlot:
 	if inventory_ == null:
 		return null
 
@@ -89,7 +88,7 @@ func can_bind_inventory_slot(inventory_: InventoryResource, inventory_index_: in
 
 
 func get_slot_display_name(inventory_: InventoryResource, hotbar_index_: int) -> String:
-	var slot_ = get_bound_slot(inventory_, hotbar_index_)
+	var slot_: InventorySlot = get_bound_slot(inventory_, hotbar_index_)
 	if slot_ == null or slot_.is_empty():
 		return "Empty"
 	if slot_.weapon_instance != null:
@@ -163,20 +162,34 @@ func use_hotbar_slot(player_: PlayerController, hotbar_index_: int) -> bool:
 	if item_data_ == null:
 		return false
 
-	if item_data_.item_type != ItemData.ItemType.CONSUMABLE and not item_data_.is_consumable:
+	if not item_data_.is_consumable_item():
 		return false
 
-	var removed_amount_: int = inventory_.remove_item(item_data_, 1)
-	if removed_amount_ <= 0:
+	var use_result_: Dictionary = player_.use_consumable(item_data_, inventory_)
+	if not bool(use_result_.get("success", false)):
+		var failure_reason_: StringName = StringName(String(use_result_.get("reason", &"unknown")))
+		if failure_reason_ == &"already_full_hp":
+			print("[Hotbar] Skipped %s from slot %d because the player is already at full HP" % [
+				item_data_.display_name,
+				inventory_index_
+			])
+		else:
+			push_warning("[Hotbar] Failed to consume %s (reason=%s)" % [
+				item_data_.display_name,
+				String(failure_reason_)
+			])
 		return false
 
-	var healed_amount_: float = 0.0
-	var health_component_: HealthComponent = player_.get_health_component()
-	if health_component_ != null:
-		healed_amount_ = health_component_.heal(DEFAULT_HEAL_AMOUNT)
+	var applied_effect_: StringName = StringName(String(use_result_.get("effect", &"none")))
+	var applied_value_: float = float(use_result_.get("applied_value", 0.0))
 
 	hotbar_used.emit(hotbar_index_, &"consumable")
-	print("[Hotbar] Consumed %s from slot %d (heal=%.1f)" % [item_data_.display_name, inventory_index_, healed_amount_])
+	print("[Hotbar] Consumed %s from slot %d (%s=%.1f)" % [
+		item_data_.display_name,
+		inventory_index_,
+		String(applied_effect_),
+		applied_value_
+	])
 	return true
 #endregion
 
@@ -213,7 +226,7 @@ func _build_empty_bindings() -> Array[int]:
 
 
 func _get_inventory_slot_count() -> int:
-	var inventory_ := _get_player_inventory()
+	var inventory_: InventoryResource = _get_player_inventory()
 	if inventory_ == null:
 		return 20
 	return maxi(inventory_.max_slots, inventory_.slots.size())

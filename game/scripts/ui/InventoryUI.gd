@@ -106,7 +106,7 @@ func _process(_delta: float) -> void:
 
 
 func _input(event_: InputEvent) -> void:
-	var key_event_ := event_ as InputEventKey
+	var key_event_: InputEventKey = event_ as InputEventKey
 	if key_event_ != null and key_event_.echo:
 		return
 
@@ -208,7 +208,7 @@ func _style_ui() -> void:
 	title_label.text = "背包"
 	info_label.text = "[E / I] 背包   [1-5] 快捷欄   Shift+左鍵 快裝"
 	backdrop.color = UIColorsResource.BACKDROP
-	_apply_panel_style(main_panel, UIColorsResource.PANEL_BG, UIColorsResource.PANEL_BORDER, UIColorsResource.MODAL_BORDER_WIDTH)
+	_apply_panel_style(main_panel, Color.TRANSPARENT, Color.TRANSPARENT, 0)
 	_apply_panel_style(inventory_panel, UIColorsResource.INVENTORY_PANEL_BG, UIColorsResource.PANEL_BORDER_SUBTLE, UIColorsResource.SUBPANEL_BORDER_WIDTH)
 	_apply_panel_style(hotbar_panel, UIColorsResource.HOTBAR_PANEL_BG, UIColorsResource.HOTBAR_PANEL_BORDER, UIColorsResource.SUBPANEL_BORDER_WIDTH)
 	_apply_panel_style(tooltip_panel, UIColorsResource.TOOLTIP_BG, UIColorsResource.TOOLTIP_BORDER, UIColorsResource.MODAL_BORDER_WIDTH)
@@ -245,7 +245,7 @@ func _apply_tab_button_style(button_: Button, active_: bool) -> void:
 
 
 func _resolve_inventory_context() -> void:
-	var player_ := get_tree().get_first_node_in_group("player") as PlayerController
+	var player_: PlayerController = get_tree().get_first_node_in_group("player") as PlayerController
 	assert(player_ != null, "InventoryUI requires PlayerController in group 'player'")
 
 	var inventory_ := player_.get_inventory()
@@ -430,7 +430,7 @@ func _get_hotbar_manager() -> Node:
 
 
 func _play_open_animation() -> void:
-	var tween_ := create_tween()
+	var tween_: Tween = create_tween()
 	tween_.set_parallel(true)
 	main_panel.pivot_offset = main_panel.size * 0.5
 	backdrop.modulate.a = 0.0

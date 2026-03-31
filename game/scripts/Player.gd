@@ -210,6 +210,32 @@ func get_inventory() -> InventoryNode:
 	return inventory
 
 
+func use_consumable(item_data_: ItemDataResource, source_inventory_: InventoryNode = null) -> Dictionary:
+	var preview_result_: Dictionary = _preview_consumable_use(item_data_)
+	if not bool(preview_result_.get("success", false)):
+		return preview_result_
+
+	var inventory_to_consume_from_: InventoryNode = source_inventory_
+	if inventory_to_consume_from_ == null:
+		inventory_to_consume_from_ = inventory
+	if inventory_to_consume_from_ == null:
+		return _build_consumable_use_result(false, &"missing_inventory")
+
+	var removed_amount_: int = inventory_to_consume_from_.remove_item(item_data_, 1)
+	if removed_amount_ <= 0:
+		return _build_consumable_use_result(false, &"remove_failed")
+
+	var apply_result_: Dictionary = _apply_consumable_effect(item_data_)
+	if bool(apply_result_.get("success", false)):
+		return apply_result_
+
+	var refunded_amount_: int = inventory_to_consume_from_.add_item(item_data_, 1)
+	if refunded_amount_ > 0:
+		push_warning("[PlayerController] Failed to refund consumable after effect application failure: %s" % item_data_.display_name)
+
+	return apply_result_
+
+
 func get_equipped_weapon() -> WeaponInstance:
 	if equipment != null:
 		return equipment.equipped_weapon
@@ -408,7 +434,7 @@ func try_equip_from_inventory(slot_index_: int) -> bool:
 			if weapon_instance_ == null:
 				return false
 
-			var current_weapon_ := equipment.get_equipped_in_slot(EquipmentNode.EquipmentSlot.WEAPON_MAIN) as WeaponInstanceResource
+			var current_weapon_: WeaponInstanceResource = equipment.get_equipped_in_slot(EquipmentNode.EquipmentSlot.WEAPON_MAIN) as WeaponInstanceResource
 			if current_weapon_ == weapon_instance_:
 				if not inventory.remove_weapon(weapon_instance_):
 					return false
@@ -430,11 +456,11 @@ func try_equip_from_inventory(slot_index_: int) -> bool:
 			if gear_instance_ == null:
 				return false
 
-			var target_slot_ := _get_equipment_slot_for_gear(gear_instance_)
+			var target_slot_: int = _get_equipment_slot_for_gear(gear_instance_)
 			if target_slot_ == -1:
 				return false
 
-			var current_gear_ := equipment.get_equipped_in_slot(target_slot_) as GearInstanceResource
+			var current_gear_: GearInstanceResource = equipment.get_equipped_in_slot(target_slot_) as GearInstanceResource
 			if current_gear_ == gear_instance_:
 				return inventory.remove_gear(gear_instance_)
 
@@ -460,11 +486,11 @@ func try_unequip_to_inventory(slot_: EquipmentNode.EquipmentSlot) -> bool:
 		return false
 
 	if slot_ == EquipmentNode.EquipmentSlot.WEAPON_MAIN:
-		var weapon_instance_ := equipped_instance_ as WeaponInstanceResource
+		var weapon_instance_: WeaponInstanceResource = equipped_instance_ as WeaponInstanceResource
 		if weapon_instance_ == null or not inventory.add_weapon(weapon_instance_):
 			return false
 
-		var unequipped_weapon_ := equipment.unequip_slot(slot_) as WeaponInstanceResource
+		var unequipped_weapon_: WeaponInstanceResource = equipment.unequip_slot(slot_) as WeaponInstanceResource
 		if unequipped_weapon_ == null:
 			inventory.remove_weapon(weapon_instance_)
 			return false
@@ -472,11 +498,11 @@ func try_unequip_to_inventory(slot_: EquipmentNode.EquipmentSlot) -> bool:
 		_apply_equipped_weapon_instance(equipment.equipped_weapon)
 		return true
 
-	var gear_instance_ := equipped_instance_ as GearInstanceResource
+	var gear_instance_: GearInstanceResource = equipped_instance_ as GearInstanceResource
 	if gear_instance_ == null or not inventory.add_gear(gear_instance_):
 		return false
 
-	var unequipped_gear_ := equipment.unequip_slot(slot_) as GearInstanceResource
+	var unequipped_gear_: GearInstanceResource = equipment.unequip_slot(slot_) as GearInstanceResource
 	if unequipped_gear_ == null:
 		inventory.remove_gear(gear_instance_)
 		return false
@@ -508,7 +534,7 @@ func quick_move_from_inventory(from_inventory_: InventoryNode, slot_index_: int,
 
 
 func to_save_dict() -> Dictionary:
-	var current_weapon_ := get_equipped_weapon()
+	var current_weapon_: WeaponInstance = get_equipped_weapon()
 	var equipped_weapon_uid_: String = current_weapon_.instance_uid if current_weapon_ != null else ""
 	var equipped_weapon_id_: String = String(current_weapon_.weapon_id) if current_weapon_ != null else ""
 	var equipped_weapon_enhance_: int = current_weapon_.enhance_level if current_weapon_ != null else 0
@@ -563,15 +589,15 @@ func from_save_dict(data_: Dictionary) -> Dictionary:
 
 
 func restore_equipped_weapon_from_save(data_: Dictionary) -> bool:
-	var weapon_id_ := StringName(String(data_.get("equipped_weapon_id", "")))
+	var weapon_id_: StringName = StringName(String(data_.get("equipped_weapon_id", "")))
 	if weapon_id_.is_empty():
 		return false
 
-	var save_manager_ = _get_save_manager()
+	var save_manager_: Node = _get_save_manager()
 	if save_manager_ == null:
 		return false
 
-	var weapon_data_ = save_manager_.resolve_weapon_data(weapon_id_) as WeaponData
+	var weapon_data_: WeaponData = save_manager_.resolve_weapon_data(weapon_id_) as WeaponData
 	if weapon_data_ == null:
 		return false
 
@@ -657,7 +683,7 @@ func can_perform_dash() -> bool:
 
 #region Helpers
 func _instantiate_weapon_controller(weapon_data_: WeaponData) -> WeaponController:
-	var weapon_controller_ := weapon_data_.weapon_scene.instantiate() as WeaponController
+	var weapon_controller_: WeaponController = weapon_data_.weapon_scene.instantiate() as WeaponController
 	assert(weapon_controller_ != null, "WeaponData.weapon_scene must instantiate WeaponController")
 
 	weapon_pivot.add_child(weapon_controller_)
@@ -668,7 +694,7 @@ func _clear_equipped_weapon_controller() -> void:
 	if equipped_weapon_controller == null:
 		return
 
-	var weapon_controller_parent_ := equipped_weapon_controller.get_parent()
+	var weapon_controller_parent_: Node = equipped_weapon_controller.get_parent()
 	if weapon_controller_parent_ != null:
 		weapon_controller_parent_.remove_child(equipped_weapon_controller)
 
@@ -713,6 +739,52 @@ func _rollback_gear_inventory_equip(new_gear_: GearInstanceResource, old_gear_: 
 		push_warning("[PlayerController] Failed to restore gear to inventory after rollback")
 
 
+func _build_consumable_use_result(success_: bool, reason_: StringName, effect_: StringName = &"none", applied_value_: float = 0.0) -> Dictionary:
+	return {
+		"success": success_,
+		"reason": reason_,
+		"effect": effect_,
+		"applied_value": applied_value_
+	}
+
+
+func _preview_consumable_use(item_data_: ItemDataResource) -> Dictionary:
+	if item_data_ == null:
+		return _build_consumable_use_result(false, &"missing_item_data")
+
+	if not item_data_.is_consumable_item():
+		return _build_consumable_use_result(false, &"not_consumable")
+
+	match item_data_.consumable_effect:
+		ItemData.ConsumableEffect.HEAL:
+			if item_data_.consumable_heal_amount <= 0.0:
+				return _build_consumable_use_result(false, &"invalid_heal_amount")
+			if health_component == null:
+				return _build_consumable_use_result(false, &"missing_health_component")
+			if health_component.current_hp >= health_component.max_hp:
+				return _build_consumable_use_result(false, &"already_full_hp")
+			var restorable_hp_: float = minf(item_data_.consumable_heal_amount, health_component.max_hp - health_component.current_hp)
+			return _build_consumable_use_result(true, &"ok", &"heal", restorable_hp_)
+		_:
+			return _build_consumable_use_result(false, &"unsupported_effect")
+
+
+func _apply_consumable_effect(item_data_: ItemDataResource) -> Dictionary:
+	if item_data_ == null:
+		return _build_consumable_use_result(false, &"missing_item_data")
+
+	match item_data_.consumable_effect:
+		ItemData.ConsumableEffect.HEAL:
+			if health_component == null:
+				return _build_consumable_use_result(false, &"missing_health_component")
+			var restored_hp_: float = health_component.heal(item_data_.consumable_heal_amount)
+			if restored_hp_ <= 0.0:
+				return _build_consumable_use_result(false, &"heal_not_applied")
+			return _build_consumable_use_result(true, &"ok", &"heal", restored_hp_)
+		_:
+			return _build_consumable_use_result(false, &"unsupported_effect")
+
+
 func _get_equipment_slot_for_gear(gear_instance_: GearInstanceResource) -> int:
 	if gear_instance_ == null or gear_instance_.gear_data == null:
 		return -1
@@ -734,7 +806,7 @@ func _try_handle_debug_weapon_switch(event_: InputEvent) -> bool:
 	if not enable_debug_weapon_switching:
 		return false
 
-	var key_event_ := event_ as InputEventKey
+	var key_event_: InputEventKey = event_ as InputEventKey
 	if key_event_ != null and key_event_.echo:
 		return false
 
@@ -762,11 +834,11 @@ func _try_handle_debug_weapon_switch(event_: InputEvent) -> bool:
 
 
 func _try_handle_debug_save_load(event_: InputEvent) -> bool:
-	var key_event_ := event_ as InputEventKey
+	var key_event_: InputEventKey = event_ as InputEventKey
 	if key_event_ == null or not key_event_.pressed or key_event_.echo:
 		return false
 
-	var save_manager_ = _get_save_manager()
+	var save_manager_: Node = _get_save_manager()
 	if save_manager_ == null:
 		return false
 
@@ -791,7 +863,7 @@ func _debug_equip_weapon(weapon_data_: WeaponData) -> void:
 
 
 func _try_handle_debug_inventory(event_: InputEvent) -> bool:
-	var key_event_ := event_ as InputEventKey
+	var key_event_: InputEventKey = event_ as InputEventKey
 	if key_event_ != null and key_event_.echo:
 		return false
 
@@ -842,7 +914,7 @@ func _debug_add_inventory_item(item_data_: ItemDataResource, amount_: int) -> vo
 
 
 func record_recent_pickup(display_name_: String, amount_: int) -> void:
-	var safe_amount_ := maxi(amount_, 1)
+	var safe_amount_: int = maxi(amount_, 1)
 	recent_pickup_summary = "%s x%d" % [display_name_, safe_amount_]
 
 
@@ -867,7 +939,7 @@ func _debug_add_all_runes() -> void:
 		push_warning("[Debug][Runes] Inventory node is missing")
 		return
 
-	var rune_manager_ = _get_rune_manager()
+	var rune_manager_: Node = _get_rune_manager()
 	if rune_manager_ == null:
 		push_warning("[Debug][Runes] RuneManager is unavailable")
 		return
@@ -926,7 +998,7 @@ func _try_handle_hotbar_input(event_: InputEvent) -> bool:
 	if hotbar_index_ == -1 or is_controls_locked() or is_dashing:
 		return false
 
-	var hotbar_manager_ = _get_hotbar_manager()
+	var hotbar_manager_: Node = _get_hotbar_manager()
 	if hotbar_manager_ != null and hotbar_manager_.use_hotbar_slot(self, hotbar_index_):
 		return true
 
@@ -934,7 +1006,7 @@ func _try_handle_hotbar_input(event_: InputEvent) -> bool:
 
 
 func _toggle_inventory_ui() -> void:
-	var inventory_ui_ = _get_inventory_ui()
+	var inventory_ui_: Node = _get_inventory_ui()
 	if inventory_ui_ == null:
 		return
 
@@ -967,7 +1039,7 @@ func _create_ghost() -> void:
 	if dash_ghost_count <= 0:
 		return
 
-	var parent_node_ := get_parent()
+	var parent_node_: Node = get_parent()
 	if parent_node_ == null:
 		return
 
@@ -990,7 +1062,7 @@ func _create_ghost() -> void:
 		if is_instance_valid(oldest_ghost_):
 			oldest_ghost_.queue_free()
 
-	var tween_ := create_tween()
+	var tween_: Tween = create_tween()
 	tween_.tween_property(ghost_, "modulate:a", 0.0, 0.2)
 	tween_.tween_callback(Callable(ghost_, "queue_free"))
 
@@ -1049,13 +1121,13 @@ func _on_health_depleted() -> void:
 
 
 func _respawn_at_checkpoint() -> void:
-	var scene_transition_manager_ := _get_scene_transition_manager()
+	var scene_transition_manager_: Node = _get_scene_transition_manager()
 	var respawn_point_: Dictionary = {}
 	var has_respawn_position_: bool = false
 	if scene_transition_manager_ != null and scene_transition_manager_.has_method("get_respawn_point"):
 		respawn_point_ = scene_transition_manager_.get_respawn_point()
 
-	var respawn_position_ := Vector2.ZERO
+	var respawn_position_: Vector2 = Vector2.ZERO
 	if not respawn_point_.is_empty():
 		respawn_position_ = respawn_point_.get("position", Vector2.ZERO)
 		has_respawn_position_ = respawn_point_.has("position")

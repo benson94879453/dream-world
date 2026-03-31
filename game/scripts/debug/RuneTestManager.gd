@@ -63,7 +63,7 @@ func simulate_probability_test(endless_chance_: float, double_strike_chance_: fl
 	reset_stats()
 	probability_sample_count = maxi(sample_count_, 1)
 
-	var rng_ := RandomNumberGenerator.new()
+	var rng_: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng_.randomize()
 	for _sample_index in range(probability_sample_count):
 		record_endless_blade_result(rng_.randf() <= minf(maxf(endless_chance_, 0.0), 1.0))
@@ -147,7 +147,7 @@ func get_stat_entry(stat_key_: String) -> Dictionary:
 
 
 func _get_trigger_rate(stat_key_: String) -> float:
-	var stat_entry_ := get_stat_entry(stat_key_)
+	var stat_entry_: Dictionary = get_stat_entry(stat_key_)
 	var total_: int = int(stat_entry_.get("total", 0))
 	if total_ <= 0:
 		return 0.0

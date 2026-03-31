@@ -20,7 +20,7 @@ var _base_dialog: DialogDataResource = null
 
 #region Core Lifecycle
 func _ready() -> void:
-	var dialog_manager_ = _get_dialog_manager()
+	var dialog_manager_: Node = _get_dialog_manager()
 	if dialog_manager_ == null:
 		return
 
@@ -32,13 +32,13 @@ func _ready() -> void:
 
 #region Public
 func get_available_quests() -> Array[QuestDataResource]:
-	var quest_manager_ = _get_quest_manager()
+	var quest_manager_: Node = _get_quest_manager()
 	var result_: Array[QuestDataResource] = []
 	if quest_manager_ == null:
 		return result_
 
 	for quest_id_ in available_quest_ids:
-		var quest_data_ = quest_manager_.get_quest_data(quest_id_) as QuestDataResource
+		var quest_data_: QuestDataResource = quest_manager_.get_quest_data(quest_id_) as QuestDataResource
 		if quest_data_ == null:
 			continue
 		if quest_manager_.can_accept_quest(quest_data_):
@@ -48,7 +48,7 @@ func get_available_quests() -> Array[QuestDataResource]:
 
 
 func get_turn_in_quests() -> Array[QuestInstanceResource]:
-	var quest_manager_ = _get_quest_manager()
+	var quest_manager_: Node = _get_quest_manager()
 	var result_: Array[QuestInstanceResource] = []
 	if quest_manager_ == null:
 		return result_
@@ -67,9 +67,9 @@ func get_turn_in_quests() -> Array[QuestInstanceResource]:
 func build_runtime_dialog(base_dialog_: DialogDataResource, npc_name_: String) -> DialogDataResource:
 	_base_dialog = base_dialog_
 
-	var available_quests_ := get_available_quests()
-	var turn_in_quests_ := get_turn_in_quests()
-	var tracked_quests_ := _get_relevant_active_quests()
+	var available_quests_: Array[QuestDataResource] = get_available_quests()
+	var turn_in_quests_: Array[QuestInstanceResource] = get_turn_in_quests()
+	var tracked_quests_: Array[QuestInstanceResource] = _get_relevant_active_quests()
 	if available_quests_.is_empty() and turn_in_quests_.is_empty() and tracked_quests_.is_empty():
 		if base_dialog_ != null:
 			return base_dialog_
@@ -93,14 +93,14 @@ func build_runtime_dialog(base_dialog_: DialogDataResource, npc_name_: String) -
 
 	menu_choices_.append(_build_choice("先這樣", &""))
 
-	var menu_node_ := DialogNodeDataResource.new()
+	var menu_node_: DialogNodeDataResource = DialogNodeDataResource.new()
 	menu_node_.node_id = &"quest_menu"
 	menu_node_.node_type = DialogData.NodeType.CHOICE
 	menu_node_.speaker_name = npc_name_
 	menu_node_.text = _build_menu_text(available_quests_, turn_in_quests_, tracked_quests_)
 	menu_node_.choices = menu_choices_
 
-	var dialog_ := DialogDataResource.new()
+	var dialog_: DialogDataResource = DialogDataResource.new()
 	dialog_.dialog_id = StringName("%s_menu" % String(npc_id))
 	dialog_.nodes = [menu_node_]
 	dialog_.start_node_id = menu_node_.node_id
@@ -110,7 +110,7 @@ func build_runtime_dialog(base_dialog_: DialogDataResource, npc_name_: String) -
 #region Helpers
 func _get_relevant_active_quests() -> Array[QuestInstanceResource]:
 	var result_: Array[QuestInstanceResource] = []
-	var quest_manager_ = _get_quest_manager()
+	var quest_manager_: Node = _get_quest_manager()
 	if quest_manager_ == null:
 		return result_
 
@@ -160,24 +160,24 @@ func _build_menu_text(
 
 
 func _build_choice(choice_text_: String, action_id_: StringName) -> DialogChoiceDataResource:
-	var choice_ := DialogChoiceDataResource.new()
+	var choice_: DialogChoiceDataResource = DialogChoiceDataResource.new()
 	choice_.choice_text = choice_text_
 	choice_.action_id = action_id_
 	return choice_
 
 
 func _build_feedback_dialog(message_: String) -> DialogDataResource:
-	var text_node_ := DialogNodeDataResource.new()
+	var text_node_: DialogNodeDataResource = DialogNodeDataResource.new()
 	text_node_.node_id = &"feedback"
 	text_node_.speaker_name = _get_npc_display_name()
 	text_node_.text = message_
 	text_node_.next_node_id = &"end"
 
-	var end_node_ := DialogNodeDataResource.new()
+	var end_node_: DialogNodeDataResource = DialogNodeDataResource.new()
 	end_node_.node_id = &"end"
 	end_node_.node_type = DialogData.NodeType.END
 
-	var dialog_ := DialogDataResource.new()
+	var dialog_: DialogDataResource = DialogDataResource.new()
 	dialog_.dialog_id = StringName("%s_feedback" % String(npc_id))
 	dialog_.nodes = [text_node_, end_node_]
 	dialog_.start_node_id = text_node_.node_id
@@ -185,12 +185,12 @@ func _build_feedback_dialog(message_: String) -> DialogDataResource:
 
 
 func _on_dialog_action_requested(action_id_: StringName) -> void:
-	var dialog_manager_ = _get_dialog_manager()
+	var dialog_manager_: Node = _get_dialog_manager()
 	if dialog_manager_ == null or dialog_manager_.current_npc_id != npc_id:
 		return
 
-	var action_text_ := String(action_id_)
-	var quest_manager_ = _get_quest_manager()
+	var action_text_: String = String(action_id_)
+	var quest_manager_: Node = _get_quest_manager()
 	if quest_manager_ == null:
 		return
 
@@ -199,7 +199,7 @@ func _on_dialog_action_requested(action_id_: StringName) -> void:
 		return
 
 	if action_text_.begins_with(ACTION_ACCEPT_PREFIX):
-		var quest_id_ := StringName(action_text_.trim_prefix(ACTION_ACCEPT_PREFIX))
+		var quest_id_: StringName = StringName(action_text_.trim_prefix(ACTION_ACCEPT_PREFIX))
 		var success_: bool = quest_manager_.accept_quest(quest_id_)
 		if success_:
 			_pending_dialog = null
@@ -209,7 +209,7 @@ func _on_dialog_action_requested(action_id_: StringName) -> void:
 		return
 
 	if action_text_.begins_with(ACTION_TURN_IN_PREFIX):
-		var quest_id_ := StringName(action_text_.trim_prefix(ACTION_TURN_IN_PREFIX))
+		var quest_id_: StringName = StringName(action_text_.trim_prefix(ACTION_TURN_IN_PREFIX))
 		var success_: bool = quest_manager_.turn_in_quest(quest_id_)
 		if success_:
 			_pending_dialog = null
@@ -233,7 +233,7 @@ func _start_pending_dialog() -> void:
 	if _pending_dialog == null:
 		return
 
-	var dialog_manager_ = _get_dialog_manager()
+	var dialog_manager_: Node = _get_dialog_manager()
 	if dialog_manager_ == null or dialog_manager_.is_dialog_active:
 		return
 
@@ -243,7 +243,7 @@ func _start_pending_dialog() -> void:
 
 
 func _get_npc_display_name() -> String:
-	var parent_ = get_parent()
+	var parent_: Node = get_parent()
 	if parent_ != null:
 		var npc_name_value_ = parent_.get("npc_name")
 		if npc_name_value_ != null:

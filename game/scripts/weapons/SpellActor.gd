@@ -102,8 +102,8 @@ func _can_affect_target(target_: Node2D) -> bool:
 	if target_ == owner_actor:
 		return affect_self
 
-	var owner_is_player_ := _is_player_aligned(owner_actor)
-	var target_is_player_ := _is_player_aligned(target_)
+	var owner_is_player_: bool = _is_player_aligned(owner_actor)
+	var target_is_player_: bool = _is_player_aligned(target_)
 	if owner_is_player_ == target_is_player_:
 		return affect_friends
 

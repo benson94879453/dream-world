@@ -1,6 +1,6 @@
 # 文件同步摘要
 
-> 最後更新: 2026-03-30
+> 最後更新: 2026-03-31
 
 > 入口請先看 `README.md`
 
@@ -20,13 +20,24 @@
 | 敵人 AI | ✅ | Slime / Archer / Boar |
 | NPC 對話 | ✅ | DialogManager + flags |
 | 任務系統（後端） | ✅ | QuestManager 全功能，4筆資料 |
-| 任務系統（前端） | ❌ | **HUD / 日誌 / 通知 全部缺失** |
+| 任務系統（前端） | ✅ | HUD / 日誌 / 通知 已完成 |
 | 場景系統 | ✅ | TownHub ↔ Dungeon01 |
 | Checkpoint | ✅ | 營火 + 重生點 |
-| 存檔系統 | ✅ | Save v7 + checksum + migration |
-| Hotbar 存檔 | ❌ | 綁定不進存檔（待 Save v8） |
-| 跨重啟重生點 | ❌ | 重開遊戲回 TownHub（待 Save v8） |
-| 消耗品效果 | ⚠️ | 硬編碼 heal 25，待資料驅動 |
+| 存檔系統 | ✅ | Save v8 + checksum + migration |
+| Hotbar 存檔 | ✅ | 綁定已納入存檔（Save v8） |
+| 跨重啟重生點 | ✅ | 重生點已可跨重啟保存（Save v8） |
+| 消耗品效果 | ✅ | 已改為資料驅動（HEAL 50） |
+
+- 9A-1 任務追蹤 HUD：✅ 已完成並驗收通過
+- 9A-2 任務通知 Toast：✅ 已完成並驗收通過
+- 9A-2.5 任務 UI 輸入恢復整合修復：✅ 已完成並驗收通過
+- 9A-3 任務日誌介面：✅ 已完成並驗收通過
+- 9B-1 Hotbar 綁定進存檔：✅ 已完成並驗收通過
+- 9B-2 Checkpoint 跨重啟重生：✅ 已完成並驗收通過
+- 9B-3 消耗品系統資料驅動：✅ 已完成並驗收通過
+- 9D Save v8 整合：✅ 已完成並驗收通過
+- 9C-1 Boss 死亡掉落：✅ 已完成並驗收通過
+- 9E-1 前端 UI 視覺重構與文案清理：✅ 已完成並驗收通過
 
 ---
 
@@ -55,16 +66,16 @@
 
 | 優先 | Phase | 內容 | 狀態 |
 |:----:|-------|------|:----:|
-| P1 | 9A-1 | 任務追蹤 HUD（螢幕右側） | ⬜ |
-| P1 | 9A-2 | 任務通知 Toast | ⬜ |
-| P1 | 9A-3 | 任務日誌介面（J 鍵） | ⬜ |
-| P1 | 9B-1 | Hotbar 綁定進存檔 | ⬜ |
-| P1 | 9B-2 | Checkpoint 重生點跨重啟 | ⬜ |
-| P1 | 9B-3 | 消耗品系統資料驅動 | ⬜ |
-| P1 | 9D   | Save v8 整合 | ⬜ |
-| P2 | 9C-1 | Boss 死亡掉落 | ⬜ |
-| P2 | 9C-2 | Boss 死亡演出 | ⬜ |
-| P2 | 9C-3 | Boss 後傳送門高亮 | ⬜ |
+| P1 | 9A-1 | 任務追蹤 HUD（螢幕右側） | ✅ |
+| P1 | 9A-2 | 任務通知 Toast | ✅ |
+| P1 | 9A-3 | 任務日誌介面（J 鍵） | ✅ |
+| P1 | 9B-1 | Hotbar 綁定進存檔 | ✅ |
+| P1 | 9B-2 | Checkpoint 重生點跨重啟 | ✅ |
+| P1 | 9B-3 | 消耗品系統資料驅動 | ✅ |
+| P1 | 9D   | Save v8 整合 | ✅ |
+| P1 | 9C-1 | Boss 死亡掉落 | ✅ |
+| P2 | 9C-2 | Boss 死亡演出 | ✅ |
+| P2 | 9C-3 | Boss 後傳送門高亮 | ✅ |
 | P2 | 10A  | Dungeon 02 + 新敵人 | ⬜ |
 | P3 | 10B  | 群體 AI | ⬜ |
 | P3 | 10C  | 多階段 Boss | ⬜ |
@@ -84,7 +95,7 @@
 | v5 | 金幣 | ✅ |
 | v6 | Equipment + checksum | ✅ |
 | v7 | Quest + SceneState + ZoneReset | ✅ |
-| v8 | Hotbar 綁定 + Respawn 場景 | ⬜ Phase 9D |
+| v8 | Hotbar 綁定 + Respawn 場景 | ✅ |
 
 ---
 
@@ -94,8 +105,8 @@
 |------|---------|:----:|
 | README.md | 2026-03-30 | ✅ 入口 |
 | workflow_template.md | 2026-03-30 | ✅ 三角色流程 |
-| task_prompt.md | 2026-03-30 | ✅ 當前任務 |
-| task_backlog.md | 2026-03-30 | ✅ 任務池 |
+| task_prompt.md | 2026-03-31 | ✅ 當前任務 |
+| task_backlog.md | 2026-03-31 | ✅ 任務池 |
 | code_review_template.md | 2026-03-30 | ✅ 驗收模板 |
 | specs/input_keymap.md | 2026-03-30 | ✅ 操作總表 |
 | planning/project_goals.md | 2026-03-29 | ✅ |
@@ -108,4 +119,4 @@
 
 歷史文件已歸檔至 `archive/`，詳見 `README.md`。
 
-*文件已同步 - 2026-03-30*
+*文件已同步 - 2026-03-31*

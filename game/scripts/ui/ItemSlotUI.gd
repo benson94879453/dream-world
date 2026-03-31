@@ -8,6 +8,7 @@ const ItemDataResource = preload("res://game/scripts/data/ItemData.gd")
 const HotbarManagerNode = preload("res://game/scripts/core/HotbarManager.gd")
 const RuneDataResource = preload("res://game/scripts/data/RuneData.gd")
 const WeaponInstanceResource = preload("res://game/scripts/data/WeaponInstance.gd")
+const UIColorsResource = preload("res://game/scripts/ui/UIColors.gd")
 
 signal hover_started(slot_ui: ItemSlotUI)
 signal hover_ended(slot_ui: ItemSlotUI)
@@ -154,7 +155,7 @@ func build_tooltip_payload() -> Dictionary:
 
 #region Drag And Drop
 func _gui_input(event_: InputEvent) -> void:
-	var mouse_event_ := event_ as InputEventMouseButton
+	var mouse_event_: InputEventMouseButton = event_ as InputEventMouseButton
 	if mouse_event_ == null or not mouse_event_.pressed:
 		return
 	if mouse_event_.button_index != MOUSE_BUTTON_LEFT or not has_display_content():
@@ -285,31 +286,18 @@ func _set_fallback_text(text_: String) -> void:
 
 
 func _apply_visual_state() -> void:
-	var stylebox_: StyleBoxFlat = StyleBoxFlat.new()
-	stylebox_.bg_color = Color(0.19, 0.19, 0.19, 0.95)
-	stylebox_.border_color = Color(0.53, 0.53, 0.53, 1.0)
-	stylebox_.border_width_left = 2
-	stylebox_.border_width_top = 2
-	stylebox_.border_width_right = 2
-	stylebox_.border_width_bottom = 2
-	stylebox_.corner_radius_top_left = 2
-	stylebox_.corner_radius_top_right = 2
-	stylebox_.corner_radius_bottom_right = 2
-	stylebox_.corner_radius_bottom_left = 2
-
+	var stylebox_: StyleBoxFlat
 	if hovered:
-		stylebox_.bg_color = Color(0.28, 0.28, 0.22, 1.0)
-		stylebox_.border_color = Color(0.95, 0.85, 0.42, 1.0)
+		stylebox_ = UIColorsResource.build_panel_style(UIColorsResource.SLOT_HOVER_BG, UIColorsResource.SLOT_ACTIVE_BORDER, 2, 6)
 	elif is_hotbar_slot:
-		stylebox_.bg_color = Color(0.24, 0.18, 0.12, 0.98)
-		stylebox_.border_color = Color(0.72, 0.56, 0.31, 1.0)
+		stylebox_ = UIColorsResource.build_panel_style(Color(0.24, 0.18, 0.12, 0.98), Color(0.72, 0.56, 0.31, 1.0), 1, 6)
 	elif has_display_content():
-		stylebox_.bg_color = Color(0.21, 0.21, 0.21, 0.98)
-		stylebox_.border_color = Color(0.67, 0.67, 0.67, 1.0)
+		stylebox_ = UIColorsResource.build_borderless_style(UIColorsResource.SLOT_BG, 6) # Use borderless for occupied slots too, only hover shows border
+	else:
+		stylebox_ = UIColorsResource.build_borderless_style(UIColorsResource.SLOT_BG, 6)
 
 	if filter_hidden:
 		stylebox_.bg_color = Color(0.12, 0.12, 0.12, 0.78)
-		stylebox_.border_color = Color(0.28, 0.28, 0.28, 1.0)
 
 	add_theme_stylebox_override("panel", stylebox_)
 	modulate = Color(1.0, 1.0, 1.0, 0.75) if filter_hidden else Color.WHITE
@@ -427,8 +415,8 @@ func _build_gear_stats() -> String:
 	var details_: Array[String] = ["防禦: %.1f" % current_gear.get_total_defense()]
 	if current_gear.gear_data != null:
 		for modifier_key_ in current_gear.gear_data.stat_modifiers:
-			var modifier_name_ := _format_stat_key(StringName(String(modifier_key_)))
-			var value_ := float(current_gear.gear_data.stat_modifiers.get(modifier_key_, 0.0))
+			var modifier_name_: String = _format_stat_key(StringName(String(modifier_key_)))
+			var value_: float = float(current_gear.gear_data.stat_modifiers.get(modifier_key_, 0.0))
 			details_.append("%s: %+.1f" % [modifier_name_, value_])
 
 	return "\n".join(details_)
@@ -443,7 +431,7 @@ func _build_item_stats() -> String:
 		details_.append("堆疊數量: %d" % current_amount)
 	details_.append("最大堆疊: %d" % maxi(current_item.max_stack, 1))
 
-	var rune_data_ := current_item as RuneDataResource
+	var rune_data_: RuneDataResource = current_item as RuneDataResource
 	if rune_data_ != null:
 		var rune_tags_: Array[String] = []
 		for tag_ in rune_data_.rune_tags:
@@ -571,7 +559,7 @@ func _get_star_text(star_level_: int) -> String:
 
 func _set_child_mouse_filters(node_: Node) -> void:
 	for child_node_ in node_.get_children():
-		var child_control_ := child_node_ as Control
+		var child_control_: Control = child_node_ as Control
 		if child_control_ != null:
 			child_control_.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_set_child_mouse_filters(child_node_)

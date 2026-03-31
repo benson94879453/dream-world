@@ -83,7 +83,7 @@ func _process(_delta: float) -> void:
 
 #region Helpers
 func _update_player_debug() -> void:
-	var player_ := get_tree().get_first_node_in_group("player") as PlayerController
+	var player_: PlayerController = get_tree().get_first_node_in_group("player") as PlayerController
 	if player_ == null:
 		player_state_label.text = "Player State: N/A"
 		player_hp_label.text = "Player HP: N/A"
@@ -194,7 +194,7 @@ func _update_boar_debug() -> void:
 
 
 func _update_rune_test_debug() -> void:
-	var rune_test_manager_ = _get_rune_test_manager()
+	var rune_test_manager_: Node = _get_rune_test_manager()
 	if rune_test_manager_ == null:
 		_set_rune_test_labels_visible(false)
 		return
@@ -266,12 +266,12 @@ func _find_closest_enemy_by_id(enemy_id_: StringName) -> EnemyAIController:
 	if enemies_.is_empty():
 		return null
 
-	var player_ := get_tree().get_first_node_in_group("player") as PlayerController
+	var player_: PlayerController = get_tree().get_first_node_in_group("player") as PlayerController
 	var closest_enemy_: EnemyAIController = null
 	var closest_distance_: float = INF
 
 	for enemy_node_ in enemies_:
-		var enemy_ := enemy_node_ as EnemyAIController
+		var enemy_: EnemyAIController = enemy_node_ as EnemyAIController
 		if enemy_ == null or enemy_.get_enemy_id() != enemy_id_:
 			continue
 
@@ -314,7 +314,7 @@ func _get_hotbar_summary(player_: PlayerController) -> String:
 	if player_ == null:
 		return "N/A"
 
-	var hotbar_manager_ = _get_hotbar_manager()
+	var hotbar_manager_: Node = _get_hotbar_manager()
 	var inventory_ = player_.get_inventory()
 	if hotbar_manager_ == null or inventory_ == null:
 		return "N/A"
@@ -334,7 +334,7 @@ func _get_hotbar_manager() -> Node:
 
 
 func _get_player_max_hp() -> float:
-	var player_ := get_tree().get_first_node_in_group("player") as PlayerController
+	var player_: PlayerController = get_tree().get_first_node_in_group("player") as PlayerController
 	if player_ == null or player_.get_health_component() == null:
 		return 0.0
 	return player_.get_health_component().max_hp

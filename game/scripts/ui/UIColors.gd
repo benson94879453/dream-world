@@ -30,6 +30,13 @@ const ENTRY_SELECTED_BORDER: Color = Color(0.97, 0.84, 0.43, 1.0)
 const ENTRY_COMPLETED_BG: Color = Color(0.12, 0.12, 0.14, 0.95)
 const ENTRY_COMPLETED_BORDER: Color = Color(0.34, 0.34, 0.36, 0.92)
 
+# Specific UI components
+const SPEAKER_BADGE_BG: Color = Color(0.08, 0.08, 0.1, 0.98)
+const SLOT_BG: Color = Color(0.0, 0.0, 0.0, 0.35)
+const SLOT_HOVER_BG: Color = Color(0.12, 0.11, 0.09, 0.6)
+const SLOT_ACTIVE_BORDER: Color = Color(0.92, 0.82, 0.53, 0.9)
+const SLOT_INACTIVE_BORDER: Color = Color(0.0, 0.0, 0.0, 0.0)
+
 # Inventory / hotbar specific
 const INVENTORY_PANEL_BG: Color = Color(0.14, 0.15, 0.18, 0.98)
 const HOTBAR_PANEL_BG: Color = Color(0.13, 0.11, 0.09, 0.98)
@@ -82,13 +89,31 @@ const HUD_CORNER_RADIUS: int = 6
 
 
 static func build_panel_style(bg_color_: Color, border_color_: Color, border_width_: int, corner_radius_: int) -> StyleBoxFlat:
-	var stylebox_ := StyleBoxFlat.new()
+	var stylebox_: StyleBoxFlat = StyleBoxFlat.new()
 	stylebox_.bg_color = bg_color_
 	stylebox_.border_color = border_color_
 	stylebox_.border_width_left = border_width_
 	stylebox_.border_width_top = border_width_
 	stylebox_.border_width_right = border_width_
 	stylebox_.border_width_bottom = border_width_
+	stylebox_.corner_radius_top_left = corner_radius_
+	stylebox_.corner_radius_top_right = corner_radius_
+	stylebox_.corner_radius_bottom_left = corner_radius_
+	stylebox_.corner_radius_bottom_right = corner_radius_
+	return stylebox_
+
+
+static func build_glass_style(bg_color_: Color, border_color_: Color, border_width_: int, corner_radius_: int) -> StyleBoxFlat:
+	var stylebox_ := build_panel_style(bg_color_, border_color_, border_width_, corner_radius_)
+	stylebox_.border_blend = true # Softer border
+	stylebox_.shadow_color = Color(0.0, 0.0, 0.0, 0.4)
+	stylebox_.shadow_size = 8
+	return stylebox_
+
+
+static func build_borderless_style(bg_color_: Color, corner_radius_: int) -> StyleBoxFlat:
+	var stylebox_: StyleBoxFlat = StyleBoxFlat.new()
+	stylebox_.bg_color = bg_color_
 	stylebox_.corner_radius_top_left = corner_radius_
 	stylebox_.corner_radius_top_right = corner_radius_
 	stylebox_.corner_radius_bottom_left = corner_radius_

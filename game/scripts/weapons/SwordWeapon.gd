@@ -70,7 +70,7 @@ func _setup_weapon() -> void:
 	assert(attack_hitbox_collision != null, "SwordWeapon attack_hitbox_collision_path must point to CollisionShape2D")
 	assert(attack_cooldown_timer != null, "SwordWeapon attack_cooldown_timer_path must point to Timer")
 
-	var hitbox_shape_ := attack_hitbox_collision.shape as RectangleShape2D
+	var hitbox_shape_: RectangleShape2D = attack_hitbox_collision.shape as RectangleShape2D
 	assert(hitbox_shape_ != null, "SwordWeapon attack hitbox shape must be RectangleShape2D")
 
 	attack_phase_timer = Timer.new()
